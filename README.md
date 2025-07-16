@@ -1,61 +1,61 @@
-# RoomieConnect - AI-Powered Roommate Matching Algorithm
+# FindHousing - Smart Real-Time Roommate Matching App
 
-RoomieConnect is a modern web application designed to help users find compatible roommates through an intelligent, conversational chatbot. Built from the ground up, this project features a React frontend, a Node.js backend, and a dynamic matching algorithm that gets to know users' personalities and preferences.
+FindHousing is an intelligent web application that helps you find the perfect roommate by considering not just personality and lifestyle, but also distance, match percentage, and real-time communication. The app uses a conversational AI chatbot to collect user preferences, calculates compatibility scores, and enables instant messaging between matches.
 
-## Features
+## Key Features
 
-- **Conversational Chatbot**: Instead of a boring form, users interact with a friendly chatbot that asks questions in a natural, conversational way.
-- **Dynamic Questioning**: The chatbot doesn't just follow a script. It listens to user answers and asks relevant follow-up questions to gain deeper insight.
-- **Weighted Scoring System**: A sophisticated algorithm scores user answers based on a weighted system that prioritizes key lifestyle habits for more accurate compatibility.
-- **Intelligent Matching**: The backend finds the best matches by identifying users with similar compatibility scores (within a 2-point range) and ranking them.
-- **Full-Stack Architecture**: The application is built with a modern React frontend and a robust Node.js (Express) backend, ensuring a smooth and responsive user experience.
-- **In-Memory Database**: For rapid prototyping, user profiles are stored in a simple in-memory array on the server.
+- **Conversational AI Chatbot**: Users answer questions in a friendly, chat-based interface, making the onboarding process engaging and natural.
+- **Smart Matching Algorithm**: Matches are determined using a weighted scoring system that takes into account lifestyle, habits, and preferences.
+- **Distance Awareness**: The app factors in your location and shows how far away your top matches are, so you can find roommates nearby or in your preferred area.
+- **Match Percentage**: Each match is ranked by a compatibility percentage, so you can see at a glance who is most compatible with you.
+- **Real-Time Messaging**: Instantly chat with your matches using a modern, responsive chat interface powered by Stream Chat for seamless, live conversations.
+- **Modern Full-Stack Architecture**: Built with React (frontend) and Node.js/Express (backend) for a fast, smooth user experience.
 
 ## Tech Stack
 
-- **Frontend**:
-  - **React.js**: For building the user interface.
-  - **Axios**: For making API requests to the backend.
-  - **Sentiment**: For analyzing the emotional tone of user answers.
+- **Frontend**: React.js, Axios, Sentiment
+- **Backend**: Node.js, Express.js, Stream Chat API
 
-- **Backend**:
-  - **Node.js**: As the JavaScript runtime environment.
-  - **Express.js**: As the web application framework.
-  - **CORS**: For enabling cross-origin requests.
-  - **Body-Parser**: For parsing incoming request bodies.
+## How It Works
 
-## How to Run This Project
+1. **Sign Up & Chatbot Onboarding**: New users are guided through a series of questions by the AI chatbot to build a detailed roommate profile.
+2. **Smart Matching**: The backend calculates compatibility scores, taking into account your answers and location.
+3. **See Your Matches**: View your top matches, including their match percentage and distance from you.
+4. **Start a Conversation**: Click to start a real-time chat with any of your matches and get to know them instantly.
 
-1.  **Clone the Repository**:
+## Getting Started
+
+1. **Clone the Repository**
     ```bash
-    git clone https://github.com/Rahul-Kaura/MatchingAlgorithm-V1--RoomieConnect.git
-    cd MatchingAlgorithm-V1--RoomieConnect
+    git clone https://github.com/Rahul-Kaura/FindHousing-Real-time-Messaging-.git
+    cd FindHousing-Real-time-Messaging-
     ```
-
-2.  **Install Dependencies for Both Frontend and Backend**:
+2. **Install Dependencies**
     ```bash
-    # Install backend dependencies
+    # Backend
     cd backend
     npm install
-
-    # Install frontend dependencies
+    # Frontend
     cd ../frontend
     npm install
     ```
-
-3.  **Start the Backend Server**:
-    *   In a new terminal window, navigate to the `backend` directory and run:
+3. **Run the App**
+    - Start the backend:
     ```bash
+      cd backend
     node index.js
     ```
-    *   The backend will start on `http://localhost:3001`.
-
-4.  **Start the Frontend Application**:
-    *   In another terminal window, navigate to the `frontend` directory and run:
+    - Start the frontend:
     ```bash
+      cd ../frontend
     npm start
     ```
-    *   The application will open in your browser at `http://localhost:3000`.
+    - Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-5.  **Start Matching!**
-    *   Open two or more browser tabs to `http://localhost:3000` to create multiple user profiles and see the matching algorithm in action. 
+## Real-Time Messaging
+
+FindHousing uses [Stream Chat](https://getstream.io/chat/) to enable live, real-time messaging between users. Once matched, you can chat instantly—no refresh needed, and all messages are delivered in real time.
+
+---
+
+**Note:** This project currently uses in-memory storage for rapid prototyping. For production, a persistent database is recommended. 
