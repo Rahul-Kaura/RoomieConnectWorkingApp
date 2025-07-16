@@ -56,6 +56,10 @@ FindHousing is an intelligent web application that helps you find the perfect ro
 
 FindHousing uses [Stream Chat](https://getstream.io/chat/) to enable live, real-time messaging between users. Once matched, you can chat instantly—no refresh needed, and all messages are delivered in real time.
 
+## UI Animations
+
+- The home screen features a synchronized cycling and pulse animation for the credits at the bottom: "By: Rahul, <cycling names>". Both "Rahul" and the cycling names pulse in sync, and the RoomieConnect logo and title bounce at the same interval for a lively, modern effect.
+
 ---
 
 **Note:** This project currently uses in-memory storage for rapid prototyping. For production, a persistent database is recommended. 
