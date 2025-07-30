@@ -16,14 +16,12 @@ A modern, intelligent roommate matching application that uses advanced algorithm
 - **Typing indicators** and online/offline status
 - **Message persistence** with Firebase Realtime Database
 
-### 🎨 **Modern UI/UX with Cool Animations**
-- **Smooth screen transitions** with fade-in slide effects
-- **Cool loading animations** with color-changing spinners
-- **"Powered by AI" animation** with cycling dots
+### 🎨 **Modern UI/UX**
+- **Smooth animations** and transitions throughout the app
+- **Responsive design** for all devices
 - **Interactive match cards** with pin/unpin functionality
 - **Custom avatars** with fallback initials
 - **Bouncing RoomieConnect logo** for navigation
-- **Professional loading experience** with 2-second animations
 
 ### ⚙️ **User Management**
 - **Firebase Authentication** (Email/Password & Google Sign-in)
@@ -44,13 +42,6 @@ A modern, intelligent roommate matching application that uses advanced algorithm
 - **Total notification counter**
 - **Persistent notification state**
 
-### 🎭 **Enhanced Animations**
-- **Color-changing loading spinner** (teal → blue → purple → red)
-- **Pulsing scale effects** and glowing shadows
-- **Smooth 0.3-0.5s transitions** between all screens
-- **Cycling dots animation** for "Powered by AI" text
-- **Professional loading experience** with consistent timing
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -62,24 +53,24 @@ A modern, intelligent roommate matching application that uses advanced algorithm
 ### Installation
 
 1. **Clone the repository**
-   ```bash
+    ```bash
    git clone https://github.com/yourusername/roomieconnect.git
    cd roomieconnect
-   ```
+    ```
 
 2. **Install dependencies**
-   ```bash
+    ```bash
    # Install root dependencies
    npm install
    
    # Install frontend dependencies
    cd frontend
-   npm install
+    npm install
    
    # Install backend dependencies
    cd ../backend
-   npm install
-   ```
+    npm install
+    ```
 
 3. **Firebase Setup**
    - Create a new Firebase project
@@ -110,9 +101,8 @@ A modern, intelligent roommate matching application that uses advanced algorithm
 ### Frontend (React.js)
 - **React 18** with functional components and hooks
 - **Firebase SDK** for authentication and real-time database
-- **Enhanced CSS3 animations** for smooth user experience
+- **CSS3 animations** for smooth user experience
 - **Responsive design** with mobile-first approach
-- **Cool loading animations** and smooth transitions
 
 ### Backend (Node.js/Express)
 - **Express.js** server for API endpoints
@@ -126,18 +116,6 @@ A modern, intelligent roommate matching application that uses advanced algorithm
 - **Structured data** for profiles, matches, and messages
 
 ## 📱 Key Components
-
-### Welcome Screen
-- **Interactive welcome screen** with "Click anywhere to start"
-- **Personalized welcome message** for returning users
-- **"Powered by AI" animation** with cycling dots
-- **Smooth transitions** to next screen
-
-### Loading Experience
-- **Cool color-changing spinner** animation
-- **2-second loading duration** for smooth experience
-- **Pulsing text effects** and glowing shadows
-- **Professional loading screen** design
 
 ### Chatbot Questionnaire
 - **Interactive questionnaire** with keyword validation
@@ -223,8 +201,8 @@ const firebaseConfig = {
 
 ### Backend Deployment (Heroku/Railway)
 1. **Prepare for deployment**
-   ```bash
-   cd backend
+    ```bash
+      cd backend
    # Ensure package.json has start script
    ```
 
@@ -235,7 +213,7 @@ const firebaseConfig = {
    ```
 
 3. **Set environment variables**
-   ```bash
+    ```bash
    heroku config:set NODE_ENV=production
    heroku config:set FIREBASE_PROJECT_ID=your-project-id
    ```
@@ -244,8 +222,6 @@ const firebaseConfig = {
 
 ### Manual Testing Checklist
 - [ ] User registration and login
-- [ ] Welcome screen with smooth transitions
-- [ ] Loading screen animations
 - [ ] Questionnaire completion
 - [ ] Match generation and display
 - [ ] Real-time messaging
@@ -276,7 +252,6 @@ const firebaseConfig = {
 - **Efficient state management** with React hooks
 - **Cached distance calculations**
 - **Compressed images** and assets
-- **Smooth transitions** for better perceived performance
 
 ## 🤝 Contributing
 
