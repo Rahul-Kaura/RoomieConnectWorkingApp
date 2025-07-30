@@ -2,21 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
-const { StreamChat } = require('stream-chat');
 
 const app = express();
 const port = 3001;
-
-// GetStream.io Credentials
-const streamApiKey = 'dvs4w5jx9dyc';
-const streamApiSecret = 'cxap2747ujezft5v8kf477v3ugrsyv9qbnb2gtzwk3vvtf34tz4asfvs847k9up5';
-const streamClient = StreamChat.getInstance(streamApiKey, streamApiSecret);
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // --- State Management ---
+// Clear database - start fresh
 const profiles = [];
 let nextId = 1;
 const users = [];
@@ -99,34 +94,12 @@ app.post('/login', (req, res) => {
     }
     const user = users.find(u => u.email === email);
     if (!user) {
-        return res.status(401).send({ error: 'Invalid credentials' });
+        return res.status(401).send({ error: 'User not found. Please register first.' });
     }
     res.send(user);
 });
 
-// GetStream Token Generation
-app.post('/getstream-token', async (req, res) => {
-    const { userId, name } = req.body;
-    if (!userId || !name) {
-        return res.status(400).send({ error: 'User ID and name are required' });
-    }
 
-    try {
-        // Create or update the user in GetStream
-        await streamClient.upsertUser({
-            id: userId.toString(),
-            name: name,
-            // You can add other custom fields here, like a profile image
-        });
-
-        // Create a token for the user
-        const token = streamClient.createToken(userId.toString());
-        res.send({ token });
-    } catch (error) {
-        console.error('GetStream token generation error:', error);
-        res.status(500).send({ error: 'Could not generate GetStream token' });
-    }
-});
 
 // Profile & Matching
 app.post('/submit', async (req, res) => {
@@ -139,7 +112,7 @@ app.post('/submit', async (req, res) => {
 
     const newProfile = {
         profileId: nextId++,
-        userId: id,
+        userId: id, // This is now a string (Auth0 user.sub)
         name,
         answers,
         score,
@@ -166,8 +139,33 @@ app.get('/match/:id', (req, res) => {
     const matches = profiles
         .filter(p => p.profileId !== profileId)
         .map(otherUser => {
-            const scoreDifference = Math.abs(currentUserProfile.score - otherUser.score);
-            const compatibility = Math.max(0, 100 - (scoreDifference * 10));
+            // Calculate compatibility based on normalized answers
+            let compatibilityScore = 0;
+            let totalQuestions = 0;
+            
+            // Compare answers for each question
+            currentUserProfile.answers.forEach(currentAnswer => {
+                const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
+                if (otherAnswer) {
+                    totalQuestions++;
+                    if (currentAnswer.answer === otherAnswer.answer) {
+                        compatibilityScore += 1; // Perfect match
+                    } else if (currentAnswer.answer && otherAnswer.answer) {
+                        // Check for similar answers (e.g., "yes" vs "yeah")
+                        const currentLower = currentAnswer.answer.toLowerCase();
+                        const otherLower = otherAnswer.answer.toLowerCase();
+                        if (currentLower.includes(otherLower) || otherLower.includes(currentLower)) {
+                            compatibilityScore += 0.8; // Similar match
+                        } else {
+                            compatibilityScore += 0.2; // Different answers
+                        }
+                    }
+                }
+            });
+            
+            // Calculate percentage
+            const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 0;
+            
             let distance = 'N/A';
             if (currentUserProfile.coordinates && otherUser.coordinates) {
                 const distInMiles = getDistance(
@@ -178,11 +176,12 @@ app.get('/match/:id', (req, res) => {
                 );
                 distance = `${Math.round(distInMiles)} mi`;
             }
-            return {
+            
+        return {
                 userId: otherUser.userId,
                 profileId: otherUser.profileId,
-                name: otherUser.name,
-                compatibility: compatibility.toFixed(2),
+            name: otherUser.name,
+            compatibility: compatibility.toFixed(2),
                 distance,
                 location: otherUser.location || 'N/A',
                 score: otherUser.score,
@@ -198,9 +197,22 @@ app.get('/match/:id', (req, res) => {
 });
 
 app.get('/profile/user/:userId', (req, res) => {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = req.params.userId; // Use string, not parseInt
     const userProfile = profiles.find(p => p.userId === userId);
+    console.log('Profile lookup for userId:', userId, 'Found:', !!userProfile);
     res.send({ hasProfile: !!userProfile, profile: userProfile });
+});
+
+// Debug endpoint: List all profiles
+app.get('/profiles', (req, res) => {
+    res.json(profiles);
+});
+
+// Debug endpoint: Reset all profiles
+app.post('/reset-profiles', (req, res) => {
+    profiles.length = 0;
+    nextId = 1;
+    res.send({ success: true, message: 'All profiles reset.' });
 });
 
 app.listen(port, () => {

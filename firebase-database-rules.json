@@ -1,0 +1,44 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    "messages": {
+      "$chatId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "chats": {
+      "$chatId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "onlineStatus": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "lastActivity": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "typing": {
+      "$chatId": {
+        "$userId": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    },
+    "profiles": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+} 

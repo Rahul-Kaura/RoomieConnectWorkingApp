@@ -1,8 +1,48 @@
 {
+  "name": "roomieconnect",
+  "version": "1.0.0",
+  "description": "Smart roommate matching application with real-time messaging and location-based matching",
+  "main": "backend/index.js",
+  "scripts": {
+    "start": "node backend/index.js",
+    "server": "node backend/index.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [
+    "roommate",
+    "matching",
+    "real-time",
+    "messaging",
+    "firebase",
+    "react",
+    "nodejs",
+    "location",
+    "chat"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^7.1.2",
-    "@mui/material": "^7.1.2"
-  }
+    "concurrently": "^7.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/roomieconnect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/roomieconnect/issues"
+  },
+  "homepage": "https://github.com/yourusername/roomieconnect#readme"
 }
