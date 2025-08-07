@@ -1560,8 +1560,8 @@ input:focus, select:focus, textarea:focus {
     background: rgba(255, 255, 255, 1);
     transform: scale(1.1);
     animation: none;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    border: 2px solid #3b82f6;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid #e5e7eb;
 }
 
 .match-card-expand-button svg {
@@ -1569,7 +1569,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .match-card-expand-button:hover svg {
-    stroke: #3b82f6;
+    stroke: #6b7280;
 }
 
 /* Expanded card overlay */
