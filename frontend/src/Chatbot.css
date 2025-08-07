@@ -919,7 +919,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
-    animation: bounceLogo 3s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+    animation: pulse 2s infinite;
     position: absolute;
     bottom: 25px;
     right: 10px;
@@ -941,7 +941,7 @@
     cursor: pointer;
     opacity: 0.7;
     transition: all 0.3s ease;
-    animation: bounceLogo 3s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+    animation: pulse 2s infinite;
 }
 
 .match-card-chat-icon:hover {
@@ -1553,7 +1553,7 @@ input:focus, select:focus, textarea:focus {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(4px);
     z-index: 10;
-    animation: bounceLogo 3s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+    animation: pulse 2s infinite;
 }
 
 .match-card-expand-button:hover {
