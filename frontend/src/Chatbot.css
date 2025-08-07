@@ -1465,6 +1465,9 @@ input:focus, select:focus, textarea:focus {
 .match-card-chat-icon:hover {
     transform: scale(1.1) rotate(5deg);
     background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
 }
 
 /* Smooth notification badge */
@@ -1724,7 +1727,7 @@ input:focus, select:focus, textarea:focus {
     
     .match-card-expand-button {
         bottom: 10px;
-        right: -45px;
+        right: -65px;
     }
     
     .match-card-header {
