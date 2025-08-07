@@ -699,6 +699,7 @@
         0 4px 12px rgba(0, 0, 0, 0.1),
         0 2px 6px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none; /* Hidden by default on desktop */
 }
 
 .match-card-expand-button:hover {
@@ -959,6 +960,7 @@
     }
     
     .match-card-expand-button {
+        display: block; /* Show on mobile */
         bottom: 12px;
         right: -28px;
         padding: 6px;
