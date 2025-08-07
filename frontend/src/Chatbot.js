@@ -427,10 +427,10 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         strokeLinecap="round" 
                                         strokeLinejoin="round"
                                     >
-                                        <path d="M7 17L17 7"></path>
-                                        <path d="M7 7h10v10"></path>
-                                        <path d="M17 17L7 7"></path>
-                                        <path d="M17 7v10H7"></path>
+                                        <path d="M7 7L17 17"></path>
+                                        <path d="M17 7L7 17"></path>
+                                        <path d="M7 7L7 17"></path>
+                                        <path d="M17 7L17 17"></path>
                                     </svg>
                                 </div>
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
