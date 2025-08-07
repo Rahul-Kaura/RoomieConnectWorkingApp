@@ -230,6 +230,7 @@ function MatchLoadingScreen() {
 function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings, onTogglePin }) {
     const [unreadCounts, setUnreadCounts] = React.useState({});
     const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
+    const [expandedMatch, setExpandedMatch] = React.useState(null);
     const placeholderImages = [
         'https://randomuser.me/api/portraits/women/44.jpg',
         'https://randomuser.me/api/portraits/women/65.jpg',
@@ -265,6 +266,16 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         if (onTogglePin) {
             onTogglePin(matchId, newPinnedMatches.has(matchId));
         }
+    };
+
+    // Handle expand card
+    const handleExpandCard = (match) => {
+        setExpandedMatch(match);
+    };
+
+    // Handle close expanded card
+    const handleCloseExpanded = () => {
+        setExpandedMatch(null);
     };
 
     // Function to get user initials
@@ -405,6 +416,23 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
                                 </div>
+                                <div className="match-card-expand-button" onClick={() => handleExpandCard(match)}>
+                                    <svg 
+                                        width="20" 
+                                        height="20" 
+                                        viewBox="0 0 24 24" 
+                                        fill="none" 
+                                        stroke="#6b7280" 
+                                        strokeWidth="2" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M15 3h6v6"></path>
+                                        <path d="M10 14L21 3"></path>
+                                        <path d="M18 13v6h-6"></path>
+                                        <path d="M14 10L3 21"></path>
+                                    </svg>
+                                </div>
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
                             </div>
                             {renderUserAvatar(match)}
@@ -428,10 +456,65 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             </div>
                         </div>
                     );
-                })}
-                </div>
+                                })}
             </div>
         </div>
+        
+        {/* Expanded Card Modal */}
+        {expandedMatch && (
+            <div className="expanded-card-overlay" onClick={handleCloseExpanded}>
+                <div className="expanded-card-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="expanded-card-header">
+                        <h3 className="expanded-card-title">{expandedMatch.name}</h3>
+                        <button className="expanded-card-close" onClick={handleCloseExpanded}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div className="expanded-card-content">
+                        <div className="expanded-card-avatar">
+                            {renderUserAvatar(expandedMatch)}
+                        </div>
+                        <div className="expanded-card-details">
+                            <div className="expanded-card-info-item">
+                                <strong>Age:</strong> {expandedMatch.age || 'Not specified'}
+                            </div>
+                            <div className="expanded-card-info-item">
+                                <strong>Major:</strong> {expandedMatch.major || 'Not specified'}
+                            </div>
+                            <div className="expanded-card-info-item">
+                                <strong>Location:</strong> {expandedMatch.location || 'Not specified'}
+                            </div>
+                            <div className="expanded-card-info-item">
+                                <strong>Allergies:</strong> {expandedMatch.allergyInfo || 'N/A'}
+                            </div>
+                            <div className="expanded-card-info-item">
+                                <strong>Instagram:</strong> {expandedMatch.instagram && expandedMatch.instagram.trim() ? `@${expandedMatch.instagram}` : 'N/A'}
+                            </div>
+                            <div className="expanded-card-info-item">
+                                <strong>Match Score:</strong> {expandedMatch.compatibility}%
+                            </div>
+                            {expandedMatch.distance !== null && (
+                                <div className="expanded-card-info-item">
+                                    <strong>Distance:</strong> {expandedMatch.distance} miles away
+                                </div>
+                            )}
+                        </div>
+                        <div className="expanded-card-actions">
+                            <button className="expanded-card-chat-button" onClick={() => onStartChat(expandedMatch)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Start Chat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+    </div>
     );
 }
 

@@ -1508,3 +1508,211 @@ input:focus, select:focus, textarea:focus {
         transition-duration: 0.01ms !important;
     }
 } 
+
+/* Expand button styles */
+.match-card-expand-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+.match-card-expand-button:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.match-card-expand-button svg {
+    transition: all 0.2s ease;
+}
+
+.match-card-expand-button:hover svg {
+    stroke: #20b2aa;
+}
+
+/* Expanded card overlay */
+.expanded-card-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.expanded-card-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideInUp 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.expanded-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.expanded-card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.expanded-card-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.expanded-card-close:hover {
+    background: #f3f4f6;
+    transform: scale(1.1);
+}
+
+.expanded-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.expanded-card-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.expanded-card-avatar .match-card-img,
+.expanded-card-avatar .match-card-img-initials {
+    width: 120px;
+    height: 120px;
+    font-size: 36px;
+}
+
+.expanded-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.expanded-card-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #20b2aa;
+}
+
+.expanded-card-info-item strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+.expanded-card-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.expanded-card-chat-button {
+    background: linear-gradient(135deg, #20b2aa, #26a69a);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(32, 178, 170, 0.3);
+}
+
+.expanded-card-chat-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(32, 178, 170, 0.4);
+}
+
+.expanded-card-chat-button:active {
+    transform: translateY(0);
+}
+
+/* Mobile responsive for expanded card */
+@media (max-width: 768px) {
+    .expanded-card-modal {
+        width: 95%;
+        max-height: 85vh;
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .expanded-card-title {
+        font-size: 1.3rem;
+    }
+    
+    .expanded-card-avatar .match-card-img,
+    .expanded-card-avatar .match-card-img-initials {
+        width: 100px;
+        height: 100px;
+        font-size: 30px;
+    }
+    
+    .expanded-card-info-item {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .expanded-card-chat-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation for expanded card */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+} 
