@@ -17,6 +17,13 @@
   animation: poweredByPulse 3s linear infinite;
 }
 
+/* Mobile styles for powered by AI */
+@media (max-width: 768px) {
+  .powered-by-ai {
+    margin-bottom: 50px; /* Moved down 10 pixels (from 60px to 50px) */
+  }
+}
+
 .ai-text {
   color: #20b2aa;
   font-weight: 600;
