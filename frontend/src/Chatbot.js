@@ -188,7 +188,7 @@ const questions = {
         getNext: () => 'instagram'
     },
     'instagram': {
-        text: "What's your Instagram handle? (e.g., @username or type 'skip' if you prefer not to share)",
+        text: "What's your Instagram handle? (Just type the username without @, or type 'skip' if you prefer not to share)",
         category: 'social',
         weight: 0, // No weight for matching, just for display
         keywords: ['skip', 'none', 'n/a', 'no', 'prefer not to share'],
@@ -914,8 +914,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         const currentQuestion = questions[currentQuestionId];
         const userAnswer = trimmedInput;
 
-        // Validate user input against keywords
-        if (currentQuestion.keywords && currentQuestion.keywords.length > 0) {
+        // Validate user input against keywords (skip validation for free text questions)
+        if (currentQuestion.keywords && currentQuestion.keywords.length > 0 && currentQuestionId !== 'instagram') {
             const lowerCaseInput = userAnswer.toLowerCase();
             
             // Check for common variations and synonyms
