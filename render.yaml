@@ -1,0 +1,24 @@
+services:
+  # Backend API
+  - type: web
+    name: roomieconnect-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+
+  # Frontend
+  - type: web
+    name: roomieconnect-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://roomieconnect-backend.onrender.com 
