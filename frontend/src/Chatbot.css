@@ -879,6 +879,8 @@
     align-items: center;
     margin-bottom: 12px;
     position: relative;
+    min-height: 30px;
+    padding-right: 80px;
 }
 
 .match-card-pin-button {
@@ -887,6 +889,9 @@
     border-radius: 50%;
     transition: all 0.2s ease;
     z-index: 10;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .match-card-pin-button:hover {
@@ -1513,13 +1518,14 @@ input:focus, select:focus, textarea:focus {
 .match-card-expand-button {
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 40px;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
     transition: all 0.2s ease;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(4px);
+    z-index: 10;
 }
 
 .match-card-expand-button:hover {
@@ -1697,6 +1703,15 @@ input:focus, select:focus, textarea:focus {
     .expanded-card-chat-button {
         padding: 10px 20px;
         font-size: 0.9rem;
+    }
+    
+    .match-card-expand-button {
+        right: 35px;
+        top: 8px;
+    }
+    
+    .match-card-header {
+        padding-right: 70px;
     }
 }
 
