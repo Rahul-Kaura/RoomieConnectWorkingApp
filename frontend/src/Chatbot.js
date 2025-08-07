@@ -431,8 +431,12 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <circle cx="12" cy="12" r="10"></circle>
                                         {/* Diagonal double-headed arrow */}
                                         <line x1="7" y1="17" x2="17" y2="7"></line>
-                                        <polygon points="17,7 15,5 13,7"></polygon>
-                                        <polygon points="7,17 5,15 7,13"></polygon>
+                                        {/* Top-right arrowhead */}
+                                        <line x1="17" y1="7" x2="15" y2="5"></line>
+                                        <line x1="17" y1="7" x2="13" y2="7"></line>
+                                        {/* Bottom-left arrowhead */}
+                                        <line x1="7" y1="17" x2="5" y2="15"></line>
+                                        <line x1="7" y1="17" x2="7" y2="13"></line>
                                     </svg>
                                 </div>
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
