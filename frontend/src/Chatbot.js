@@ -889,7 +889,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         // Handle location detection
         if (currentQuestionId === 'location' && trimmedInput.toLowerCase() === 'detect') {
             const userMessage = { text: 'detect', sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
+            setMessages(prev => [...prev, userMessage]);
             
             // Show detecting message
             setMessages(prev => [...prev, { text: "🔍 Detecting your location...", sender: 'bot' }]);
@@ -900,6 +900,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     setUserLocation(detectedLocation);
                     setMessages(prev => [...prev, { text: `📍 Detected: ${detectedLocation}`, sender: 'bot' }]);
                     setInput(detectedLocation);
+                    // Move to next question after successful detection
+                    setTimeout(() => askNextQuestion(currentQuestionId, detectedLocation), 1000);
                 } else {
                     setMessages(prev => [...prev, { text: "Could not detect your location. Please enter it manually (e.g., 'New York, NY')", sender: 'bot' }]);
                 }
