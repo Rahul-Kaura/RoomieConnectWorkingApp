@@ -231,6 +231,23 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [unreadCounts, setUnreadCounts] = React.useState({});
     const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
     const [expandedMatch, setExpandedMatch] = React.useState(null);
+    const [currentPage, setCurrentPage] = React.useState(0);
+    
+    const cardsPerPage = 2;
+    const totalPages = Math.ceil((matches || []).length / cardsPerPage);
+    
+    const handlePreviousPage = () => {
+        setCurrentPage(prev => Math.max(0, prev - 1));
+    };
+    
+    const handleNextPage = () => {
+        setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+    };
+    
+    const getCurrentMatches = () => {
+        const startIndex = currentPage * cardsPerPage;
+        return (matches || []).slice(startIndex, startIndex + cardsPerPage);
+    };
     const placeholderImages = [
         'https://randomuser.me/api/portraits/women/44.jpg',
         'https://randomuser.me/api/portraits/women/65.jpg',
@@ -396,82 +413,119 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         </div>
                     </div>
                 </div>
-            <div className="match-results-grid">
-                {(matches || []).slice(0, 10).map((match, i) => {
-                    const isPinned = pinnedMatches.has(match.id);
-                    return (
-                        <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={match.userId || match.name}>
-                            <div className="match-card-header">
-                                <div className="match-card-pin-button" onClick={() => handleTogglePin(match.id)}>
-                                    <svg 
-                                        width="20" 
-                                        height="20" 
-                                        viewBox="0 0 24 24" 
-                                        fill={isPinned ? "#FFD700" : "none"} 
-                                        stroke={isPinned ? "#FFD700" : "#6b7280"} 
-                                        strokeWidth="2" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round"
-                                    >
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                </div>
-                                <div className="match-card-expand-button" onClick={() => handleExpandCard(match)}>
-                                    <svg 
-                                        width="20" 
-                                        height="20" 
-                                        viewBox="0 0 24 24" 
-                                        fill="none" 
-                                        stroke="#6b7280" 
-                                        strokeWidth="2" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round"
-                                    >
-                                        {/* Rounded square outline */}
-                                        <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
-                                        {/* Four arrows from near-center to corners */}
-                                        {/* Top-left arrow */}
-                                        <line x1="9" y1="9" x2="6" y2="6"></line>
-                                        <line x1="6" y1="6" x2="8" y2="6"></line>
-                                        <line x1="6" y1="6" x2="6" y2="8"></line>
-                                        {/* Top-right arrow */}
-                                        <line x1="15" y1="9" x2="18" y2="6"></line>
-                                        <line x1="18" y1="6" x2="16" y2="6"></line>
-                                        <line x1="18" y1="6" x2="18" y2="8"></line>
-                                        {/* Bottom-left arrow */}
-                                        <line x1="9" y1="15" x2="6" y2="18"></line>
-                                        <line x1="6" y1="18" x2="8" y2="18"></line>
-                                        <line x1="6" y1="18" x2="6" y2="16"></line>
-                                        {/* Bottom-right arrow */}
-                                        <line x1="15" y1="15" x2="18" y2="18"></line>
-                                        <line x1="18" y1="18" x2="16" y2="18"></line>
-                                        <line x1="18" y1="18" x2="18" y2="16"></line>
-                                    </svg>
-                                </div>
-                                {isPinned && <div className="pinned-badge">📌 Pinned</div>}
-                            </div>
-                            {renderUserAvatar(match)}
-                            <div className="match-card-name">{match.name}</div>
-                            <div className="match-card-age">Age: {match.age || 'Not specified'}</div>
-                            <div className="match-card-major">Major: {match.major || 'Not specified'}</div>
-                                <div className="match-card-allergies">Allergies: {match.allergyInfo || 'N/A'}</div>
-                            <div className="match-card-instagram">Instagram: {match.instagram && match.instagram.trim() ? `@${match.instagram}` : 'N/A'}</div>
-                            <div className="match-card-info">
-                                <div>Match: {match.compatibility}%</div>
-                                {match.distance !== null && <div className="match-card-distance">📍 {match.distance} miles away</div>}
-                                {match.location && <div className="match-card-location">📍 {match.location}</div>}
-                            </div>
-                            <div className="match-card-chat-icon" onClick={() => onStartChat(match)}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                {unreadCounts[match.id] > 0 && (
-                                    <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
-                                        {unreadCounts[match.id] > 99 ? '99+' : unreadCounts[match.id]}
+            <div className="match-results-carousel">
+                <div className="match-results-grid">
+                    {getCurrentMatches().map((match, i) => {
+                        const isPinned = pinnedMatches.has(match.id);
+                        return (
+                            <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={match.userId || match.name}>
+                                <div className="match-card-header">
+                                    <div className="match-card-pin-button" onClick={() => handleTogglePin(match.id)}>
+                                        <svg 
+                                            width="20" 
+                                            height="20" 
+                                            viewBox="0 0 24 24" 
+                                            fill={isPinned ? "#FFD700" : "none"} 
+                                            stroke={isPinned ? "#FFD700" : "#6b7280"} 
+                                            strokeWidth="2" 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round"
+                                        >
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
                                     </div>
-                                )}
+                                    <div className="match-card-expand-button" onClick={() => handleExpandCard(match)}>
+                                        <svg 
+                                            width="20" 
+                                            height="20" 
+                                            viewBox="0 0 24 24" 
+                                            fill="none" 
+                                            stroke="#6b7280" 
+                                            strokeWidth="2" 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round"
+                                        >
+                                            {/* Rounded square outline */}
+                                            <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+                                            {/* Four arrows from near-center to corners */}
+                                            {/* Top-left arrow */}
+                                            <line x1="9" y1="9" x2="6" y2="6"></line>
+                                            <line x1="6" y1="6" x2="8" y2="6"></line>
+                                            <line x1="6" y1="6" x2="6" y2="8"></line>
+                                            {/* Top-right arrow */}
+                                            <line x1="15" y1="9" x2="18" y2="6"></line>
+                                            <line x1="18" y1="6" x2="16" y2="6"></line>
+                                            <line x1="18" y1="6" x2="18" y2="8"></line>
+                                            {/* Bottom-left arrow */}
+                                            <line x1="9" y1="15" x2="6" y2="18"></line>
+                                            <line x1="6" y1="18" x2="8" y2="18"></line>
+                                            <line x1="6" y1="18" x2="6" y2="16"></line>
+                                            {/* Bottom-right arrow */}
+                                            <line x1="15" y1="15" x2="18" y2="18"></line>
+                                            <line x1="18" y1="18" x2="16" y2="18"></line>
+                                            <line x1="18" y1="18" x2="18" y2="16"></line>
+                                        </svg>
+                                    </div>
+                                    {isPinned && <div className="pinned-badge">📌 Pinned</div>}
+                                </div>
+                                {renderUserAvatar(match)}
+                                <div className="match-card-name">{match.name}</div>
+                                <div className="match-card-age">Age: {match.age || 'Not specified'}</div>
+                                <div className="match-card-major">Major: {match.major || 'Not specified'}</div>
+                                <div className="match-card-allergies">Allergies: {match.allergyInfo || 'N/A'}</div>
+                                <div className="match-card-instagram">Instagram: {match.instagram && match.instagram.trim() ? `@${match.instagram}` : 'N/A'}</div>
+                                <div className="match-card-info">
+                                    <div>Match: {match.compatibility}%</div>
+                                    {match.distance !== null && <div className="match-card-distance">📍 {match.distance} miles away</div>}
+                                    {match.location && <div className="match-card-location">📍 {match.location}</div>}
+                                </div>
+                                <div className="match-card-chat-icon" onClick={() => onStartChat(match)}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                    {unreadCounts[match.id] > 0 && (
+                                        <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
+                                            {unreadCounts[match.id] > 99 ? '99+' : unreadCounts[match.id]}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                        );
+                    })}
+                </div>
+                
+                {/* Navigation Controls */}
+                {totalPages > 1 && (
+                    <div className="carousel-navigation">
+                        <button 
+                            className="carousel-nav-button carousel-nav-prev" 
+                            onClick={handlePreviousPage}
+                            disabled={currentPage === 0}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                            </svg>
+                        </button>
+                        
+                        <div className="carousel-indicators">
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`carousel-indicator ${i === currentPage ? 'active' : ''}`}
+                                    onClick={() => setCurrentPage(i)}
+                                />
+                            ))}
                         </div>
-                    );
-                                })}
+                        
+                        <button 
+                            className="carousel-nav-button carousel-nav-next" 
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages - 1}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="9,18 15,12 9,6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
         
