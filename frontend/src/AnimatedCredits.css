@@ -1,0 +1,134 @@
+.credits-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  text-align: center;
+  z-index: 10;
+  background: transparent;
+  pointer-events: none;
+}
+
+.powered-by-ai {
+  color: #aaa;
+  font-size: 18px;
+  margin-bottom: 60px;
+  letter-spacing: 0.5px;
+  animation: poweredByPulse 3s linear infinite;
+}
+
+.ai-text {
+  color: #20b2aa;
+  font-weight: 600;
+  animation: aiGlow 3s linear infinite;
+}
+
+.ai-dots {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.ai-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #20b2aa;
+  margin: 0 1px;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.ai-dot:nth-child(1) { animation-delay: 0s; }
+.ai-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 60%, 100% { 
+    opacity: 0.3; 
+    transform: scale(0.8); 
+  }
+  30% { 
+    opacity: 1; 
+    transform: scale(1.2); 
+  }
+}
+
+@keyframes poweredByPulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  8% { opacity: 1; transform: scale(1.02); }
+  20% { opacity: 1; transform: scale(1.02); }
+  32% { opacity: 1; transform: scale(1.02); }
+  40% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0.7; transform: scale(1); }
+}
+
+@keyframes aiGlow {
+  0% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
+  8% { color: #20b2aa; text-shadow: 0 0 10px rgba(32, 178, 170, 0.6); }
+  20% { color: #20b2aa; text-shadow: 0 0 15px rgba(32, 178, 170, 0.8); }
+  32% { color: #20b2aa; text-shadow: 0 0 10px rgba(32, 178, 170, 0.6); }
+  40% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
+  100% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
+}
+
+.home-credits {
+  color: #aaa;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.credit-name-rahul {
+  display: inline-block;
+  animation: rahulPulse 3s linear infinite;
+}
+
+.credit-name-pulse {
+  animation: rahulPulse 3s linear infinite;
+}
+
+@keyframes rahulPulse {
+  0% { color: #aaa; transform: scale(1); }
+  8% { color: #20b2aa; transform: scale(1.08); }
+  20% { color: #20b2aa; transform: scale(1.12); }
+  32% { color: #20b2aa; transform: scale(1.08); }
+  40% { color: #aaa; transform: scale(1); }
+  100% { color: #aaa; transform: scale(1); }
+}
+
+.credit-name-fade {
+  display: inline-block;
+  margin-left: 2px;
+  animation: fadeInOut 3s linear infinite;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(8px); }
+  8% { opacity: 1; transform: translateY(0); }
+  92% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+.animated-logo {
+  animation: bounceLogo 3s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+}
+
+.home-title {
+  color: #20b2aa;
+  font-size: 48px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  animation: bounceLogo 3s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+}
+
+@keyframes bounceLogo {
+  0%   { transform: translateY(0); }
+  10%  { transform: translateY(-10px) scale(1.05); }
+  20%  { transform: translateY(-20px) scale(1.1); }
+  30%  { transform: translateY(-10px) scale(1.05); }
+  40%  { transform: translateY(0) scale(1); }
+  100% { transform: translateY(0) scale(1); }
+} 
