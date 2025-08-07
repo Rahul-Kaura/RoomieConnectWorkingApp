@@ -431,19 +431,19 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
                                         {/* Four arrows from near-center to corners */}
                                         {/* Top-left arrow */}
-                                        <line x1="11" y1="11" x2="6" y2="6"></line>
+                                        <line x1="9" y1="9" x2="6" y2="6"></line>
                                         <line x1="6" y1="6" x2="8" y2="6"></line>
                                         <line x1="6" y1="6" x2="6" y2="8"></line>
                                         {/* Top-right arrow */}
-                                        <line x1="13" y1="11" x2="18" y2="6"></line>
+                                        <line x1="15" y1="9" x2="18" y2="6"></line>
                                         <line x1="18" y1="6" x2="16" y2="6"></line>
                                         <line x1="18" y1="6" x2="18" y2="8"></line>
                                         {/* Bottom-left arrow */}
-                                        <line x1="11" y1="13" x2="6" y2="18"></line>
+                                        <line x1="9" y1="15" x2="6" y2="18"></line>
                                         <line x1="6" y1="18" x2="8" y2="18"></line>
                                         <line x1="6" y1="18" x2="6" y2="16"></line>
                                         {/* Bottom-right arrow */}
-                                        <line x1="13" y1="13" x2="18" y2="18"></line>
+                                        <line x1="15" y1="15" x2="18" y2="18"></line>
                                         <line x1="18" y1="18" x2="16" y2="18"></line>
                                         <line x1="18" y1="18" x2="18" y2="16"></line>
                                     </svg>
