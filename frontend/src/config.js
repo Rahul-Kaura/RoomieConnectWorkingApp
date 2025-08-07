@@ -1,6 +1,6 @@
 // API Configuration
 export const API_URL = process.env.NODE_ENV === 'production' 
-  ? process.env.REACT_APP_API_URL || 'https://roomieconnect-backend.onrender.com'  // Will be set by Netlify
+  ? 'https://roomieconnect-backend.onrender.com'  // Live backend URL
   : 'http://localhost:4000';
 
 // Distance API Configuration
