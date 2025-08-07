@@ -429,14 +429,18 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     >
                                         {/* Circle outline */}
                                         <circle cx="12" cy="12" r="10"></circle>
-                                        {/* Diagonal double-headed arrow */}
+                                        {/* First arrow: bottom-left to top-right */}
                                         <line x1="7" y1="17" x2="17" y2="7"></line>
-                                        {/* Top-right arrowhead */}
                                         <line x1="17" y1="7" x2="15" y2="5"></line>
                                         <line x1="17" y1="7" x2="13" y2="7"></line>
-                                        {/* Bottom-left arrowhead */}
                                         <line x1="7" y1="17" x2="5" y2="15"></line>
                                         <line x1="7" y1="17" x2="7" y2="13"></line>
+                                        {/* Second arrow: top-left to bottom-right */}
+                                        <line x1="7" y1="7" x2="17" y2="17"></line>
+                                        <line x1="17" y1="17" x2="15" y2="19"></line>
+                                        <line x1="17" y1="17" x2="13" y2="17"></line>
+                                        <line x1="7" y1="7" x2="5" y2="9"></line>
+                                        <line x1="7" y1="7" x2="7" y2="11"></line>
                                     </svg>
                                 </div>
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
