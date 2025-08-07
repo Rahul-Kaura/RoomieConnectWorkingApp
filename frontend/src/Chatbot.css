@@ -912,7 +912,7 @@
     box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
     animation: pulse 2s infinite;
     position: absolute;
-    bottom: 40px;
+    bottom: 25px;
     right: 10px;
     z-index: 5;
 }
@@ -1522,8 +1522,8 @@ input:focus, select:focus, textarea:focus {
 /* Expand button styles */
 .match-card-expand-button {
     position: absolute;
-    bottom: 40px;
-    right: 10px;
+    bottom: 15px;
+    right: -32px;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -1711,8 +1711,8 @@ input:focus, select:focus, textarea:focus {
     }
     
     .match-card-expand-button {
-        bottom: 35px;
-        right: 8px;
+        bottom: 10px;
+        right: -25px;
     }
     
     .match-card-header {
@@ -1721,7 +1721,7 @@ input:focus, select:focus, textarea:focus {
     }
     
     .pinned-badge {
-        bottom: 35px;
+        bottom: 20px;
         right: 8px;
         font-size: 9px;
         padding: 3px 6px;
