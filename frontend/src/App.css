@@ -84,7 +84,7 @@ body {
 /* Mobile styles for welcome back message */
 @media (max-width: 768px) {
     .welcome-back-message {
-        margin: 3px 0 20px 0; /* Moved up 7 pixels (from 10px to 3px) */
+        margin: -5px 0 20px 0; /* Moved up 15 pixels total (from 10px to -5px) */
     }
 }
 
