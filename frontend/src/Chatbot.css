@@ -1522,8 +1522,8 @@ input:focus, select:focus, textarea:focus {
 /* Expand button styles */
 .match-card-expand-button {
     position: absolute;
-    top: 10px;
-    right: 40px;
+    bottom: 40px;
+    right: 10px;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -1711,8 +1711,8 @@ input:focus, select:focus, textarea:focus {
     }
     
     .match-card-expand-button {
-        right: 35px;
-        top: 8px;
+        bottom: 35px;
+        right: 8px;
     }
     
     .match-card-header {
