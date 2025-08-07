@@ -607,7 +607,8 @@
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
-    max-height: 70vh;
+    min-height: 60vh;
+    max-height: 80vh;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #20b2aa #f1f5f9;
@@ -641,6 +642,8 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    min-height: 180px;
+    justify-content: space-between;
 }
 .match-card:hover {
     transform: translateY(-5px);
@@ -692,6 +695,7 @@
     border-top: 1px solid #eee;
     padding-top: 8px;
     margin-top: auto;
+    flex-shrink: 0;
 }
 .match-card-chat-icon {
     position: absolute;
@@ -1150,18 +1154,48 @@
 @media (max-width: 768px) {
     .match-results-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 16px;
         padding: 16px;
+        min-height: 70vh;
+        max-height: 85vh;
+        overflow-y: auto;
     }
     
     .match-card {
-        padding: 12px;
+        padding: 16px;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .match-card-img-initials {
+        width: 70px;
+        height: 70px;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    
+    .match-card-name {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+    
+    .match-card-major, .match-card-allergies, .match-card-instagram, .match-card-age {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .match-card-location {
+        font-size: 0.85rem;
+        margin-top: 6px;
     }
     
     .chatbot-container-isolated {
         width: 95%;
-        height: 90vh;
+        height: 95vh;
         margin: 2.5vh auto;
+        overflow: hidden;
     }
     
     .notification {
@@ -1448,6 +1482,8 @@ input:focus, select:focus, textarea:focus {
 @media (max-width: 768px) {
     .match-card {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 200px;
+        padding: 16px;
     }
     
     .match-card:hover {
