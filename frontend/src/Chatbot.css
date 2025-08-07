@@ -912,8 +912,8 @@
     box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
     animation: pulse 2s infinite;
     position: absolute;
-    bottom: 40px;
-    right: 10px;
+    top: 0;
+    left: 30px;
     z-index: 5;
 }
 
@@ -1721,8 +1721,7 @@ input:focus, select:focus, textarea:focus {
     }
     
     .pinned-badge {
-        bottom: 35px;
-        right: 8px;
+        left: 25px;
         font-size: 9px;
         padding: 3px 6px;
     }
