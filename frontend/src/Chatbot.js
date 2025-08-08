@@ -839,7 +839,7 @@ function Notification({ message, type, onClose }) {
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
-    const [currentQuestionId, setCurrentQuestionId] = useState('upload_image');
+    const [currentQuestionId, setCurrentQuestionId] = useState('name');
     const [answers, setAnswers] = useState([]);
     const messagesEndRef = useRef(null);
     const [showMatchLoading, setShowMatchLoading] = useState(false);
@@ -917,7 +917,11 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     
     useEffect(() => {
         const loadProfile = async () => {
+            console.log('Chatbot loadProfile - existingProfile:', existingProfile);
+            console.log('Chatbot loadProfile - currentUser:', currentUser);
+            
             if (existingProfile) {
+                console.log('Found existing profile, loading matches...');
                 setShowMatchLoading(true);
                 try {
                     const matchResponse = await axios.get(`http://localhost:3001/match/${existingProfile.userId}`);
@@ -932,6 +936,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     setShowMatchLoading(false);
                 }
             } else {
+                console.log('No existing profile, starting with name question...');
                 // Always start with the name question
                 const firstQuestion = questions['name'];
                 const botMessage = {
