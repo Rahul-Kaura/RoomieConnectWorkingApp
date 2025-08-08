@@ -951,6 +951,20 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         loadProfile();
     }, [currentUser, existingProfile]);
 
+    // Force initial message if no messages exist and no profile
+    useEffect(() => {
+        if (messages.length === 0 && !existingProfile && currentUser) {
+            console.log('Forcing initial message...');
+            const firstQuestion = questions['name'];
+            const botMessage = {
+                text: firstQuestion.text,
+                sender: 'bot'
+            };
+            setMessages([botMessage]);
+            setCurrentQuestionId('name');
+        }
+    }, [messages.length, existingProfile, currentUser]);
+
     useEffect(() => {
         if (existingProfile && existingProfile.id) {
             fetchMatches(existingProfile.profileId);
@@ -1920,6 +1934,18 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         }
     };
 
+    // Debug logging
+    console.log('Chatbot render state:', {
+        activeMatch,
+        showMatchLoading,
+        showSettings,
+        showMatchResults,
+        messages: messages.length,
+        currentQuestionId,
+        existingProfile: !!existingProfile,
+        currentUser: !!currentUser
+    });
+
     if (activeMatch) {
         return <ChatScreen 
             currentUser={currentUser} 
@@ -1938,13 +1964,19 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 <h2 className="chatbot-header-title">RoomieConnect AI</h2>
                 <p className="chatbot-header-subtitle">Your personal roommate finder</p>
             </div>
-                <div className="chatbot-messages" ref={messagesEndRef}>
-                    {messages.map((msg, index) => (
+            <div className="chatbot-messages" ref={messagesEndRef}>
+                {messages.length === 0 ? (
+                    <div className="chatbot-message bot">
+                        <p>Loading...</p>
+                    </div>
+                ) : (
+                    messages.map((msg, index) => (
                         <div key={index} className={`chatbot-message ${msg.sender}`}>
-                        {msg.image && <img src={msg.image} alt="User upload" className="chatbot-message-image" />}
-                        {msg.text && <p>{msg.text}</p>}
+                            {msg.image && <img src={msg.image} alt="User upload" className="chatbot-message-image" />}
+                            {msg.text && <p>{msg.text}</p>}
                         </div>
-                    ))}
+                    ))
+                )}
             </div>
             <div className="chatbot-input-area">
                 <input
