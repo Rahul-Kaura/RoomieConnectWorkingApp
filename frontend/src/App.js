@@ -20,9 +20,15 @@ function App() {
       const storedName = localStorage.getItem('userName');
       const userName = storedName || user.name || user.email;
       
+      console.log('Auth0 User:', user);
+      console.log('User ID (sub):', user.sub);
+      console.log('Stored name:', storedName);
+      console.log('Final userName:', userName);
+      
       setCurrentUser({ id: user.sub, name: userName, email: user.email });
     }
     if (!isAuthenticated) {
+      console.log('User not authenticated, clearing state');
       setCurrentUser(null);
       setUserProfile(null);
       localStorage.removeItem('userProfile');
@@ -33,14 +39,43 @@ function App() {
   // Check for profile in Firebase when currentUser changes
   useEffect(() => {
     if (currentUser) {
+      console.log('Loading profile for user ID:', currentUser.id);
       (async () => {
-        const profile = await loadProfile(currentUser.id);
-        if (profile) {
-          setUserProfile(profile);
-          localStorage.setItem('userProfile', JSON.stringify(profile));
-        } else {
-          setUserProfile(null);
-          localStorage.removeItem('userProfile');
+        try {
+          // First try to load from localStorage for faster loading
+          const storedProfile = localStorage.getItem('userProfile');
+          if (storedProfile) {
+            try {
+              const parsedProfile = JSON.parse(storedProfile);
+              console.log('Found profile in localStorage:', parsedProfile);
+              // Only use localStorage profile if it matches the current user
+              if (parsedProfile.id === currentUser.id) {
+                setUserProfile(parsedProfile);
+                console.log('Using profile from localStorage');
+              }
+            } catch (e) {
+              console.log('Error parsing localStorage profile:', e);
+            }
+          }
+          
+          // Then try to load from Firebase (this will override localStorage if different)
+          const profile = await loadProfile(currentUser.id);
+          console.log('Loaded profile from Firebase:', profile);
+          if (profile) {
+            setUserProfile(profile);
+            localStorage.setItem('userProfile', JSON.stringify(profile));
+            console.log('Profile saved to localStorage');
+          } else {
+            console.log('No profile found in Firebase');
+            // Don't clear localStorage profile if Firebase doesn't have one
+            // setUserProfile(null);
+            // localStorage.removeItem('userProfile');
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          // Don't clear localStorage on error
+          // setUserProfile(null);
+          // localStorage.removeItem('userProfile');
         }
       })();
     }
@@ -81,11 +116,13 @@ function App() {
   };
 
   const handleLogout = () => {
+    console.log('Logging out user');
     logout({ returnTo: window.location.origin });
     setCurrentUser(null);
     setUserProfile(null);
     setView('welcome');
-    localStorage.removeItem('userProfile');
+    // Don't remove userProfile from localStorage on logout to preserve data
+    // localStorage.removeItem('userProfile');
   };
 
   const handleUpdateUser = (updatedUser) => {
