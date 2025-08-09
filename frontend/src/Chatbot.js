@@ -1196,7 +1196,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             ] 
                         });
                         setShowMatchResults(true);
-                    }, 6000); // 6 second timeout to match animation duration
+                    }, 10000); // 10 second timeout to match new animation duration
                     
                     setTimeout(async () => {
                         try {

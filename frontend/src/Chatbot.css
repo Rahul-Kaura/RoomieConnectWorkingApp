@@ -1729,7 +1729,7 @@ textarea:focus {
 } 
 
 /* =====================================
-   AWWWARDS-INSPIRED UI TRANSITION LOADING
+   AWWWARDS-INSPIRED UI TRANSITION LOADING (10 SECONDS)
    ===================================== */
 
 .loading-spinner-cool {
@@ -1740,7 +1740,7 @@ textarea:focus {
     align-items: center;
     justify-content: center;
     perspective: 1000px;
-    animation: loadingContainerFloat 6s ease-in-out infinite;
+    animation: loadingContainerFloat 10s ease-in-out infinite;
 }
 
 /* Multiple UI screen cards that transition */
@@ -1771,7 +1771,7 @@ textarea:focus {
 
 /* Screen 1: Chatbot Interface */
 .loading-screen-1 {
-    animation: screenTransition1 6s ease-in-out infinite;
+    animation: screenTransition1 10s ease-in-out infinite;
     z-index: 3;
 }
 
@@ -1800,7 +1800,7 @@ textarea:focus {
 
 /* Screen 2: Profile Setup */
 .loading-screen-2 {
-    animation: screenTransition2 6s ease-in-out infinite;
+    animation: screenTransition2 10s ease-in-out infinite;
     z-index: 2;
 }
 
@@ -1829,7 +1829,7 @@ textarea:focus {
 
 /* Screen 3: Matches Preview */
 .loading-screen-3 {
-    animation: screenTransition3 6s ease-in-out infinite;
+    animation: screenTransition3 10s ease-in-out infinite;
     z-index: 1;
 }
 
@@ -1871,7 +1871,7 @@ textarea:focus {
     justify-content: center;
 }
 
-/* Screen transition animations */
+/* Screen transition animations (10 seconds) */
 @keyframes screenTransition1 {
     0% {
         transform: translateX(0) translateY(0) rotateY(0deg) scale(1);
@@ -1967,7 +1967,7 @@ textarea:focus {
     }
 }
 
-/* Loading progress indicator */
+/* Loading progress indicator (10 seconds) */
 .loading-progress-bar {
     position: absolute;
     bottom: -40px;
@@ -1984,7 +1984,7 @@ textarea:focus {
     height: 100%;
     background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
     border-radius: 2px;
-    animation: progressFill 6s ease-in-out infinite;
+    animation: progressFill 10s ease-in-out infinite;
 }
 
 @keyframes progressFill {
@@ -2012,7 +2012,7 @@ textarea:focus {
     font-weight: 500;
     color: #20b2aa;
     text-align: center;
-    animation: textFade 6s ease-in-out infinite;
+    animation: textFade 10s ease-in-out infinite;
 }
 
 @keyframes textFade {
@@ -2034,40 +2034,151 @@ textarea:focus {
     }
 }
 
-/* Ensure chat icons are perfectly consistent */
-.match-card-chat-icon {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 0;
-    cursor: pointer;
-    font-size: 16px;
+/* =====================================
+   HOME LOADING ANIMATION (2.5 SECONDS)
+   ===================================== */
+
+.home-loading-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    box-shadow: 
-        0 4px 12px rgba(32, 178, 170, 0.3),
-        0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px;
-    max-width: 44px;
-    min-height: 44px;
-    max-height: 44px;
-    animation: logoFloatSubtle 4s ease-in-out infinite;
-    transform-origin: center;
+    animation: homeLogoFloat 2.5s ease-in-out;
 }
 
-.match-card-chat-icon:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 
-        0 8px 20px rgba(32, 178, 170, 0.4),
-        0 4px 10px rgba(0, 0, 0, 0.15);
-    animation-play-state: paused;
-} 
+.home-loading-logo {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    animation: homeLogoBuild 2.5s ease-in-out;
+}
+
+/* Logo build animation */
+@keyframes homeLogoBuild {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    30% {
+        transform: scale(0.7) rotate(-90deg);
+        opacity: 0.6;
+    }
+    60% {
+        transform: scale(1.1) rotate(0deg);
+        opacity: 0.9;
+    }
+    80% {
+        transform: scale(1.05) rotate(5deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes homeLogoFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+/* Brand text reveal */
+.home-loading-text {
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: 700;
+    color: #20b2aa;
+    text-align: center;
+    animation: homeBrandReveal 2.5s ease-in-out;
+    text-shadow: 0 2px 4px rgba(32, 178, 170, 0.2);
+}
+
+@keyframes homeBrandReveal {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+        letter-spacing: 10px;
+    }
+    40% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+        letter-spacing: 8px;
+    }
+    70% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0px);
+        letter-spacing: 2px;
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0px);
+        letter-spacing: 1px;
+    }
+}
+
+/* Particles animation for home loading */
+.home-loading-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.home-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    border-radius: 50%;
+    animation: homeParticleFloat 2.5s ease-in-out infinite;
+}
+
+.home-particle:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.home-particle:nth-child(2) {
+    top: 40%;
+    right: 15%;
+    animation-delay: 0.3s;
+}
+
+.home-particle:nth-child(3) {
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 0.6s;
+}
+
+.home-particle:nth-child(4) {
+    top: 60%;
+    right: 25%;
+    animation-delay: 0.9s;
+}
+
+.home-particle:nth-child(5) {
+    bottom: 20%;
+    right: 10%;
+    animation-delay: 1.2s;
+}
+
+@keyframes homeParticleFloat {
+    0%, 100% {
+        transform: translateY(0px) scale(0.5);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translateY(-20px) scale(1);
+        opacity: 1;
+    }
 } 

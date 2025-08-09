@@ -10,9 +10,20 @@ import { autoSyncTestProfiles } from './services/syncTestProfiles';
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();
-  const [view, setView] = useState('welcome'); // welcome, chatbot, matches, loading
+  const [view, setView] = useState('homeLoading'); // Start with home loading animation
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+
+  // Auto-transition from home loading to welcome after 2.5 seconds
+  useEffect(() => {
+    if (view === 'homeLoading') {
+      const timer = setTimeout(() => {
+        setView('welcome');
+      }, 2500); // 2.5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [view]);
 
   // Debug when userProfile changes
   useEffect(() => {
@@ -230,6 +241,48 @@ function App() {
     );
     
     switch (view) {
+      case 'homeLoading':
+        return (
+          <div className="home-loading-screen screen-transition" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
+            color: '#20b2aa',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Home loading animation */}
+            <div className="home-loading-container">
+              <div className="home-loading-particles">
+                <div className="home-particle"></div>
+                <div className="home-particle"></div>
+                <div className="home-particle"></div>
+                <div className="home-particle"></div>
+                <div className="home-particle"></div>
+              </div>
+              
+              <div className="home-loading-logo">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polyline points="25,70 70,25 115,70" stroke="#20b2aa" strokeWidth="6" fill="none" />
+                  <rect x="35" y="70" width="70" height="45" rx="10" stroke="#20b2aa" strokeWidth="6" fill="none" />
+                  <path d="M70 110
+                    C 70 105, 52 98, 52 85
+                    A 10 10 0 0 1 70 85
+                    A 10 10 0 0 1 88 85
+                    C 88 98, 70 105, 70 110
+                    Z" stroke="#20b2aa" strokeWidth="4" fill="none" />
+                </svg>
+              </div>
+              
+              <div className="home-loading-text">
+                ROOMIE<br/>CONNECT
+              </div>
+            </div>
+          </div>
+        );
       case 'loading':
         return (
           <div className="loading-screen screen-transition" style={{
