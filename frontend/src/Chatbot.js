@@ -346,11 +346,17 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
     };
     
+    // Function to get consistent match ID (not dependent on page position)
+    const getMatchId = (match) => {
+        // Use id or userId if available, otherwise use name + some unique property
+        return match.id || match.userId || match.name || `match-${Math.random()}`;
+    };
+
     const getCurrentMatches = () => {
         // Sort matches: pinned first, then by unread messages, then by recent activity, then by distance
         const sortedMatches = [...(matches || [])].sort((a, b) => {
-            const aKey = a.id || a.userId || a.name;
-            const bKey = b.id || b.userId || b.name;
+            const aKey = getMatchId(a);
+            const bKey = getMatchId(b);
             const aIsPinned = pinnedMatches.has(aKey);
             const bIsPinned = pinnedMatches.has(bKey);
             
@@ -399,8 +405,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
 
     // Toggle pin status
     const handleTogglePin = (match, index) => {
-        // Use consistent ID logic for both key and pinning
-        const matchId = match.id || match.userId || `${match.name}-${index}`;
+        // Use consistent ID logic that doesn't depend on page position
+        const matchId = getMatchId(match);
         
         const newPinnedMatches = new Set(pinnedMatches);
         if (newPinnedMatches.has(matchId)) {
@@ -410,6 +416,15 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         }
         setPinnedMatches(newPinnedMatches);
         savePinnedMatches(newPinnedMatches);
+        
+        // Force a re-render by resetting current page to 0 to show pinned items at top
+        setCurrentPage(0);
+        
+        // If we just pinned a match, ensure it appears at the front by triggering a state update
+        setTimeout(() => {
+            // This slight delay ensures the pinned state is properly propagated
+            setCurrentPage(0); // Reset to first page to see the newly pinned match
+        }, 100);
     };
 
     // Handle expand card
@@ -555,7 +570,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             <div className="match-results-carousel">
             <div className="match-results-grid">
                     {getCurrentMatches().map((match, i) => {
-                    const uniqueKey = match.id || match.userId || `${match.name}-${i}`;
+                    const uniqueKey = getMatchId(match);
                     const isPinned = pinnedMatches.has(uniqueKey);
                     return (
                         <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={uniqueKey}>
@@ -1236,7 +1251,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             ] 
                         });
                         setShowMatchResults(true);
-                    }, 10000); // 10 second timeout to match new animation duration
+                    }, 6500); // 6.5 second timeout to match animation duration
                     
                     setTimeout(async () => {
                         try {

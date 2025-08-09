@@ -14,16 +14,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
-  // Auto-transition from home loading to welcome after 4 seconds
-  useEffect(() => {
-    if (view === 'homeLoading') {
-      const timer = setTimeout(() => {
-        setView('welcome');
-      }, 4000); // 4 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [view]);
+  // Remove auto-transition - let homeLoading stay until user clicks
 
   // Debug when userProfile changes
   useEffect(() => {
@@ -74,8 +65,8 @@ function App() {
 
   // Check for profile in Firebase when currentUser changes
   useEffect(() => {
-    // Don't load profiles during home loading animation
-    if (currentUser && view !== 'homeLoading') {
+    // Start loading profiles immediately when we have a currentUser, even during homeLoading
+    if (currentUser) {
       console.log('=== PROFILE LOADING DEBUG ===');
       console.log('Loading profile for user ID:', currentUser.id);
       console.log('Current user object:', currentUser);
@@ -145,7 +136,7 @@ function App() {
         console.log('=== END PROFILE LOADING DEBUG ===');
       })();
     }
-  }, [currentUser, view]);
+  }, [currentUser]); // Removed 'view' dependency so it loads immediately
 
   // Test messaging setup and sync test profiles when app loads
   useEffect(() => {
@@ -173,11 +164,11 @@ function App() {
     if (isAuthenticated) {
       if (userProfile) {
         console.log('✅ User has profile, going to matches view');
-        // Show loading screen for 10 seconds to match animation, then go to matches
+        // Show loading screen for 6.5 seconds
         setView('loading');
         setTimeout(() => {
           setView('matches');
-        }, 10000);
+        }, 6500);
       } else {
         console.log('❌ No user profile, going to chatbot');
         setView('chatbot');
@@ -241,7 +232,7 @@ function App() {
     switch (view) {
       case 'homeLoading':
         return (
-          <div className="home-loading-screen screen-transition" style={{
+          <div className="home-loading-screen screen-transition" onClick={() => setView('welcome')} style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -250,7 +241,8 @@ function App() {
             background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
             color: '#20b2aa',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            cursor: 'pointer'
           }}>
             {/* Home loading animation */}
             <div className="home-loading-container">
@@ -279,6 +271,18 @@ function App() {
                 ROOMIE<br/>CONNECT
               </div>
             </div>
+            
+            <p style={{ 
+              marginTop: '40px', 
+              fontSize: '16px', 
+              color: '#20b2aa', 
+              fontWeight: '400',
+              textAlign: 'center',
+              opacity: 0.8,
+              animation: 'textPulse 2s ease-in-out infinite'
+            }}>
+              Click anywhere to start
+            </p>
           </div>
         );
       case 'loading':

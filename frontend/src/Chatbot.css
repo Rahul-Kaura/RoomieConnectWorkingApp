@@ -1763,7 +1763,7 @@ textarea:focus {
     align-items: center;
     justify-content: center;
     perspective: 1000px;
-    animation: loadingContainerFloat 10s ease-in-out infinite;
+    animation: loadingContainerFloat 6.5s ease-in-out;
 }
 
 /* Multiple UI screen cards that transition */
@@ -1794,7 +1794,7 @@ textarea:focus {
 
 /* Screen 1: Chatbot Interface */
 .loading-screen-1 {
-    animation: screenTransition1 10s ease-in-out infinite;
+    animation: screenTransition1 6.5s ease-in-out;
     z-index: 3;
 }
 
@@ -1823,7 +1823,7 @@ textarea:focus {
 
 /* Screen 2: Profile Setup */
 .loading-screen-2 {
-    animation: screenTransition2 10s ease-in-out infinite;
+    animation: screenTransition2 6.5s ease-in-out;
     z-index: 2;
 }
 
@@ -1852,7 +1852,7 @@ textarea:focus {
 
 /* Screen 3: Matches Preview */
 .loading-screen-3 {
-    animation: screenTransition3 10s ease-in-out infinite;
+    animation: screenTransition3 6.5s ease-in-out;
     z-index: 1;
 }
 
@@ -2007,7 +2007,7 @@ textarea:focus {
     height: 100%;
     background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
     border-radius: 2px;
-    animation: progressFill 10s ease-in-out infinite;
+    animation: progressFill 6.5s ease-in-out;
 }
 
 @keyframes progressFill {
@@ -2035,7 +2035,7 @@ textarea:focus {
     font-weight: 500;
     color: #20b2aa;
     text-align: center;
-    animation: textFade 10s ease-in-out infinite;
+    animation: textFade 6.5s ease-in-out;
 }
 
 @keyframes textFade {
