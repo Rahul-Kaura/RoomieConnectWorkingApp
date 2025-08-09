@@ -1,9 +1,9 @@
 const axios = require('axios');
 
 // Auth0 Configuration
-const AUTH0_DOMAIN = 'YOUR_AUTH0_DOMAIN'; // e.g., 'your-tenant.auth0.com'
-const CLIENT_ID = 'YOUR_MANAGEMENT_API_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_MANAGEMENT_API_CLIENT_SECRET';
+const AUTH0_DOMAIN = 'dev-s2103new01u1y2di.us.auth0.com';
+const CLIENT_ID = 'XWSeKVDinNDBbkwV6gmbBXvtugEGcbOm';
+const CLIENT_SECRET = 'j9Qk-HPvmobkhMwZdInRVM1TmogzqsC705rJyH2H_BeXI8sajL3Siqhf7Grr5ZuW';
 
 // Test users to create
 const testUsers = [
