@@ -333,6 +333,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
     const [expandedMatch, setExpandedMatch] = React.useState(null);
     const [currentPage, setCurrentPage] = React.useState(0);
+    const [isMobile, setIsMobile] = useState(false);
     
     const cardsPerPage = 2;
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
@@ -476,6 +477,18 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         return () => clearInterval(interval);
     }, [matches, currentUser.id]);
 
+    // Detect mobile screen size
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     return (
         <div className="chatbot-container-isolated">
         <div className="match-results-outer">
@@ -534,6 +547,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
                                 </div>
+                                                                    {!isMobile && (
                                     <div className="match-card-expand-button hover-blue-animation" onClick={() => handleExpandCard(match)}>
                                         <svg 
                                             width="20" 
@@ -564,8 +578,9 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                             <line x1="15" y1="15" x2="18" y2="18"></line>
                                             <line x1="18" y1="18" x2="16" y2="18"></line>
                                             <line x1="18" y1="18" x2="18" y2="16"></line>
-                                    </svg>
-                                </div>
+                                        </svg>
+                                    </div>
+                                )}
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
                             </div>
                             {renderUserAvatar(match)}
