@@ -1402,14 +1402,31 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 matches = await getMatches(profile, allProfiles);
                 console.log('Found matches from Firebase:', matches?.length || 0);
             } else {
-                console.log('No Firebase profiles found, using backend for matches...');
+                console.log('No Firebase profiles found, loading backend profiles...');
                 try {
-                    const backendResponse = await submitProfile(profile);
-                    if (backendResponse && backendResponse.matches) {
-                        matches = backendResponse.matches;
-                        console.log('Found matches from backend:', matches?.length || 0);
+                    // Load profiles directly from backend
+                    const backendProfilesResponse = await axios.get(`${API_URL}/profiles`);
+                    if (backendProfilesResponse.data && backendProfilesResponse.data.length > 0) {
+                        console.log('Loaded backend profiles:', backendProfilesResponse.data.length);
+                        matches = await getMatches(profile, backendProfilesResponse.data);
+                        console.log('Found matches from backend profiles:', matches?.length || 0);
                     } else {
-                        // Fallback: create dummy matches if backend also fails
+                        throw new Error('No backend profiles available');
+                    }
+                } catch (backendError) {
+                    console.error('Backend profiles failed:', backendError);
+                    console.log('Using fallback demo profiles...');
+                    try {
+                        const backendResponse = await submitProfile(profile);
+                        if (backendResponse && backendResponse.matches) {
+                            matches = backendResponse.matches;
+                            console.log('Found matches from backend:', matches?.length || 0);
+                        } else {
+                            throw new Error('Backend submit failed');
+                        }
+                    } catch (submitError) {
+                        console.error('Backend submit also failed:', submitError);
+                        // Use hardcoded demo matches as final fallback
                         matches = [
                             { 
                                 id: 'demo-1', 
@@ -1420,7 +1437,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                                 age: '22',
                                 image: 'https://randomuser.me/api/portraits/men/32.jpg',
                                 instagram: 'alexchen_cs',
-                                allergies: 'No allergies'
+                                allergies: 'No allergies',
+                                answers: [
+                                    { questionId: 'intro', answer: 'morning' },
+                                    { questionId: 'cleanliness', answer: 'tidy' },
+                                    { questionId: 'noise', answer: 'quiet' },
+                                    { questionId: 'guests', answer: 'private' },
+                                    { questionId: 'smoking', answer: 'no' }
+                                ]
                             },
                             { 
                                 id: 'demo-2', 
@@ -1431,39 +1455,18 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                                 age: '21',
                                 image: 'https://randomuser.me/api/portraits/women/68.jpg',
                                 instagram: 'maya_bio',
-                                allergies: 'Peanuts'
+                                allergies: 'Peanuts',
+                                answers: [
+                                    { questionId: 'intro', answer: 'night' },
+                                    { questionId: 'cleanliness', answer: 'relaxed' },
+                                    { questionId: 'noise', answer: 'music' },
+                                    { questionId: 'guests', answer: 'merrier' },
+                                    { questionId: 'smoking', answer: 'bothers me' }
+                                ]
                             }
                         ];
-                        console.log('Using demo matches as fallback');
+                        console.log('Using hardcoded demo matches as final fallback');
                     }
-                } catch (backendError) {
-                    console.error('Backend also failed:', backendError);
-                    // Show at least demo profiles
-                    matches = [
-                        { 
-                            id: 'demo-1', 
-                            name: 'Alex Chen', 
-                            compatibility: 85, 
-                            major: 'Computer Science', 
-                            location: 'Berkeley, CA',
-                            age: '22',
-                            image: 'https://randomuser.me/api/portraits/men/32.jpg',
-                            instagram: 'alexchen_cs',
-                            allergies: 'No allergies'
-                        },
-                        { 
-                            id: 'demo-2', 
-                            name: 'Maya Patel', 
-                            compatibility: 78, 
-                            major: 'Biology', 
-                            location: 'Stanford, CA',
-                            age: '21',
-                            image: 'https://randomuser.me/api/portraits/women/68.jpg',
-                            instagram: 'maya_bio',
-                            allergies: 'Peanuts'
-                        }
-                    ];
-                    console.log('Using demo matches as fallback');
                 }
             }
             
@@ -1483,7 +1486,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     age: '22',
                     image: 'https://randomuser.me/api/portraits/men/32.jpg',
                     instagram: 'alexchen_cs',
-                    allergies: 'No allergies'
+                    allergies: 'No allergies',
+                    answers: [
+                        { questionId: 'intro', answer: 'morning' },
+                        { questionId: 'cleanliness', answer: 'tidy' },
+                        { questionId: 'noise', answer: 'quiet' },
+                        { questionId: 'guests', answer: 'private' },
+                        { questionId: 'smoking', answer: 'no' }
+                    ]
                 },
                 { 
                     id: 'demo-2', 
@@ -1494,7 +1504,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     age: '21',
                     image: 'https://randomuser.me/api/portraits/women/68.jpg',
                     instagram: 'maya_bio',
-                    allergies: 'Peanuts'
+                    allergies: 'Peanuts',
+                    answers: [
+                        { questionId: 'intro', answer: 'night' },
+                        { questionId: 'cleanliness', answer: 'relaxed' },
+                        { questionId: 'noise', answer: 'music' },
+                        { questionId: 'guests', answer: 'merrier' },
+                        { questionId: 'smoking', answer: 'bothers me' }
+                    ]
                 },
                 { 
                     id: 'demo-3', 
@@ -1505,29 +1522,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     age: '23',
                     image: 'https://randomuser.me/api/portraits/men/75.jpg',
                     instagram: 'jordankim_biz',
-                    allergies: 'No allergies'
-                },
-                { 
-                    id: 'demo-4', 
-                    name: 'Sofia Rodriguez', 
-                    compatibility: 80, 
-                    major: 'Psychology', 
-                    location: 'Oakland, CA',
-                    age: '20',
-                    image: 'https://randomuser.me/api/portraits/women/44.jpg',
-                    instagram: 'sofia_psych',
-                    allergies: 'Shellfish'
-                },
-                { 
-                    id: 'demo-5', 
-                    name: 'Marcus Johnson', 
-                    compatibility: 76, 
-                    major: 'Engineering', 
-                    location: 'San Jose, CA',
-                    age: '24',
-                    image: 'https://randomuser.me/api/portraits/men/86.jpg',
-                    instagram: 'marcus_eng',
-                    allergies: 'No allergies'
+                    allergies: 'No allergies',
+                    answers: [
+                        { questionId: 'intro', answer: 'morning' },
+                        { questionId: 'cleanliness', answer: 'between' },
+                        { questionId: 'noise', answer: 'quiet' },
+                        { questionId: 'guests', answer: 'merrier' },
+                        { questionId: 'smoking', answer: 'no' }
+                    ]
                 }
             ];
             setMatchResults({ matches: demoMatches });
@@ -1851,8 +1853,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     let totalQuestions = 0;
                     
                     // Compare answers for each question
-                    currentProfile.answers.forEach(currentAnswer => {
-                        const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
+                    if (currentProfile.answers && otherUser.answers) {
+                        currentProfile.answers.forEach(currentAnswer => {
+                            const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
                         if (otherAnswer) {
                             totalQuestions++;
                             if (currentAnswer.answer === otherAnswer.answer) {
@@ -1869,6 +1872,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             }
                         }
                     });
+                    }
                     
                     // Calculate percentage
                     const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 0;
