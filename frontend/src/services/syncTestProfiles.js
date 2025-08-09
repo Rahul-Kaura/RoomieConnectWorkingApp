@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { saveProfile, loadAllProfiles } from './firebaseProfile';
-import { database } from './firebaseProfile';
+import { database } from '../firebase';
 import { ref, remove } from 'firebase/database';
 import { API_URL } from '../config';
 
@@ -160,16 +160,8 @@ const calculateScoreFromAnswers = (answers) => {
  * Call this when the app starts to ensure test profiles are available
  */
 export const autoSyncTestProfiles = async () => {
-    // DISABLED: No longer auto-sync test profiles
-    console.log('⏭️ Test profile auto-sync disabled - only real user profiles will be used');
+    // DISABLED: No longer auto-sync or clear test profiles
+    console.log('⏭️ Test profile operations disabled - keeping all existing profiles');
     
-    // Optionally clear existing test profiles
-    if (localStorage.getItem('clearTestProfiles')) {
-        console.log('🧹 Clearing test profiles as requested...');
-        const result = await clearTestProfiles();
-        localStorage.removeItem('clearTestProfiles');
-        return result;
-    }
-    
-    return { success: true, message: 'Auto-sync disabled - real users only' };
+    return { success: true, message: 'Profile operations disabled - all profiles preserved' };
 }; 

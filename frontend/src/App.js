@@ -14,12 +14,12 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
-  // Auto-transition from home loading to welcome after 2.5 seconds
+  // Auto-transition from home loading to welcome after 4 seconds
   useEffect(() => {
     if (view === 'homeLoading') {
       const timer = setTimeout(() => {
         setView('welcome');
-      }, 2500); // 2.5 seconds
+      }, 4000); // 4 seconds
       
       return () => clearTimeout(timer);
     }
@@ -151,9 +151,6 @@ function App() {
     // Run messaging test and sync test profiles after a short delay to ensure Firebase is initialized
     const timer = setTimeout(async () => {
       testMessagingSetup();
-      
-      // Trigger clearing of unwanted test profiles (keeping Alex Chen)
-      localStorage.setItem('clearTestProfiles', 'true');
       
       // Auto-sync test profiles to Firebase
       try {

@@ -370,7 +370,10 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     };
 
     // Toggle pin status
-    const handleTogglePin = (matchId) => {
+    const handleTogglePin = (match, index) => {
+        // Use consistent ID logic for both key and pinning
+        const matchId = match.id || match.userId || `${match.name}-${index}`;
+        
         const newPinnedMatches = new Set(pinnedMatches);
         if (newPinnedMatches.has(matchId)) {
             newPinnedMatches.delete(matchId);
@@ -380,7 +383,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         setPinnedMatches(newPinnedMatches);
         savePinnedMatches(newPinnedMatches);
         
-        // Call parent function to re-sort matches
+        // Call parent component's toggle function if provided
         if (onTogglePin) {
             onTogglePin(matchId, newPinnedMatches.has(matchId));
         }
@@ -517,12 +520,12 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             <div className="match-results-carousel">
             <div className="match-results-grid">
                     {getCurrentMatches().map((match, i) => {
-                    const isPinned = pinnedMatches.has(match.id);
                     const uniqueKey = match.id || match.userId || `${match.name}-${i}`;
+                    const isPinned = pinnedMatches.has(uniqueKey);
                     return (
                         <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={uniqueKey}>
                             <div className="match-card-header">
-                                <div className="match-card-pin-button hover-blue-animation" onClick={() => handleTogglePin(match.id)}>
+                                <div className="match-card-pin-button hover-blue-animation" onClick={() => handleTogglePin(match, i)}>
                                     <svg 
                                         width="20" 
                                         height="20" 
@@ -2241,57 +2244,23 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         }
     };
 
-    const handleTogglePin = (matchId, isPinned) => {
-        // Update the matches with the new pinned status
-        const updatedMatches = matchResults.matches.map(match => {
-            if (match.id === matchId) {
-                return { ...match, isPinned: isPinned };
-            }
-            return match;
-        });
+    const handleTogglePin = (match, index) => {
+        // Use consistent ID logic for both key and pinning
+        const matchId = match.id || match.userId || `${match.name}-${index}`;
         
-        // Re-sort the matches based on the new pinned status
-        const sortedMatches = updatedMatches.sort((a, b) => {
-            // First priority: Pinned matches
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-            
-            // Second priority: Unread notifications
-            const aUnreadCount = notificationService.getUnreadCount([currentUser.id, a.id].sort().join('_'));
-            const bUnreadCount = notificationService.getUnreadCount([currentUser.id, b.id].sort().join('_'));
-            if (aUnreadCount > 0 && bUnreadCount === 0) return -1;
-            if (aUnreadCount === 0 && bUnreadCount > 0) return 1;
-            
-            // Third priority: Recent message activity (users with recent conversations)
-            const aChatId = [currentUser.id, a.id].sort().join('_');
-            const bChatId = [currentUser.id, b.id].sort().join('_');
-            const aLastRead = notificationService.lastReadTimestamps.get(aChatId) || 0;
-            const bLastRead = notificationService.lastReadTimestamps.get(bChatId) || 0;
-            
-            // If one user has recent activity and the other doesn't, prioritize the active one
-            const hasRecentActivityA = aLastRead > 0;
-            const hasRecentActivityB = bLastRead > 0;
-            
-            if (hasRecentActivityA && !hasRecentActivityB) return -1;
-            if (!hasRecentActivityA && hasRecentActivityB) return 1;
-            
-            // If both have recent activity, sort by most recent
-            if (hasRecentActivityA && hasRecentActivityB) {
-                return bLastRead - aLastRead; // Most recent first
-            }
-            
-            // Fourth priority: Distance (closer first)
-            if (a.distance !== null && b.distance !== null) {
-                return a.distance - b.distance;
-            }
-            if (a.distance !== null && b.distance === null) return -1;
-            if (a.distance === null && b.distance !== null) return 1;
-            
-            // Fifth priority: Compatibility score
-            return parseFloat(b.compatibility) - parseFloat(a.compatibility);
-        });
+        const newPinnedMatches = new Set(pinnedMatches);
+        if (newPinnedMatches.has(matchId)) {
+            newPinnedMatches.delete(matchId);
+        } else {
+            newPinnedMatches.add(matchId);
+        }
+        setPinnedMatches(newPinnedMatches);
+        savePinnedMatches(newPinnedMatches);
         
-        setMatchResults({ ...matchResults, matches: sortedMatches });
+        // Call parent component's toggle function if provided
+        if (onTogglePin) {
+            onTogglePin(matchId, newPinnedMatches.has(matchId));
+        }
     };
 
     const detectUserLocation = async () => {
@@ -2379,7 +2348,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
                             <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
                         </svg>
-            </div>
+                    </div>
                     <h2 className="chatbot-header-title">
                         <span className="logo-text-roomie">Roomie</span>
                         <span className="logo-text-connect">Connect</span>
