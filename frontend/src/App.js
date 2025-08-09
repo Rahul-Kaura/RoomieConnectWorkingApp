@@ -188,7 +188,27 @@ function App() {
   };
 
   const renderContent = () => {
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)'
+      }}>
+        <div className="loading-spinner-cool"></div>
+        <p style={{ 
+          marginTop: '30px', 
+          fontSize: '18px', 
+          color: '#20b2aa', 
+          fontWeight: '500',
+          textAlign: 'center'
+        }}>
+          Welcome to RoomieConnect...
+        </p>
+      </div>
+    );
     
     switch (view) {
       case 'loading':

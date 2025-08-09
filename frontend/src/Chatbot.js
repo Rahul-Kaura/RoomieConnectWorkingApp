@@ -1908,14 +1908,32 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 if (aUnreadCount > 0 && bUnreadCount === 0) return -1;
                 if (aUnreadCount === 0 && bUnreadCount > 0) return 1;
                 
-                // Third priority: Distance (closer first)
+                // Third priority: Recent message activity (users with recent conversations)
+                const aChatId = [currentUser.id, a.id].sort().join('_');
+                const bChatId = [currentUser.id, b.id].sort().join('_');
+                const aLastRead = notificationService.lastReadTimestamps.get(aChatId) || 0;
+                const bLastRead = notificationService.lastReadTimestamps.get(bChatId) || 0;
+                
+                // If one user has recent activity and the other doesn't, prioritize the active one
+                const hasRecentActivityA = aLastRead > 0;
+                const hasRecentActivityB = bLastRead > 0;
+                
+                if (hasRecentActivityA && !hasRecentActivityB) return -1;
+                if (!hasRecentActivityA && hasRecentActivityB) return 1;
+                
+                // If both have recent activity, sort by most recent
+                if (hasRecentActivityA && hasRecentActivityB) {
+                    return bLastRead - aLastRead; // Most recent first
+                }
+                
+                // Fourth priority: Distance (closer first)
                 if (a.distance !== null && b.distance !== null) {
                     return a.distance - b.distance;
                 }
                 if (a.distance !== null && b.distance === null) return -1;
                 if (a.distance === null && b.distance !== null) return 1;
                 
-                // Fourth priority: Compatibility score
+                // Fifth priority: Compatibility score
                 return parseFloat(b.compatibility) - parseFloat(a.compatibility);
             })
             .slice(0, 10); // Show more matches since we're sorting by multiple criteria
@@ -2168,14 +2186,32 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             if (aUnreadCount > 0 && bUnreadCount === 0) return -1;
             if (aUnreadCount === 0 && bUnreadCount > 0) return 1;
             
-            // Third priority: Distance (closer first)
+            // Third priority: Recent message activity (users with recent conversations)
+            const aChatId = [currentUser.id, a.id].sort().join('_');
+            const bChatId = [currentUser.id, b.id].sort().join('_');
+            const aLastRead = notificationService.lastReadTimestamps.get(aChatId) || 0;
+            const bLastRead = notificationService.lastReadTimestamps.get(bChatId) || 0;
+            
+            // If one user has recent activity and the other doesn't, prioritize the active one
+            const hasRecentActivityA = aLastRead > 0;
+            const hasRecentActivityB = bLastRead > 0;
+            
+            if (hasRecentActivityA && !hasRecentActivityB) return -1;
+            if (!hasRecentActivityA && hasRecentActivityB) return 1;
+            
+            // If both have recent activity, sort by most recent
+            if (hasRecentActivityA && hasRecentActivityB) {
+                return bLastRead - aLastRead; // Most recent first
+            }
+            
+            // Fourth priority: Distance (closer first)
             if (a.distance !== null && b.distance !== null) {
                 return a.distance - b.distance;
             }
             if (a.distance !== null && b.distance === null) return -1;
             if (a.distance === null && b.distance !== null) return 1;
             
-            // Fourth priority: Compatibility score
+            // Fifth priority: Compatibility score
             return parseFloat(b.compatibility) - parseFloat(a.compatibility);
         });
         
