@@ -234,18 +234,94 @@ function MatchLoadingScreen() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 flex: '1',
-                background: '#f5f5f5',
-                color: '#20b2aa'
+                background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
+                color: '#20b2aa',
+                position: 'relative'
             }}>
-                <div className="loading-spinner-cool"></div>
-                <p className="loading-text" style={{ 
-                    marginTop: '50px', 
-                    fontSize: '24px', 
-                    color: '#666', 
-                    fontWeight: '500',
-                    textAlign: 'center'
-                }}>
-                    Finding your top roommate matches...
+                {/* Awwwards-inspired UI transition animation */}
+                <div className="loading-spinner-cool">
+                    <div className="loading-ui-screens">
+                        {/* Screen 1: Chatbot Interface */}
+                        <div className="loading-screen-card loading-screen-1">
+                            <div className="loading-screen-content">
+                                <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '20px',
+                                    fontSize: '24px',
+                                    fontWeight: '700',
+                                    color: 'white'
+                                }}>
+                                    💬
+                                </div>
+                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                    Complete your profile
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Screen 2: Profile Setup */}
+                        <div className="loading-screen-card loading-screen-2">
+                            <div className="loading-screen-content">
+                                <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '20px',
+                                    fontSize: '24px',
+                                    fontWeight: '700',
+                                    color: 'white'
+                                }}>
+                                    👤
+                                </div>
+                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                    Building your profile
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Screen 3: Matches Preview */}
+                        <div className="loading-screen-card loading-screen-3">
+                            <div className="loading-screen-content">
+                                <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '16px',
+                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '20px',
+                                    fontSize: '24px',
+                                    fontWeight: '700',
+                                    color: 'white'
+                                }}>
+                                    🏠
+                                </div>
+                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                    Finding perfect matches
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="loading-progress-bar">
+                        <div className="loading-progress-fill"></div>
+                    </div>
+                </div>
+
+                <p className="loading-text">
+                    Creating your perfect roommate connections...
                 </p>
             </div>
         </div>
@@ -1120,7 +1196,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             ] 
                         });
                         setShowMatchResults(true);
-                    }, 8000); // 8 second max timeout
+                    }, 6000); // 6 second timeout to match animation duration
                     
                     setTimeout(async () => {
                         try {

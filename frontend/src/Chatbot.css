@@ -1728,194 +1728,346 @@ textarea:focus {
     }
 } 
 
-/* Cool Loading Animation - House Building Theme */
+/* =====================================
+   AWWWARDS-INSPIRED UI TRANSITION LOADING
+   ===================================== */
+
 .loading-spinner-cool {
     position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 40px auto;
+    width: 300px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    animation: loadingContainerFloat 6s ease-in-out infinite;
 }
 
-/* House foundation that builds up */
-.loading-spinner-cool::before {
-    content: '';
+/* Multiple UI screen cards that transition */
+.loading-ui-screens {
     position: absolute;
-    bottom: 20px;
-    left: 20%;
-    width: 60%;
-    height: 8px;
-    background: linear-gradient(90deg, #20b2aa, #26a69a);
-    border-radius: 4px;
-    animation: foundationBuild 2s ease-in-out infinite;
-}
-
-/* House walls that appear */
-.loading-spinner-cool::after {
-    content: '';
-    position: absolute;
-    bottom: 28px;
-    left: 25%;
-    width: 50%;
-    height: 40px;
-    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 50%, #20b2aa 100%);
-    border-radius: 4px 4px 0 0;
-    animation: wallsBuild 2s ease-in-out infinite 0.5s both;
-}
-
-/* Roof triangle that slides down */
-.loading-spinner-cool {
-    /* Roof created with pseudo-elements in child divs */
-}
-
-/* Add roof and details with additional elements */
-.loading-spinner-cool {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.loading-spinner-cool::before {
-    animation: foundationSlide 3s ease-in-out infinite;
+/* Individual screen cards */
+.loading-screen-card {
+    position: absolute;
+    width: 280px;
+    height: 380px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        0 8px 16px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform-style: preserve-3d;
 }
 
-.loading-spinner-cool::after {
-    animation: wallsGrow 3s ease-in-out infinite 0.8s both;
+/* Screen 1: Chatbot Interface */
+.loading-screen-1 {
+    animation: screenTransition1 6s ease-in-out infinite;
+    z-index: 3;
 }
 
-/* Floating dots around the house */
-.loading-spinner-cool {
-    overflow: visible;
+.loading-screen-1::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    border-radius: 24px 24px 0 0;
 }
 
-/* Create the roof with border triangle */
-.loading-spinner-cool {
-    background: 
-        /* Roof triangle */
-        linear-gradient(45deg, transparent 40%, #ff6b6b 40%, #ff6b6b 60%, transparent 60%),
-        /* House walls */
-        linear-gradient(to top, #20b2aa 20px, transparent 20px);
-    animation: houseFloat 4s ease-in-out infinite;
+.loading-screen-1::after {
+    content: 'RoomieConnect AI';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 1;
 }
 
-/* Keyframe animations */
-@keyframes foundationSlide {
-    0%, 100% {
-        transform: translateX(-20px);
-        opacity: 0.3;
-    }
-    25% {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    75% {
-        opacity: 1;
-    }
+/* Screen 2: Profile Setup */
+.loading-screen-2 {
+    animation: screenTransition2 6s ease-in-out infinite;
+    z-index: 2;
 }
 
-@keyframes wallsGrow {
+.loading-screen-2::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    border-radius: 24px 24px 0 0;
+}
+
+.loading-screen-2::after {
+    content: 'Your Profile';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 1;
+}
+
+/* Screen 3: Matches Preview */
+.loading-screen-3 {
+    animation: screenTransition3 6s ease-in-out infinite;
+    z-index: 1;
+}
+
+.loading-screen-3::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    border-radius: 24px 24px 0 0;
+}
+
+.loading-screen-3::after {
+    content: 'Your Top Matches';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    z-index: 1;
+}
+
+/* Content areas for each screen */
+.loading-screen-content {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 20px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Screen transition animations */
+@keyframes screenTransition1 {
     0% {
-        height: 0;
-        opacity: 0;
+        transform: translateX(0) translateY(0) rotateY(0deg) scale(1);
+        opacity: 1;
+        z-index: 3;
     }
-    50% {
-        height: 40px;
+    20% {
+        transform: translateX(-50px) translateY(-20px) rotateY(-15deg) scale(0.95);
         opacity: 0.8;
     }
+    33% {
+        transform: translateX(-100px) translateY(-40px) rotateY(-30deg) scale(0.8);
+        opacity: 0.3;
+    }
+    40% {
+        transform: translateX(-200px) translateY(-60px) rotateY(-45deg) scale(0.6);
+        opacity: 0;
+    }
     100% {
-        height: 40px;
-        opacity: 1;
+        transform: translateX(-200px) translateY(-60px) rotateY(-45deg) scale(0.6);
+        opacity: 0;
     }
 }
 
-@keyframes houseFloat {
-    0%, 100% {
-        transform: translateY(0px) rotate(0deg);
+@keyframes screenTransition2 {
+    0% {
+        transform: translateX(80px) translateY(30px) rotateY(20deg) scale(0.9);
+        opacity: 0.7;
+        z-index: 2;
     }
     25% {
-        transform: translateY(-10px) rotate(1deg);
+        transform: translateX(0) translateY(0) rotateY(0deg) scale(1);
+        opacity: 1;
+        z-index: 3;
     }
-    50% {
-        transform: translateY(-5px) rotate(0deg);
+    45% {
+        transform: translateX(-50px) translateY(-20px) rotateY(-15deg) scale(0.95);
+        opacity: 0.8;
     }
-    75% {
-        transform: translateY(-15px) rotate(-1deg);
+    60% {
+        transform: translateX(-100px) translateY(-40px) rotateY(-30deg) scale(0.8);
+        opacity: 0.3;
+    }
+    70% {
+        transform: translateX(-200px) translateY(-60px) rotateY(-45deg) scale(0.6);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(-200px) translateY(-60px) rotateY(-45deg) scale(0.6);
+        opacity: 0;
     }
 }
 
-/* Alternative simpler version with connecting dots */
-.loading-spinner-cool {
-    position: relative;
-    width: 100px;
-    height: 100px;
+@keyframes screenTransition3 {
+    0% {
+        transform: translateX(160px) translateY(60px) rotateY(40deg) scale(0.8);
+        opacity: 0.5;
+        z-index: 1;
+    }
+    50% {
+        transform: translateX(80px) translateY(30px) rotateY(20deg) scale(0.9);
+        opacity: 0.7;
+        z-index: 2;
+    }
+    75% {
+        transform: translateX(0) translateY(0) rotateY(0deg) scale(1);
+        opacity: 1;
+        z-index: 3;
+    }
+    85% {
+        transform: translateX(0) translateY(0) rotateY(0deg) scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0) translateY(0) rotateY(0deg) scale(1);
+        opacity: 1;
+        z-index: 3;
+    }
+}
+
+@keyframes loadingContainerFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    25% {
+        transform: translateY(-8px);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+    75% {
+        transform: translateY(-12px);
+    }
+}
+
+/* Loading progress indicator */
+.loading-progress-bar {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 4px;
+    background: rgba(32, 178, 170, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    border-radius: 2px;
+    animation: progressFill 6s ease-in-out infinite;
+}
+
+@keyframes progressFill {
+    0% {
+        width: 0%;
+        transform: translateX(-100%);
+    }
+    50% {
+        width: 70%;
+        transform: translateX(0%);
+    }
+    100% {
+        width: 100%;
+        transform: translateX(0%);
+    }
+}
+
+/* Loading text */
+.loading-text {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    font-weight: 500;
+    color: #20b2aa;
+    text-align: center;
+    animation: textFade 6s ease-in-out infinite;
+}
+
+@keyframes textFade {
+    0%, 20% {
+        opacity: 1;
+        content: 'Setting up your profile...';
+    }
+    30%, 50% {
+        opacity: 1;
+        content: 'Finding perfect matches...';
+    }
+    60%, 80% {
+        opacity: 1;
+        content: 'Preparing your connections...';
+    }
+    90%, 100% {
+        opacity: 1;
+        content: 'Welcome to RoomieConnect!';
+    }
+}
+
+/* Ensure chat icons are perfectly consistent */
+.match-card-chat-icon {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    cursor: pointer;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 4px 12px rgba(32, 178, 170, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.1);
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    animation: logoFloatSubtle 4s ease-in-out infinite;
+    transform-origin: center;
 }
 
-.loading-spinner-cool::before,
-.loading-spinner-cool::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #20b2aa, #26a69a);
-    animation: dotConnect 2s ease-in-out infinite;
-}
-
-.loading-spinner-cool::before {
-    top: 20%;
-    left: 20%;
-    animation-delay: 0s;
-}
-
-.loading-spinner-cool::after {
-    bottom: 20%;
-    right: 20%;
-    animation-delay: 1s;
-}
-
-@keyframes dotConnect {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(0.8);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
-}
-
-/* Add more dots with additional styling */
-.loading-spinner-cool {
-    background: 
-        radial-gradient(circle at 50% 20%, #20b2aa 4px, transparent 4px),
-        radial-gradient(circle at 20% 50%, #26a69a 3px, transparent 3px),
-        radial-gradient(circle at 80% 50%, #20b2aa 3px, transparent 3px),
-        radial-gradient(circle at 50% 80%, #26a69a 4px, transparent 4px);
-    background-size: 100% 100%;
-    animation: connectingDots 3s ease-in-out infinite;
-}
-
-@keyframes connectingDots {
-    0% {
-        background-size: 0% 0%, 0% 0%, 0% 0%, 0% 0%;
-        transform: rotate(0deg);
-    }
-    25% {
-        background-size: 100% 100%, 0% 0%, 0% 0%, 0% 0%;
-        transform: rotate(90deg);
-    }
-    50% {
-        background-size: 100% 100%, 100% 100%, 0% 0%, 0% 0%;
-        transform: rotate(180deg);
-    }
-    75% {
-        background-size: 100% 100%, 100% 100%, 100% 100%, 0% 0%;
-        transform: rotate(270deg);
-    }
-    100% {
-        background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-        transform: rotate(360deg);
-    }
+.match-card-chat-icon:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 
+        0 8px 20px rgba(32, 178, 170, 0.4),
+        0 4px 10px rgba(0, 0, 0, 0.15);
+    animation-play-state: paused;
+} 
 } 
