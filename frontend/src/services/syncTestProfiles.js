@@ -1,6 +1,55 @@
 import axios from 'axios';
-import { saveProfile } from './firebaseProfile';
+import { saveProfile, loadAllProfiles } from './firebaseProfile';
+import { database } from './firebaseProfile';
+import { ref, remove } from 'firebase/database';
 import { API_URL } from '../config';
+
+/**
+ * Clear all test profiles from Firebase
+ * This removes profiles marked as test profiles or with test-related names
+ */
+export const clearTestProfiles = async () => {
+    console.log('🧹 Clearing test profiles from Firebase...');
+    
+    try {
+        // Load all profiles first
+        const allProfiles = await loadAllProfiles();
+        
+        if (!allProfiles || allProfiles.length === 0) {
+            console.log('No profiles found in Firebase to clear');
+            return { success: true, cleared: 0 };
+        }
+        
+        let clearedCount = 0;
+        const testNames = ['Maya Patel', 'Jordan Kim', 'Sofia Rodriguez', 'Marcus Johnson', 'Test', 'Kidres', 'Sterski'];
+        
+        for (const profile of allProfiles) {
+            // Remove if it's marked as test profile or has test-related names
+            if (profile.isTestProfile || 
+                testNames.includes(profile.name) ||
+                profile.name?.toLowerCase().includes('test') ||
+                profile.id?.includes('test-user') ||
+                profile.id?.includes('demo-')) {
+                
+                try {
+                    const profileRef = ref(database, `profiles/${profile.id}`);
+                    await remove(profileRef);
+                    console.log(`🗑️ Removed test profile: ${profile.name} (${profile.id})`);
+                    clearedCount++;
+                } catch (error) {
+                    console.error(`Failed to remove profile ${profile.name}:`, error);
+                }
+            }
+        }
+        
+        console.log(`✅ Cleared ${clearedCount} test profiles from Firebase`);
+        return { success: true, cleared: clearedCount };
+        
+    } catch (error) {
+        console.error('❌ Error clearing test profiles:', error);
+        return { success: false, error: error.message };
+    }
+};
 
 /**
  * Sync backend test profiles to Firebase
@@ -111,21 +160,16 @@ const calculateScoreFromAnswers = (answers) => {
  * Call this when the app starts to ensure test profiles are available
  */
 export const autoSyncTestProfiles = async () => {
-    // Only sync in development or if specifically requested
-    if (process.env.NODE_ENV === 'development' || localStorage.getItem('forceSyncTestProfiles')) {
-        console.log('🚀 Auto-syncing test profiles...');
-        const result = await syncTestProfilesToFirebase();
-        
-        if (result.success) {
-            console.log('🎉 Test profiles are ready for matching!');
-            // Remove force sync flag if it was set
-            localStorage.removeItem('forceSyncTestProfiles');
-        } else {
-            console.log('⚠️ Test profile sync failed, matches may use fallback profiles');
-        }
-        
+    // DISABLED: No longer auto-sync test profiles
+    console.log('⏭️ Test profile auto-sync disabled - only real user profiles will be used');
+    
+    // Optionally clear existing test profiles
+    if (localStorage.getItem('clearTestProfiles')) {
+        console.log('🧹 Clearing test profiles as requested...');
+        const result = await clearTestProfiles();
+        localStorage.removeItem('clearTestProfiles');
         return result;
     }
     
-    return { success: true, message: 'Sync skipped in production' };
+    return { success: true, message: 'Auto-sync disabled - real users only' };
 }; 

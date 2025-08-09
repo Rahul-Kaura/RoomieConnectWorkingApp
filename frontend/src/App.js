@@ -41,9 +41,25 @@ function App() {
       setCurrentUser(null);
       setUserProfile(null);
       localStorage.removeItem('userProfile');
+      localStorage.removeItem('userName'); // Clear stale userName too
       setView('welcome');
     }
   }, [isAuthenticated, user]);
+
+  // Get the display name for welcome message
+  const getDisplayName = () => {
+    // Priority: userProfile name > currentUser name > stored name > Auth0 user name > email
+    if (userProfile && userProfile.name) {
+      return userProfile.name;
+    }
+    if (currentUser && currentUser.name) {
+      return currentUser.name;
+    }
+    if (user) {
+      return user.name || user.email;
+    }
+    return localStorage.getItem('userName') || 'User';
+  };
 
   // Check for profile in Firebase when currentUser changes
   useEffect(() => {
@@ -124,6 +140,9 @@ function App() {
     // Run messaging test and sync test profiles after a short delay to ensure Firebase is initialized
     const timer = setTimeout(async () => {
       testMessagingSetup();
+      
+      // Trigger clearing of unwanted test profiles (keeping Alex Chen)
+      localStorage.setItem('clearTestProfiles', 'true');
       
       // Auto-sync test profiles to Firebase
       try {
@@ -286,7 +305,7 @@ function App() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: '20px',
-                      fontSize: '24px',
+              fontSize: '24px', 
                       fontWeight: '700',
                       color: 'white'
                     }}>
@@ -342,7 +361,7 @@ function App() {
             <h1 className="home-title">ROOMIE<br/>CONNECT</h1>
             <p className="home-subtitle">Click anywhere to start</p>
             {isAuthenticated && user && (
-              <p className="welcome-back-message">Welcome Back, {localStorage.getItem('userName') || user.name || user.email}</p>
+              <p className="welcome-back-message">Welcome Back, {getDisplayName()}</p>
             )}
             <AnimatedCredits />
             {isAuthenticated && (

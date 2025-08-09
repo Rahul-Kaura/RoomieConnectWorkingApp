@@ -1226,12 +1226,6 @@
         max-height: 3.6em;
     }
     
-    /* Move chat icon lower on mobile too */
-    .match-card-chat-icon {
-        bottom: 8px;
-        right: 16px;
-    }
-    
     .chatbot-container-isolated {
         width: 100%;
         height: 100vh;
@@ -2075,4 +2069,5 @@ textarea:focus {
         0 8px 20px rgba(32, 178, 170, 0.4),
         0 4px 10px rgba(0, 0, 0, 0.15);
     animation-play-state: paused;
+} 
 } 

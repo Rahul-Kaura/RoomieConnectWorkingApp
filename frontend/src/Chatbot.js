@@ -253,7 +253,7 @@ function MatchLoadingScreen() {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     marginBottom: '20px',
-                                    fontSize: '24px',
+                    fontSize: '24px', 
                                     fontWeight: '700',
                                     color: 'white'
                                 }}>
@@ -566,8 +566,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                             <line x1="15" y1="15" x2="18" y2="18"></line>
                                             <line x1="18" y1="18" x2="16" y2="18"></line>
                                             <line x1="18" y1="18" x2="18" y2="16"></line>
-                                        </svg>
-                                    </div>
+                                    </svg>
+                                </div>
                                 {isPinned && <div className="pinned-badge">📌 Pinned</div>}
                             </div>
                             {renderUserAvatar(match)}
@@ -1173,13 +1173,24 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                                 },
                                 { 
                                     id: 'demo-2', 
-                                    name: 'Jacob', 
+                                    name: 'Maya Patel', 
                                     compatibility: 78, 
-                                    major: 'Engineering', 
-                                    location: 'San Francisco, CA',
+                                    major: 'Biology', 
+                                    location: 'Stanford, CA',
                                     age: '21',
+                                    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                                    instagram: 'maya_bio',
+                                    allergies: 'Peanuts'
+                                },
+                                { 
+                                    id: 'demo-3', 
+                                    name: 'Jordan Kim', 
+                                    compatibility: 72, 
+                                    major: 'Business', 
+                                    location: 'San Francisco, CA',
+                                    age: '23',
                                     image: 'https://randomuser.me/api/portraits/men/75.jpg',
-                                    instagram: 'jacob_eng',
+                                    instagram: 'jordankim_biz',
                                     allergies: 'No allergies'
                                 }
                             ] 
@@ -1448,7 +1459,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         // ALWAYS save the profile first - this should never fail the entire process
         try {
             console.log('Saving profile:', profile);
-            await saveProfile(profile);
+        await saveProfile(profile);
             console.log('Profile saved successfully!');
         } catch (saveError) {
             console.error('Error saving profile, but continuing with matches:', saveError);
@@ -1458,8 +1469,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         // Now try to find matches - if this fails, we still have the saved profile
         try {
             console.log('Loading all profiles for matching...');
-            // After saving, load all profiles and calculate matches
-            const allProfiles = await loadAllProfiles();
+        // After saving, load all profiles and calculate matches
+        const allProfiles = await loadAllProfiles();
             console.log('Found profiles:', allProfiles?.length || 0);
             
             // If we can't load profiles from Firebase, use backend test profiles
@@ -1514,14 +1525,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             },
                             { 
                                 id: 'demo-2', 
-                                name: 'Jacob', 
+                                name: 'Maya Patel', 
                                 compatibility: 78, 
-                                major: 'Engineering', 
-                                location: 'San Francisco, CA',
+                                major: 'Biology', 
+                                location: 'Stanford, CA',
                                 age: '21',
-                                image: 'https://randomuser.me/api/portraits/men/75.jpg',
-                                instagram: 'jacob_eng',
-                                allergies: 'No allergies',
+                                image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                                instagram: 'maya_bio',
+                                allergies: 'Peanuts',
                                 answers: [
                                     { questionId: 'intro', answer: 'night' },
                                     { questionId: 'cleanliness', answer: 'relaxed' },
@@ -1536,8 +1547,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             }
             
-            setMatchResults({ matches });
-            setShowMatchResults(true);
+        setMatchResults({ matches });
+        setShowMatchResults(true);
         } catch (matchError) {
             console.error('Error finding matches, but profile was saved:', matchError);
             // Instead of showing error, show demo matches as ultimate fallback
@@ -1563,14 +1574,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 },
                 { 
                     id: 'demo-2', 
-                    name: 'Jacob', 
+                    name: 'Maya Patel', 
                     compatibility: 78, 
-                    major: 'Engineering', 
-                    location: 'San Francisco, CA',
+                    major: 'Biology', 
+                    location: 'Stanford, CA',
                     age: '21',
-                    image: 'https://randomuser.me/api/portraits/men/75.jpg',
-                    instagram: 'jacob_eng',
-                    allergies: 'No allergies',
+                    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                    instagram: 'maya_bio',
+                    allergies: 'Peanuts',
                     answers: [
                         { questionId: 'intro', answer: 'night' },
                         { questionId: 'cleanliness', answer: 'relaxed' },
@@ -1601,7 +1612,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             setMatchResults({ matches: demoMatches });
             setShowMatchResults(true);
         } finally {
-            setShowMatchLoading(false);
+        setShowMatchLoading(false);
         }
     };
 
@@ -1923,8 +1934,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     
                     // Compare answers for each question
                     if (currentProfile.answers && otherUser.answers) {
-                        currentProfile.answers.forEach(currentAnswer => {
-                            const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
+                    currentProfile.answers.forEach(currentAnswer => {
+                        const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
                         if (otherAnswer) {
                             totalQuestions++;
                             if (currentAnswer.answer === otherAnswer.answer) {
