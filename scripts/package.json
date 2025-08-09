@@ -1,0 +1,16 @@
+{
+  "name": "roomieconnect-scripts",
+  "version": "1.0.0",
+  "description": "Utility scripts for RoomieConnect setup",
+  "main": "create-auth0-test-users.js",
+  "scripts": {
+    "create-test-users": "node create-auth0-test-users.js",
+    "setup": "npm install"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "keywords": ["auth0", "test-users", "roomieconnect"],
+  "author": "RoomieConnect",
+  "license": "MIT"
+} 
