@@ -419,6 +419,9 @@
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
+    height: 100%;
+    min-height: 650px;
+    max-height: 100vh;
 }
 
 .match-results-outer::before {
@@ -545,12 +548,15 @@
     width: 100%;
     box-sizing: border-box;
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     z-index: 1;
+    min-height: 0;
+    align-content: start;
 }
 
-/* Carousel Navigation */
+/* Ensure carousel navigation stays at bottom */
 .carousel-navigation {
     display: flex;
     align-items: center;
@@ -560,6 +566,41 @@
     border-top: 1px solid #f3f4f6;
     position: relative;
     z-index: 2;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+/* Fix chat icon alignment and add bouncing animation */
+.match-card-chat-icon {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 4px 12px rgba(32, 178, 170, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.1);
+    width: 44px;
+    height: 44px;
+    animation: logoFloatSubtle 4s ease-in-out infinite;
+    transform-origin: center;
+}
+
+.match-card-chat-icon:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 
+        0 8px 20px rgba(32, 178, 170, 0.4),
+        0 4px 10px rgba(0, 0, 0, 0.15);
+    animation-play-state: paused;
 }
 
 .carousel-nav-button {
@@ -660,6 +701,9 @@
     position: relative;
     overflow: hidden;
     border: 1px solid #f3f4f6;
+    height: auto;
+    min-height: 320px;
+    max-height: 400px;
 }
 
 .match-card::before {
@@ -811,33 +855,6 @@
     font-weight: 500;
     color: #374151;
     line-height: 1.4;
-}
-
-.match-card-chat-icon {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 10px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    box-shadow: 
-        0 4px 12px rgba(32, 178, 170, 0.3),
-        0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.match-card-chat-icon:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 
-        0 8px 20px rgba(32, 178, 170, 0.4),
-        0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .unread-badge {
