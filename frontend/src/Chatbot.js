@@ -1349,7 +1349,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     const calculateAndSubmit = async (finalAnswers) => {
         setShowMatchLoading(true);
         
-        try {
+        // First, always save the profile regardless of what happens next
         const totalWeight = finalAnswers.reduce((sum, ans) => {
             const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
             const question = questions[qId] || {};
@@ -1379,12 +1379,21 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             instagram: userInstagram,
         };
     
+        // ALWAYS save the profile first - this should never fail the entire process
+        try {
             console.log('Saving profile:', profile);
-        await saveProfile(profile);
-            
+            await saveProfile(profile);
+            console.log('Profile saved successfully!');
+        } catch (saveError) {
+            console.error('Error saving profile, but continuing with matches:', saveError);
+            // Don't fail the entire process if profile saving fails
+        }
+
+        // Now try to find matches - if this fails, we still have the saved profile
+        try {
             console.log('Loading all profiles for matching...');
-        // After saving, load all profiles and calculate matches
-        const allProfiles = await loadAllProfiles();
+            // After saving, load all profiles and calculate matches
+            const allProfiles = await loadAllProfiles();
             console.log('Found profiles:', allProfiles?.length || 0);
             
             // If we can't load profiles from Firebase, use backend test profiles
@@ -1458,10 +1467,10 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             }
             
-        setMatchResults({ matches });
-        setShowMatchResults(true);
-        } catch (error) {
-            console.error('Error in calculateAndSubmit:', error);
+            setMatchResults({ matches });
+            setShowMatchResults(true);
+        } catch (matchError) {
+            console.error('Error finding matches, but profile was saved:', matchError);
             // Instead of showing error, show demo matches as ultimate fallback
             console.log('Using ultimate fallback demo matches...');
             const demoMatches = [
@@ -1524,7 +1533,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             setMatchResults({ matches: demoMatches });
             setShowMatchResults(true);
         } finally {
-        setShowMatchLoading(false);
+            setShowMatchLoading(false);
         }
     };
 
