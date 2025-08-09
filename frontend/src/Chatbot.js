@@ -1977,8 +1977,29 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     return (
         <div className="chatbot-container-isolated">
             <div className="chatbot-header">
-                <h2 className="chatbot-header-title">RoomieConnect AI</h2>
-                <p className="chatbot-header-subtitle">Your personal roommate finder</p>
+                <div className="animated-logo-container">
+                    <div className="logo-icon">
+                        <svg viewBox="0 0 40 40" className="logo-svg">
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9"/>
+                                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.7"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="20" cy="12" r="6" fill="url(#logoGradient)" className="logo-head"/>
+                            <rect x="14" y="20" width="12" height="16" rx="6" fill="url(#logoGradient)" className="logo-body"/>
+                            <circle cx="10" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-1"/>
+                            <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
+                            <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
+                        </svg>
+                    </div>
+                    <h2 className="chatbot-header-title">
+                        <span className="logo-text-roomie">Roomie</span>
+                        <span className="logo-text-connect">Connect</span>
+                        <span className="logo-text-ai">AI</span>
+                    </h2>
+                </div>
+                <p className="chatbot-header-subtitle animated-subtitle">Your personal roommate finder</p>
             </div>
             <div className="chatbot-messages" ref={messagesEndRef}>
                 {messages.length === 0 ? (
