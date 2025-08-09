@@ -6,7 +6,7 @@ import ChatScreen from './ChatScreen';
 import { saveProfile, loadProfile, loadAllProfiles } from './services/firebaseProfile';
 import notificationService from './services/notificationService';
 import firebaseMessaging from './services/firebaseMessaging';
-import { DISTANCE_API_CONFIG, getDistanceAPI } from './config';
+import { DISTANCE_API_CONFIG, getDistanceAPI, API_URL } from './config';
 
 const questions = {
     'upload_image': {
@@ -837,8 +837,6 @@ function Notification({ message, type, onClose }) {
 }
 
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
-    console.log('Chatbot component rendered with:', { currentUser, existingProfile });
-    
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [currentQuestionId, setCurrentQuestionId] = useState('name');
@@ -904,7 +902,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     const fetchMatches = async (profileId) => {
         setShowMatchLoading(true);
         try {
-            const matchResponse = await axios.get(`http://localhost:3001/match/${profileId}`);
+            const matchResponse = await axios.get(`${API_URL}/match/${profileId}`);
             setMatchResults({
                 matches: matchResponse.data.matches,
                 score: matchResponse.data.compatibilityScore
@@ -926,7 +924,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 console.log('Found existing profile, loading matches...');
                 setShowMatchLoading(true);
                 try {
-                    const matchResponse = await axios.get(`http://localhost:3001/match/${existingProfile.userId}`);
+                    const matchResponse = await axios.get(`${API_URL}/match/${existingProfile.userId}`);
                     setMatchResults({
                         matches: matchResponse.data.matches,
                         score: matchResponse.data.compatibilityScore
@@ -955,13 +953,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
     // Force initial message if no messages exist and no profile
     useEffect(() => {
-        console.log('Initial message useEffect triggered');
-        console.log('messages.length:', messages.length);
-        console.log('existingProfile:', existingProfile);
-        console.log('currentUser:', currentUser);
-        
         if (messages.length === 0 && !existingProfile && currentUser) {
-            console.log('Forcing initial message...');
             const firstQuestion = questions['name'];
             const botMessage = {
                 text: firstQuestion.text,
@@ -976,7 +968,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (messages.length === 0 && currentUser) {
-                console.log('Fallback: Forcing initial message after timeout...');
                 const firstQuestion = questions['name'];
                 const botMessage = {
                     text: firstQuestion.text,
@@ -1776,7 +1767,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     
     const submitProfile = async (profile) => {
         try {
-            const response = await axios.post('http://localhost:3001/submit', profile);
+            const response = await axios.post(`${API_URL}/submit`, profile);
             return response.data;
         } catch (error) {
             console.error('Error submitting profile:', error);

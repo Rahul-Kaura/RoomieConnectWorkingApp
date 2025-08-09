@@ -4,9 +4,14 @@ const cors = require('cors');
 const axios = require('axios');
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://roomieconnect-frontend.onrender.com', 'https://roomieconnectworkingapp.vercel.app']
+        : ['http://localhost:3000'],
+    credentials: true
+}));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 

@@ -1,7 +1,7 @@
 // API Configuration
 export const API_URL = process.env.NODE_ENV === 'production' 
   ? 'https://roomieconnect-backend.onrender.com'  // Live backend URL
-  : 'http://localhost:4000';
+  : 'http://localhost:3001';
 
 // Distance API Configuration
 export const DISTANCE_API_CONFIG = {

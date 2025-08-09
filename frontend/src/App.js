@@ -59,13 +59,13 @@ function App() {
           }
           
           // Then try to load from Firebase (this will override localStorage if different)
-          const profile = await loadProfile(currentUser.id);
+        const profile = await loadProfile(currentUser.id);
           console.log('Loaded profile from Firebase:', profile);
-          if (profile) {
-            setUserProfile(profile);
-            localStorage.setItem('userProfile', JSON.stringify(profile));
+        if (profile) {
+          setUserProfile(profile);
+          localStorage.setItem('userProfile', JSON.stringify(profile));
             console.log('Profile saved to localStorage');
-          } else {
+        } else {
             console.log('No profile found in Firebase');
             // Don't clear localStorage profile if Firebase doesn't have one
             // setUserProfile(null);
