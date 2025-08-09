@@ -491,6 +491,7 @@
     justify-content: center;
     transition: transform 0.2s ease, opacity 0.2s ease;
     margin-left: 16px;
+    animation: logoFloatSubtle 4s ease-in-out infinite;
 }
 
 .bouncing-logo-matches:hover {
@@ -951,6 +952,11 @@
     box-shadow: 
         0 4px 12px rgba(32, 178, 170, 0.3),
         0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings button specific animation */
+.settings-button {
+    animation: settingsSpinSubtle 4s ease-in-out infinite;
 }
 
 .settings-button:hover, .back-button:hover, .detect-location-button:hover {
@@ -1515,6 +1521,21 @@ textarea:focus {
     }
     50% {
         transform: translateY(-3px) rotate(2deg);
+    }
+}
+
+@keyframes settingsSpinSubtle {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(90deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    75% {
+        transform: rotate(270deg);
     }
 }
 
