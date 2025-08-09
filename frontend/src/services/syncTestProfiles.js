@@ -21,7 +21,8 @@ export const clearTestProfiles = async () => {
         }
         
         let clearedCount = 0;
-        const testNames = ['Maya Patel', 'Jordan Kim', 'Sofia Rodriguez', 'Marcus Johnson', 'Test', 'Kidres', 'Sterski'];
+        // Removed 'Alex Chen' from this list to preserve him
+        const testNames = ['Maya Patel', 'Jordan Kim', 'Sofia Rodriguez', 'Marcus Johnson', 'Test', 'Kidres', 'Sterski', 'Serski'];
         
         for (const profile of allProfiles) {
             // Remove if it's marked as test profile or has test-related names
@@ -163,6 +164,11 @@ export const autoSyncTestProfiles = async () => {
     console.log('🔄 Force syncing Alex Chen to Firebase for visibility...');
     
     try {
+        // Temporarily enable cleanup to remove Serski
+        console.log('🧹 Cleaning up unwanted test profiles...');
+        const cleanupResult = await clearTestProfiles();
+        console.log('Cleanup result:', cleanupResult);
+        
         // Always sync to ensure Alex Chen is available for matching
         const result = await syncTestProfilesToFirebase();
         

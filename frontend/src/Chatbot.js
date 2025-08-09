@@ -167,10 +167,10 @@ const questions = {
         getNext: () => 'location'
     },
     'location': {
-        text: "For distance matching, could you please provide your city and state? (e.g., 'New York, NY') or type 'detect' to automatically detect your location",
+        text: "For distance matching, type 'detect' to automatically detect your location or 'skip' to continue without location",
         category: 'location',
         weight: 0, // No weight, just for data collection
-        keywords: ['detect'], // Allow 'detect' keyword for automatic detection
+        keywords: ['detect', 'skip'], // Only allow 'detect' or 'skip'
         getNext: () => 'age'
     },
     'age': {
@@ -335,7 +335,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [currentPage, setCurrentPage] = React.useState(0);
     const [isMobile, setIsMobile] = useState(false);
     
-    const cardsPerPage = 2;
+    const cardsPerPage = isMobile ? 4 : 2; // Mobile shows 4 cards, desktop shows 2
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
     
     const handlePreviousPage = () => {
@@ -2366,7 +2366,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
                             <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
                         </svg>
-                    </div>
+            </div>
                     <h2 className="chatbot-header-title">
                         <span className="logo-text-roomie">Roomie</span>
                         <span className="logo-text-connect">Connect</span>
