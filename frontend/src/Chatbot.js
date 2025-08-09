@@ -1577,7 +1577,10 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     
                     if (response.ok) {
                         const data = await response.json();
-                        console.log(`${apiType} API response:`, data);
+                        // Only log API response if it contains useful data
+                        if (data.status === 'OK') {
+                            console.log(`${apiType} API response: OK`);
+                        }
                         
                         if (data.status === 'OK' && data.rows && data.rows[0] && data.rows[0].elements && data.rows[0].elements[0]) {
                             const element = data.rows[0].elements[0];
@@ -1593,11 +1596,11 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             }
             
-            console.log('All APIs failed, using improved fallback calculation');
+            console.log('Distance APIs unavailable, using fallback calculation');
             return calculateDistanceFallback(location1, location2);
         } catch (error) {
             console.error('Error calculating distance with API:', error);
-            console.log('Using improved fallback calculation due to error');
+            console.log('Using fallback distance calculation');
             return calculateDistanceFallback(location1, location2);
         }
     };

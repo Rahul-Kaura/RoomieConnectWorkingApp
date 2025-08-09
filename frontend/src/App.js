@@ -6,6 +6,7 @@ import AnimatedCredits from './AnimatedCredits';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { loadProfile } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
+import { autoSyncTestProfiles } from './services/syncTestProfiles';
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();
@@ -118,11 +119,18 @@ function App() {
     }
   }, [currentUser]);
 
-  // Test messaging setup when app loads
+  // Test messaging setup and sync test profiles when app loads
   useEffect(() => {
-    // Run messaging test after a short delay to ensure Firebase is initialized
-    const timer = setTimeout(() => {
+    // Run messaging test and sync test profiles after a short delay to ensure Firebase is initialized
+    const timer = setTimeout(async () => {
       testMessagingSetup();
+      
+      // Auto-sync test profiles to Firebase
+      try {
+        await autoSyncTestProfiles();
+      } catch (error) {
+        console.error('Error during test profile sync:', error);
+      }
     }, 3000);
     
     return () => clearTimeout(timer);
