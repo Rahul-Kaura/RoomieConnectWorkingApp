@@ -335,7 +335,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [currentPage, setCurrentPage] = React.useState(0);
     const [isMobile, setIsMobile] = useState(false);
     
-    const cardsPerPage = 2; // Both desktop and mobile show 2 cards per page
+    const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
     
     const handlePreviousPage = () => {

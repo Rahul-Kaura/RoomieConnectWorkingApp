@@ -1,258 +1,252 @@
-# 🏠 RoomieConnect - Smart Roommate Matching App
-https://roomieconnect-frontend.onrender.com/
+# RoomieConnect - AI-Powered Roommate Matching Platform
 
-A modern, intelligent roommate matching application that uses advanced algorithms to connect compatible roommates based on lifestyle preferences, location, and personality traits.
+## 🏠 Overview
 
-## ✨ Features
+RoomieConnect is a sophisticated AI-powered platform that helps college students and young professionals find compatible roommates through intelligent matching algorithms and real-time communication features.
 
-### 🎯 **Smart Matching Algorithm**
-- **Keyword-based compatibility scoring** for precise matches
-- **Multi-criteria sorting**: Pinned matches, unread notifications, distance, compatibility
-- **Real-time distance calculation** using external APIs
-- **Location-based matching** with automatic geolocation detection
+## ✨ Key Features
+
+### 🤖 **AI Chatbot Questionnaire**
+- Interactive conversational interface for profile creation
+- Smart follow-up questions based on user responses
+- Automatic location detection with fallback options
+- Profile image upload with preview
+- Persistent data storage across sessions
+
+### 🎯 **Intelligent Matching Algorithm**
+- Compatibility scoring based on lifestyle preferences
+- Location-based distance calculations
+- Weighted question responses for accurate matching
+- Real-time match percentage display
 
 ### 💬 **Real-Time Messaging**
-- **Instant messaging** between matched users
-- **Unread message notifications** with real-time counters
-- **Typing indicators** and online/offline status
-- **Message persistence** with Firebase Realtime Database
+- Firebase-powered instant messaging
+- Typing indicators and online status
+- Unread message notifications
+- Professional messaging UI with animations
 
-### 🎨 **Modern UI/UX**
-- **Smooth animations** and transitions throughout the app
-- **Responsive design** for all devices
-- **Interactive match cards** with pin/unpin functionality
-- **Custom avatars** with fallback initials
-- **Bouncing RoomieConnect logo** for navigation
+### 📱 **Responsive Design**
+- Desktop-optimized layout (450px chatbot container)
+- Mobile-first responsive design
+- Touch-friendly interface elements
+- Consistent user experience across devices
 
-### ⚙️ **User Management**
-- **Firebase Authentication** (Email/Password & Google Sign-in)
-- **Profile customization** with settings screen
-- **Age validation** (18-25 years)
-- **Instagram handle integration**
-- **Allergy information tracking**
+### ⭐ **Advanced User Management**
+- Pin favorite matches for priority display
+- Smart sorting: pinned → unread → recent → distance
+- Expandable profile cards (desktop only)
+- Carousel navigation with page indicators
 
-### 📍 **Location Services**
-- **Automatic location detection** using browser geolocation
-- **Reverse geocoding** to get city/state from coordinates
-- **Accurate distance calculation** between users
-- **Multiple distance API fallbacks** for reliability
+## 🛠 Technology Stack
 
-### 🔔 **Smart Notifications**
-- **Real-time unread message counts**
-- **Bouncing notification badges**
-- **Total notification counter**
-- **Persistent notification state**
+### **Frontend**
+- **React** - Component-based UI framework
+- **CSS3** - Custom styling with animations and responsive design
+- **Auth0** - User authentication and authorization
+- **Firebase Realtime Database** - Profile storage and real-time messaging
+- **Axios** - HTTP client for API communication
 
-## 🚀 Quick Start
+### **Backend**
+- **Node.js** - Server runtime environment
+- **Express.js** - Web application framework
+- **CORS** - Cross-origin resource sharing
+- **Geolocation APIs** - Distance calculation and location services
 
-### Prerequisites
+### **Deployment**
+- **Frontend**: Vercel (https://roomieconnectworkingapp.vercel.app)
+- **Backend**: Render (https://roomieconnect-backend.onrender.com)
+- **Database**: Firebase Realtime Database
+- **Authentication**: Auth0
+
+## 📋 Prerequisites
+
 - Node.js (v14 or higher)
-- npm or yarn
-- Firebase account
-- Modern web browser with geolocation support
+- npm or yarn package manager
+- Firebase account and project
+- Auth0 account and application
+- Git for version control
 
-### Installation
+## 🚀 Installation & Setup
 
-1. **Clone the repository**
-    ```bash
-   git clone https://github.com/yourusername/roomieconnect.git
-   cd roomieconnect
-    ```
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Rahul-Kaura/RoomieConnectWorkingApp.git
+cd RoomieConnectWorkingApp
+```
 
-2. **Install dependencies**
-    ```bash
-   # Install root dependencies
-   npm install
-   
-   # Install frontend dependencies
-   cd frontend
-    npm install
-   
-   # Install backend dependencies
-   cd ../backend
-    npm install
-    ```
+### 2. Frontend Setup
+```bash
+cd frontend
+npm install
 
-3. **Firebase Setup**
-   - Create a new Firebase project
-   - Enable Authentication (Email/Password & Google)
-   - Create a Realtime Database
-   - Update `frontend/src/firebase.js` with your config
+# Create .env file with your configurations
+REACT_APP_AUTH0_DOMAIN=your-auth0-domain
+REACT_APP_AUTH0_CLIENT_ID=your-auth0-client-id
+REACT_APP_FIREBASE_API_KEY=your-firebase-api-key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-firebase-auth-domain
+REACT_APP_FIREBASE_DATABASE_URL=your-firebase-database-url
+REACT_APP_FIREBASE_PROJECT_ID=your-firebase-project-id
 
-4. **Environment Configuration**
-   ```bash
-   # Create .env file in frontend directory
-   cd frontend
-   cp .env.example .env
-   # Add your Firebase configuration
-   ```
+npm start
+```
 
-5. **Start the application**
-   ```bash
-   # Start backend (from root directory)
-   npm run server
-   
-   # Start frontend (from frontend directory)
-   cd frontend
-   npm start
-   ```
+### 3. Backend Setup
+```bash
+cd backend
+npm install
 
-## 🏗️ Architecture
+# Create .env file for production environment variables
+PORT=3001
 
-### Frontend (React.js)
-- **React 18** with functional components and hooks
-- **Firebase SDK** for authentication and real-time database
-- **CSS3 animations** for smooth user experience
-- **Responsive design** with mobile-first approach
-
-### Backend (Node.js/Express)
-- **Express.js** server for API endpoints
-- **Firebase Admin SDK** for server-side operations
-- **CORS enabled** for cross-origin requests
-- **Error handling** and validation
-
-### Database (Firebase)
-- **Firebase Realtime Database** for real-time features
-- **Firebase Authentication** for user management
-- **Structured data** for profiles, matches, and messages
-
-## 📱 Key Components
-
-### Chatbot Questionnaire
-- **Interactive questionnaire** with keyword validation
-- **Smart answer normalization** for better matching
-- **Location detection** integration
-- **Profile image upload** support
-
-### Match Results
-- **2-column grid layout** with scroll functionality
-- **Pin/unpin matches** for priority sorting
-- **Real-time distance display**
-- **Compatibility percentage** calculation
-
-### Messaging System
-- **Real-time chat interface**
-- **Message history** persistence
-- **Unread message tracking**
-- **Online status indicators**
-
-### Settings Screen
-- **Profile editing** capabilities
-- **Location detection** button
-- **Form validation** and error handling
-- **Real-time updates** to match results
+npm start
+```
 
 ## 🔧 Configuration
 
-### Distance APIs
-The app supports multiple distance calculation APIs:
-
-1. **Google Maps Distance Matrix** (Most accurate, requires API key)
-2. **Free Distance Matrix API** (No key required, currently enabled)
-3. **Fallback calculation** (Always available, mathematical)
-
-Configure in `frontend/src/config.js`:
-```javascript
-export const DISTANCE_API_CONFIG = {
-    GOOGLE_MAPS: {
-        enabled: false,
-        apiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
-        url: 'https://maps.googleapis.com/maps/api/distancematrix/json'
-    },
-    FREE_DISTANCE: {
-        enabled: true,
-        url: 'https://api.distancematrix.ai/maps/api/distancematrix/json'
-    }
-};
-```
-
 ### Firebase Configuration
-Update `frontend/src/firebase.js` with your Firebase project details:
-```javascript
-const firebaseConfig = {
-    apiKey: "your-api-key",
-    authDomain: "your-project.firebaseapp.com",
-    databaseURL: "https://your-project.firebaseio.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "your-sender-id",
-    appId: "your-app-id"
-};
+1. Create a Firebase project at https://console.firebase.google.com
+2. Enable Realtime Database
+3. Configure authentication rules
+4. Add your Firebase config to the frontend environment variables
+
+### Auth0 Configuration
+1. Create an Auth0 application at https://manage.auth0.com
+2. Configure allowed callback URLs and logout URLs
+3. Set up user management and social login providers
+4. Use the provided script to create test users (see `scripts/` directory)
+
+## 📁 Project Structure
+
+```
+RoomieConnectWorkingApp/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── App.js
+│   │   ├── Chatbot.js
+│   │   ├── FirebaseChat.js
+│   │   └── config.js
+│   ├── public/
+│   └── package.json
+├── backend/
+│   ├── index.js
+│   └── package.json
+├── scripts/
+│   ├── create-auth0-test-users.js
+│   ├── package.json
+│   └── README.md
+├── render.yaml
+└── README.md
 ```
 
-## 🚀 Deployment
+## 🎮 Usage
 
-### Frontend Deployment (Vercel/Netlify)
-1. **Build the project**
-   ```bash
-   cd frontend
-   npm run build
-   ```
+### For Users
+1. **Sign Up/Login**: Use Auth0 authentication
+2. **Complete Chatbot**: Answer lifestyle and preference questions
+3. **Browse Matches**: View compatibility scores and profiles
+4. **Pin Favorites**: Star users to keep them at the top
+5. **Start Conversations**: Real-time messaging with matches
 
-2. **Deploy to Vercel**
-   ```bash
-   npm install -g vercel
-   vercel
-   ```
+### For Developers
+1. **Test Profiles**: Use provided Auth0 test accounts
+2. **Profile Management**: Sync test profiles via admin scripts
+3. **Monitoring**: Check Firebase console for user data
+4. **Deployment**: Automatic deployment via GitHub integration
 
-3. **Deploy to Netlify**
-   - Connect your GitHub repository
-   - Set build command: `npm run build`
-   - Set publish directory: `build`
+## 🔐 Authentication & Test Users
 
-### Backend Deployment (Heroku/Railway)
-1. **Prepare for deployment**
-    ```bash
-      cd backend
-   # Ensure package.json has start script
-   ```
+The application includes 5 pre-configured test users for development:
 
-2. **Deploy to Heroku**
-   ```bash
-   heroku create your-app-name
-   git push heroku main
-   ```
+| Name | Email | Password | Age | Major |
+|------|-------|----------|-----|-------|
+| Jacob Williams | jacob.williams@test.com | TestPass123! | 22 | Computer Science |
+| Emma Davis | emma.davis@test.com | TestPass123! | 21 | Biology |
+| Michael Chen | michael.chen@test.com | TestPass123! | 23 | Engineering |
+| Sarah Johnson | sarah.johnson@test.com | TestPass123! | 20 | Psychology |
+| Alex Rodriguez | alex.rodriguez@test.com | TestPass123! | 22 | Business |
 
-3. **Set environment variables**
-    ```bash
-   heroku config:set NODE_ENV=production
-   heroku config:set FIREBASE_PROJECT_ID=your-project-id
-   ```
+See `TEST_LOGIN_CREDENTIALS.md` for detailed compatibility testing scenarios.
 
-## 🧪 Testing
+## 🎨 UI/UX Features
 
-### Manual Testing Checklist
-- [ ] User registration and login
-- [ ] Questionnaire completion
-- [ ] Match generation and display
-- [ ] Real-time messaging
-- [ ] Location detection
-- [ ] Settings updates
-- [ ] Pin/unpin functionality
-- [ ] Mobile responsiveness
+### Design System
+- **Color Scheme**: Teal gradient (#20b2aa to #26a69a)
+- **Typography**: Apple system fonts with optimized readability
+- **Animations**: Subtle floating logos and hover effects
+- **Icons**: Custom SVG icons for all interactive elements
 
-### Browser Compatibility
-- ✅ Chrome (recommended)
-- ✅ Firefox
-- ✅ Safari
-- ✅ Edge
-- ⚠️ Internet Explorer (not supported)
+### Responsive Breakpoints
+- **Desktop**: 769px and above (fixed chatbot container)
+- **Mobile**: 768px and below (full-screen layout)
+- **Touch Optimization**: 44px minimum touch targets
 
-## 🔒 Security Features
+### Accessibility
+- High contrast ratios for text readability
+- Keyboard navigation support
+- Screen reader friendly markup
+- Touch-friendly interaction zones
 
-- **Firebase Authentication** with secure token management
-- **Input validation** and sanitization
-- **CORS protection** on backend
-- **Environment variable** protection
-- **Secure API key** management
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**Chatbot not loading questions:**
+- Check Firebase configuration
+- Verify user authentication status
+- Clear localStorage and refresh
+
+**Matches not appearing:**
+- Ensure backend is running and accessible
+- Check API URL configuration in `config.js`
+- Verify test profile sync in Firebase
+
+**Authentication errors:**
+- Verify Auth0 domain and client ID
+- Check callback URLs in Auth0 dashboard
+- Ensure HTTPS in production
+
+**Real-time messaging issues:**
+- Confirm Firebase Realtime Database rules
+- Check network connectivity
+- Verify user permissions
 
 ## 📊 Performance Optimizations
 
-- **Lazy loading** for match results
-- **Optimized animations** with CSS transforms
-- **Efficient state management** with React hooks
-- **Cached distance calculations**
-- **Compressed images** and assets
+### Frontend
+- Component lazy loading
+- Image optimization and caching
+- Efficient state management
+- Debounced API calls
+
+### Backend
+- Optimized distance calculations
+- Efficient matching algorithms
+- CORS configuration for security
+- Error handling and fallbacks
+
+### Database
+- Structured data organization
+- Efficient queries and indexing
+- Real-time sync optimization
+- Data persistence strategies
+
+## 🚀 Deployment
+
+### Automatic Deployment
+- **Frontend**: Connected to Vercel via GitHub
+- **Backend**: Connected to Render via GitHub
+- **Triggers**: Automatic deployment on `main` branch push
+
+### Manual Deployment
+```bash
+# Frontend (Vercel)
+vercel --prod
+
+# Backend (Render)
+git push origin main
+```
 
 ## 🤝 Contributing
 
@@ -262,24 +256,25 @@ const firebaseConfig = {
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 👥 Authors
 
-For support and questions:
-- Create an issue on GitHub
-- Check the Firebase documentation
-- Review the browser console for errors
+- **Rahul Kaura** - Initial work - [GitHub](https://github.com/Rahul-Kaura)
 
-## 🎉 Acknowledgments
+## 🙏 Acknowledgments
 
-- Firebase for backend services
-- React team for the amazing framework
-- OpenStreetMap for geocoding services
-- Distance Matrix APIs for location calculations
+- Auth0 for authentication services
+- Firebase for real-time database
+- OpenStreetMap for location services
+- Vercel and Render for deployment platforms
+
+## 📞 Support
+
+For support, email rahul.kaura@example.com or create an issue in the GitHub repository.
 
 ---
 
-**Made with ❤️ for better roommate connections** 
+**Built with ❤️ for college students seeking the perfect roommate match!** 
