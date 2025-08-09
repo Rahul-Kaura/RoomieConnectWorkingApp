@@ -977,10 +977,10 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .match-results-grid {
+.match-results-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
-        padding: 20px;
+    gap: 16px;
+    padding: 20px;
     }
     
     .carousel-navigation {
@@ -991,23 +991,23 @@
         min-width: 44px;
         height: 44px;
         padding: 10px 14px;
-    }
-    
-    .match-card {
+}
+
+.match-card {
         padding: 20px 16px 16px 16px;
     }
     
-    .match-card-img-initials {
-        width: 80px;
-        height: 80px;
+.match-card-img-initials {
+    width: 80px;
+    height: 80px;
         font-size: 28px;
     }
     
-    .match-card-name {
+.match-card-name {
         font-size: 16px;
-    }
+}
     
-    .match-card-major, .match-card-allergies, .match-card-instagram, .match-card-age {
+.match-card-major, .match-card-allergies, .match-card-instagram, .match-card-age {
         font-size: 13px;
     }
     
@@ -1039,7 +1039,7 @@
     }
     
     .expanded-card-info-item {
-        font-size: 14px;
+    font-size: 14px;
         padding: 12px 16px;
     }
     
@@ -1151,7 +1151,7 @@ textarea:focus {
         border: 2px solid #374151;
     }
     
-    .chatbot-input {
+.chatbot-input {
         border-top: 2px solid #374151;
     }
 }

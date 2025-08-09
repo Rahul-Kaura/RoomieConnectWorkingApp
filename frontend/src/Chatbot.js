@@ -837,6 +837,8 @@ function Notification({ message, type, onClose }) {
 }
 
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
+    console.log('Chatbot component rendered with:', { currentUser, existingProfile });
+    
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [currentQuestionId, setCurrentQuestionId] = useState('name');
@@ -953,6 +955,11 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
     // Force initial message if no messages exist and no profile
     useEffect(() => {
+        console.log('Initial message useEffect triggered');
+        console.log('messages.length:', messages.length);
+        console.log('existingProfile:', existingProfile);
+        console.log('currentUser:', currentUser);
+        
         if (messages.length === 0 && !existingProfile && currentUser) {
             console.log('Forcing initial message...');
             const firstQuestion = questions['name'];
@@ -964,6 +971,24 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             setCurrentQuestionId('name');
         }
     }, [messages.length, existingProfile, currentUser]);
+
+    // Fallback - if still no messages after 1 second, force the first question
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (messages.length === 0 && currentUser) {
+                console.log('Fallback: Forcing initial message after timeout...');
+                const firstQuestion = questions['name'];
+                const botMessage = {
+                    text: firstQuestion.text,
+                    sender: 'bot'
+                };
+                setMessages([botMessage]);
+                setCurrentQuestionId('name');
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [currentUser]);
 
     useEffect(() => {
         if (existingProfile && existingProfile.id) {
