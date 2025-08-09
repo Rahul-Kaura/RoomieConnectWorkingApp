@@ -421,7 +421,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 </svg>
                             </div>
                             <button 
-                                className="settings-button"
+                                className="settings-button hover-blue-animation"
                                 onClick={onOpenSettings}
                                 title="Edit Profile"
                             >
@@ -442,10 +442,11 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             <div className="match-results-grid">
                     {getCurrentMatches().map((match, i) => {
                     const isPinned = pinnedMatches.has(match.id);
+                    const uniqueKey = match.id || match.userId || `${match.name}-${i}`;
                     return (
-                        <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={match.userId || match.name}>
+                        <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={uniqueKey}>
                             <div className="match-card-header">
-                                <div className="match-card-pin-button" onClick={() => handleTogglePin(match.id)}>
+                                <div className="match-card-pin-button hover-blue-animation" onClick={() => handleTogglePin(match.id)}>
                                     <svg 
                                         width="20" 
                                         height="20" 
@@ -459,7 +460,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
                                 </div>
-                                    <div className="match-card-expand-button" onClick={() => handleExpandCard(match)}>
+                                    <div className="match-card-expand-button hover-blue-animation" onClick={() => handleExpandCard(match)}>
                                         <svg 
                                             width="20" 
                                             height="20" 
@@ -504,7 +505,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 {match.distance !== null && <div className="match-card-distance">📍 {match.distance} miles away</div>}
                                 {match.location && <div className="match-card-location">📍 {match.location}</div>}
                             </div>
-                            <div className="match-card-chat-icon" onClick={() => onStartChat(match)}>
+                            <div className="match-card-chat-icon hover-blue-animation" onClick={() => onStartChat(match)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                 {unreadCounts[match.id] > 0 && (
                                     <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
@@ -709,7 +710,7 @@ function SettingsScreen({ currentUser, userProfile, onBack, onSave }) {
     };
 
     return (
-        <div className="chatbot-container-isolated">
+        <div className="chatbot-container-isolated" style={{ height: '100vh', maxHeight: 'none', minHeight: 'none' }}>
             <div className="shared-header">
                 <div className="header-content">
                     <h2 className="shared-header-title">Edit Profile</h2>
