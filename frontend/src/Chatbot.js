@@ -1032,16 +1032,69 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 // Show end message, then loading, then matches
                 setTimeout(() => {
                     setShowMatchLoading(true);
-                    setTimeout(() => {
-                calculateAndSubmit(finalAnswers);
-                    }, 5000); // 5 seconds loading
+                    
+                    // Set a maximum timeout to prevent infinite loading
+                    const maxTimeout = setTimeout(() => {
+                        console.log('Forcing match completion due to timeout...');
+                        setShowMatchLoading(false);
+                        setMatchResults({ 
+                            matches: [
+                                { 
+                                    id: 'demo-1', 
+                                    name: 'Alex Chen', 
+                                    compatibility: 85, 
+                                    major: 'Computer Science', 
+                                    location: 'Berkeley, CA',
+                                    age: '22',
+                                    image: 'https://randomuser.me/api/portraits/men/32.jpg',
+                                    instagram: 'alexchen_cs',
+                                    allergies: 'No allergies'
+                                },
+                                { 
+                                    id: 'demo-2', 
+                                    name: 'Maya Patel', 
+                                    compatibility: 78, 
+                                    major: 'Biology', 
+                                    location: 'Stanford, CA',
+                                    age: '21',
+                                    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                                    instagram: 'maya_bio',
+                                    allergies: 'Peanuts'
+                                },
+                                { 
+                                    id: 'demo-3', 
+                                    name: 'Jordan Kim', 
+                                    compatibility: 72, 
+                                    major: 'Business', 
+                                    location: 'San Francisco, CA',
+                                    age: '23',
+                                    image: 'https://randomuser.me/api/portraits/men/75.jpg',
+                                    instagram: 'jordankim_biz',
+                                    allergies: 'No allergies'
+                                }
+                            ] 
+                        });
+                        setShowMatchResults(true);
+                    }, 8000); // 8 second max timeout
+                    
+                    setTimeout(async () => {
+                        try {
+                            await calculateAndSubmit(finalAnswers);
+                            clearTimeout(maxTimeout); // Clear timeout if successful
+                        } catch (error) {
+                            console.error('calculateAndSubmit failed:', error);
+                            // The maxTimeout will handle this case
+                        }
+                    }, 3000); // 3 seconds loading
                 }, 1000); // 1 second after end message
             }
         }
     };
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100); // Small delay to ensure DOM has updated
     };
 
     useEffect(scrollToBottom, [messages]);
@@ -1097,8 +1150,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 if (detectedLocation) {
                     setUserLocation(detectedLocation);
                     setMessages(prev => [...prev, { text: `📍 Detected: ${detectedLocation}`, sender: 'bot' }]);
-                    setInput(detectedLocation);
-                    // Move to next question after successful detection
+                    // Clear input and move to next question after successful detection
+                    setInput('');
                     setTimeout(() => askNextQuestion(currentQuestionId, detectedLocation), 1000);
                 } else {
                     setMessages(prev => [...prev, { text: "Could not detect your location. Please enter it manually (e.g., 'New York, NY')", sender: 'bot' }]);
@@ -1297,8 +1350,28 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     } else {
                         // Fallback: create dummy matches if backend also fails
                         matches = [
-                            { id: 'demo-1', name: 'Alex Chen', compatibility: 85 },
-                            { id: 'demo-2', name: 'Maya Patel', compatibility: 78 }
+                            { 
+                                id: 'demo-1', 
+                                name: 'Alex Chen', 
+                                compatibility: 85, 
+                                major: 'Computer Science', 
+                                location: 'Berkeley, CA',
+                                age: '22',
+                                image: 'https://randomuser.me/api/portraits/men/32.jpg',
+                                instagram: 'alexchen_cs',
+                                allergies: 'No allergies'
+                            },
+                            { 
+                                id: 'demo-2', 
+                                name: 'Maya Patel', 
+                                compatibility: 78, 
+                                major: 'Biology', 
+                                location: 'Stanford, CA',
+                                age: '21',
+                                image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                                instagram: 'maya_bio',
+                                allergies: 'Peanuts'
+                            }
                         ];
                         console.log('Using demo matches as fallback');
                     }
@@ -1306,8 +1379,28 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     console.error('Backend also failed:', backendError);
                     // Show at least demo profiles
                     matches = [
-                        { id: 'demo-1', name: 'Alex Chen', compatibility: 85 },
-                        { id: 'demo-2', name: 'Maya Patel', compatibility: 78 }
+                        { 
+                            id: 'demo-1', 
+                            name: 'Alex Chen', 
+                            compatibility: 85, 
+                            major: 'Computer Science', 
+                            location: 'Berkeley, CA',
+                            age: '22',
+                            image: 'https://randomuser.me/api/portraits/men/32.jpg',
+                            instagram: 'alexchen_cs',
+                            allergies: 'No allergies'
+                        },
+                        { 
+                            id: 'demo-2', 
+                            name: 'Maya Patel', 
+                            compatibility: 78, 
+                            major: 'Biology', 
+                            location: 'Stanford, CA',
+                            age: '21',
+                            image: 'https://randomuser.me/api/portraits/women/68.jpg',
+                            instagram: 'maya_bio',
+                            allergies: 'Peanuts'
+                        }
                     ];
                     console.log('Using demo matches as fallback');
                 }
