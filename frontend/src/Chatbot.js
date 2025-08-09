@@ -920,8 +920,25 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             console.log('Chatbot loadProfile - existingProfile:', existingProfile);
             console.log('Chatbot loadProfile - currentUser:', currentUser);
             
-            if (existingProfile) {
-                console.log('Found existing profile, loading matches...');
+            // Clear any corrupted profile data
+            if (existingProfile && (!existingProfile.userId || existingProfile.userId === 'undefined:1')) {
+                console.log('Clearing corrupted profile data...');
+                localStorage.removeItem('userProfile');
+                localStorage.removeItem('userName');
+                // Force a fresh start
+                setMessages([]);
+                setCurrentQuestionId('name');
+                const firstQuestion = questions['name'];
+                const botMessage = {
+                    text: firstQuestion.text,
+                    sender: 'bot'
+                };
+                setMessages([botMessage]);
+                return;
+            }
+            
+            if (existingProfile && existingProfile.userId && existingProfile.userId !== 'undefined:1') {
+                console.log('Found valid existing profile, loading matches...');
                 setShowMatchLoading(true);
                 try {
                     console.log('Calling API:', `${API_URL}/match/${existingProfile.userId}`);
@@ -934,7 +951,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 } catch (err) {
                     console.error('Error finding matches on load:', err);
                     console.error('API URL:', API_URL);
-                    // Don't show match loading on error, show chatbot instead
+                    // Clear corrupted profile and start fresh
+                    localStorage.removeItem('userProfile');
+                    localStorage.removeItem('userName');
                     setMessages([]);
                     setCurrentQuestionId('name');
                     const firstQuestion = questions['name'];
@@ -1109,14 +1128,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
     const handleSend = async () => {
         const trimmedInput = input.trim();
-        console.log('handleSend called:', { trimmedInput, currentQuestionId });
-        if (!trimmedInput) {
-            console.log('Empty input, returning');
-            return;
-        }
+        if (!trimmedInput) return;
 
         if (currentQuestionId === 'name') {
-            console.log('Processing name input:', trimmedInput);
             // Handle name input - no validation needed, just store the name
             const userMessage = { text: trimmedInput, sender: 'user' };
             setMessages(prev => [...prev, userMessage]);
@@ -2184,12 +2198,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     type="text"
                     className="chatbot-input"
                     value={input}
-                    onChange={(e) => {
-                        console.log('Input changed:', e.target.value);
-                        setInput(e.target.value);
-                    }}
+                    onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => {
-                        console.log('Key pressed:', e.key);
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             handleSend();
@@ -2203,10 +2213,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                         <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
                     </label>
                 )}
-                <button className="chatbot-send-button" onClick={() => {
-                    console.log('Send button clicked');
-                    handleSend();
-                }}>
+                <button className="chatbot-send-button" onClick={handleSend}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>
