@@ -103,30 +103,6 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* Enhanced spinning animation with pulse */
-@keyframes coolSpin {
-  0% { 
-    transform: rotate(0deg) scale(1); 
-    border-top-color: #20b2aa;
-  }
-  25% { 
-    transform: rotate(90deg) scale(1.1); 
-    border-top-color: #1e90ff;
-  }
-  50% { 
-    transform: rotate(180deg) scale(1); 
-    border-top-color: #9370db;
-  }
-  75% { 
-    transform: rotate(270deg) scale(1.1); 
-    border-top-color: #ff6b6b;
-  }
-  100% { 
-    transform: rotate(360deg) scale(1); 
-    border-top-color: #20b2aa;
-  }
-}
-
 /* Smooth screen transitions */
 .screen-transition {
   animation: fadeInSlide 0.5s ease-out;
@@ -146,16 +122,6 @@ body {
 /* Loading screen specific animations */
 .loading-screen {
   animation: fadeInSlide 0.3s ease-out;
-}
-
-.loading-spinner-cool {
-  width: 120px;
-  height: 120px;
-  border: 12px solid #f3f3f3;
-  border-top: 12px solid #20b2aa;
-  border-radius: 50%;
-  animation: coolSpin 2s linear infinite;
-  box-shadow: 0 0 30px rgba(32, 178, 170, 0.4);
 }
 
 /* Pulse effect for loading text */
