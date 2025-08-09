@@ -328,7 +328,7 @@ function MatchLoadingScreen() {
     );
 }
 
-function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings, onTogglePin }) {
+function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings }) {
     const [unreadCounts, setUnreadCounts] = React.useState({});
     const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
     const [expandedMatch, setExpandedMatch] = React.useState(null);
@@ -382,11 +382,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         }
         setPinnedMatches(newPinnedMatches);
         savePinnedMatches(newPinnedMatches);
-        
-        // Call parent component's toggle function if provided
-        if (onTogglePin) {
-            onTogglePin(matchId, newPinnedMatches.has(matchId));
-        }
     };
 
     // Handle expand card
@@ -2244,25 +2239,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         }
     };
 
-    const handleTogglePin = (match, index) => {
-        // Use consistent ID logic for both key and pinning
-        const matchId = match.id || match.userId || `${match.name}-${index}`;
-        
-        const newPinnedMatches = new Set(pinnedMatches);
-        if (newPinnedMatches.has(matchId)) {
-            newPinnedMatches.delete(matchId);
-        } else {
-            newPinnedMatches.add(matchId);
-        }
-        setPinnedMatches(newPinnedMatches);
-        savePinnedMatches(newPinnedMatches);
-        
-        // Call parent component's toggle function if provided
-        if (onTogglePin) {
-            onTogglePin(matchId, newPinnedMatches.has(matchId));
-        }
-    };
-
     const detectUserLocation = async () => {
         if (!navigator.geolocation) {
             return null;
@@ -2328,7 +2304,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     
     if (showMatchLoading) return <MatchLoadingScreen />;
     if (showSettings) return <SettingsScreen currentUser={currentUser} userProfile={existingProfile} onBack={handleCloseSettings} onSave={handleSaveSettings} />;
-    if (showMatchResults) return <MatchResultsGrid matches={matchResults.matches} onStartChat={handleStartChat} currentUser={currentUser} onResetToHome={handleResetToHome} onOpenSettings={handleOpenSettings} onTogglePin={handleTogglePin} />;
+    if (showMatchResults) return <MatchResultsGrid matches={matchResults.matches} onStartChat={handleStartChat} currentUser={currentUser} onResetToHome={handleResetToHome} onOpenSettings={handleOpenSettings} />;
 
     return (
         <div className="chatbot-container-isolated">
