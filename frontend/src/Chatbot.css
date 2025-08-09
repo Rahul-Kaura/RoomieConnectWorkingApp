@@ -1536,12 +1536,12 @@ textarea:focus {
 @keyframes logoConnectionDraw {
     0% {
         stroke-dashoffset: 20;
-        opacity: 0.6;
+    opacity: 0.6;
     }
     50% {
         stroke-dashoffset: 0;
-        opacity: 1;
-    }
+    opacity: 1;
+}
     100% {
         stroke-dashoffset: -20;
         opacity: 0.6;
@@ -1569,7 +1569,7 @@ textarea:focus {
             0 2px 4px rgba(0, 0, 0, 0.1),
             0 0 30px rgba(255, 255, 255, 0.6),
             0 0 40px rgba(32, 178, 170, 0.3);
-        transform: scale(1.02);
+    transform: scale(1.02);
     }
 }
 
