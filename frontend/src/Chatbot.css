@@ -573,7 +573,7 @@
 /* Fix chat icon alignment and add bouncing animation */
 .match-card-chat-icon {
     position: absolute;
-    bottom: 2px;
+    bottom: -10px;
     right: 16px;
     background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
     color: white;
@@ -797,8 +797,8 @@
 }
 
 .match-card-img {
-    width: 90px;
-    height: 90px;
+    width: 90px !important;
+    height: 90px !important;
     border-radius: 16px;
     object-fit: cover;
     margin-bottom: 16px;
@@ -1207,8 +1207,8 @@
     }
     
     .match-card-img {
-        width: 75px;
-        height: 75px;
+        width: 75px !important;
+        height: 75px !important;
         margin-bottom: 14px;
         flex-shrink: 0;
     }

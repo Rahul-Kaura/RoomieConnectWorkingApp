@@ -160,17 +160,22 @@ const calculateScoreFromAnswers = (answers) => {
  * Call this when the app starts to ensure test profiles are available
  */
 export const autoSyncTestProfiles = async () => {
-    // Sync Alex Chen to ensure he's available in Firebase for all users
-    console.log('🔄 Syncing Alex Chen to Firebase...');
+    console.log('🔄 Force syncing Alex Chen to Firebase for visibility...');
     
     try {
+        // Always sync to ensure Alex Chen is available for matching
         const result = await syncTestProfilesToFirebase();
-        if (result.success) {
+        
+        if (result.success && result.successful > 0) {
             console.log('✅ Alex Chen synced to Firebase successfully');
+            console.log(`📊 Sync results: ${result.successful} successful, ${result.failed} failed`);
+        } else {
+            console.log('⚠️ Sync completed but no new profiles added (may already exist)');
         }
+        
         return result;
     } catch (error) {
-        console.error('Error syncing Alex Chen:', error);
+        console.error('❌ Error syncing Alex Chen:', error);
         return { success: false, error: error.message };
     }
 }; 
