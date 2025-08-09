@@ -40,6 +40,8 @@
         0 8px 16px rgba(0, 0, 0, 0.04),
         0 0 0 1px rgba(0, 0, 0, 0.02);
     backdrop-filter: blur(20px);
+    max-height: 650px; /* Ensure consistent height */
+    min-height: 650px; /* Prevent shrinking */
 }
 
 .chatbot-header {
@@ -49,6 +51,8 @@
     text-align: center;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0; /* Prevent header from being compressed */
+    min-height: 140px; /* Ensure minimum height for logo */
 }
 
 .chatbot-header::before {
@@ -161,9 +165,10 @@
 }
 
 .chatbot-messages {
-    flex-grow: 1;
+    flex: 1 1 0; /* Allow growing and shrinking with minimum base */
     padding: 24px 20px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -171,6 +176,7 @@
     background-image: 
         radial-gradient(circle at 20% 80%, rgba(32, 178, 170, 0.03) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(38, 166, 154, 0.03) 0%, transparent 50%);
+    min-height: 0; /* Allow shrinking */
 }
 
 .message {
@@ -242,6 +248,7 @@
     background-color: white;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0; /* Prevent input area from being compressed */
 }
 
 .chatbot-input {
