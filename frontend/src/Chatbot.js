@@ -1093,11 +1093,19 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
     const scrollToBottom = () => {
         setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100); // Small delay to ensure DOM has updated
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ 
+                    behavior: "smooth", 
+                    block: "end",
+                    inline: "nearest"
+                });
+            }
+        }, 200); // Longer delay to ensure DOM has fully updated
     };
 
-    useEffect(scrollToBottom, [messages]);
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const handleSend = async () => {
         const trimmedInput = input.trim();
@@ -1121,7 +1129,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             }
             
             setInput('');
-            setTimeout(() => askNextQuestion(currentQuestionId, trimmedInput), 500);
+            setTimeout(() => askNextQuestion(currentQuestionId, trimmedInput), 300);
             return;
         }
 
@@ -1130,7 +1138,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 const userMessage = { text: 'skip', sender: 'user' };
                 setMessages(prev => [...prev, userMessage]);
                 setInput('');
-                setTimeout(() => askNextQuestion(currentQuestionId, 'skip'), 500);
+                setTimeout(() => askNextQuestion(currentQuestionId, 'skip'), 300);
             } else {
                 setMessages(prev => [...prev, { text: "Please type 'skip' or upload an image.", sender: 'bot' }]);
             }
@@ -1152,7 +1160,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     setMessages(prev => [...prev, { text: `📍 Detected: ${detectedLocation}`, sender: 'bot' }]);
                     // Clear input and move to next question after successful detection
                     setInput('');
-                    setTimeout(() => askNextQuestion(currentQuestionId, detectedLocation), 1000);
+                    setTimeout(() => askNextQuestion(currentQuestionId, detectedLocation), 600);
                 } else {
                     setMessages(prev => [...prev, { text: "Could not detect your location. Please enter it manually (e.g., 'New York, NY')", sender: 'bot' }]);
                 }
@@ -1291,7 +1299,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setAnswers(prev => [...prev, newAnswer]);
         setInput('');
         
-        setTimeout(() => askNextQuestion(currentQuestionId, normalizedAnswer), 500);
+                            setTimeout(() => askNextQuestion(currentQuestionId, normalizedAnswer), 300);
     };
     
     const calculateAndSubmit = async (finalAnswers) => {
@@ -1936,7 +1944,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 setUserImage(event.target.result);
                 const userMessage = { text: 'Image uploaded!', sender: 'user' };
                 setMessages(prev => [...prev, userMessage]);
-                setTimeout(() => askNextQuestion('upload_image', 'image_uploaded'), 500);
+                setTimeout(() => askNextQuestion('upload_image', 'image_uploaded'), 300);
             };
             reader.readAsDataURL(e.target.files[0]);
         }
@@ -2151,7 +2159,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 </div>
                 <p className="chatbot-header-subtitle animated-subtitle">Your personal roommate finder</p>
             </div>
-            <div className="chatbot-messages" ref={messagesEndRef}>
+            <div className="chatbot-messages">
                 {messages.length === 0 ? (
                     <div className="message bot">
                         <p>Loading...</p>
@@ -2164,6 +2172,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                         </div>
                     ))
                 )}
+                <div ref={messagesEndRef} style={{ height: '1px' }} />
             </div>
             <div className="chatbot-input-area">
                 <input

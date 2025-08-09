@@ -74,39 +74,37 @@
 .logo-icon {
     position: relative;
     z-index: 2;
-    animation: logoFloat 3s ease-in-out infinite;
+    animation: logoFloatSubtle 4s ease-in-out infinite;
 }
 
 .logo-svg {
-    width: 45px;
-    height: 45px;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
 }
 
 .logo-head {
-    animation: logoPulse 2s ease-in-out infinite;
+    animation: logoPulseSubtle 3s ease-in-out infinite;
     transform-origin: center;
 }
 
 .logo-body {
-    animation: logoBodyGlow 3s ease-in-out infinite alternate;
+    animation: logoBodyGlowSubtle 4s ease-in-out infinite alternate;
 }
 
 .logo-companion-1 {
-    animation: logoFloat 2.5s ease-in-out infinite;
-    animation-delay: -0.5s;
+    animation: logoFloatSubtle 3.5s ease-in-out infinite;
+    animation-delay: -0.8s;
 }
 
 .logo-companion-2 {
-    animation: logoFloat 2.5s ease-in-out infinite;
-    animation-delay: -1s;
+    animation: logoFloatSubtle 3.5s ease-in-out infinite;
+    animation-delay: -1.6s;
 }
 
 .logo-connection {
-    animation: logoConnectionPulse 2s ease-in-out infinite;
-    stroke-dasharray: 20;
-    stroke-dashoffset: 20;
-    animation: logoConnectionDraw 3s ease-in-out infinite;
+    animation: logoConnectionDrawSubtle 5s ease-in-out infinite;
+    stroke-dasharray: 15;
 }
 
 .chatbot-header-title {
@@ -124,25 +122,25 @@
 }
 
 .logo-text-roomie {
-    animation: logoTextGlow 2s ease-in-out infinite;
+    animation: logoTextGlowSubtle 4s ease-in-out infinite;
     animation-delay: 0s;
 }
 
 .logo-text-connect {
-    animation: logoTextGlow 2s ease-in-out infinite;
-    animation-delay: 0.3s;
+    animation: logoTextGlowSubtle 4s ease-in-out infinite;
+    animation-delay: 0.4s;
 }
 
 .logo-text-ai {
-    animation: logoTextGlow 2s ease-in-out infinite;
-    animation-delay: 0.6s;
-    background: linear-gradient(45deg, #ffffff, #e0f2f1, #ffffff);
+    animation: logoTextGlowSubtle 4s ease-in-out infinite;
+    animation-delay: 0.8s;
+    background: linear-gradient(135deg, #ffffff, #f0fffe, #ffffff);
     background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: logoAIShimmer 2s ease-in-out infinite, logoTextGlow 2s ease-in-out infinite;
-    animation-delay: 0.6s, 0.6s;
+    animation: logoAIShimmerSubtle 6s ease-in-out infinite, logoTextGlowSubtle 4s ease-in-out infinite;
+    animation-delay: 0.8s, 0.8s;
 }
 
 .chatbot-header-subtitle {
@@ -1503,85 +1501,73 @@ textarea:focus {
     background: linear-gradient(135deg, #26a69a 0%, #20b2aa 100%);
 }
 
-/* Logo Animation Keyframes */
-@keyframes logoFloat {
+/* Logo Animation Keyframes - Subtle Professional Versions */
+@keyframes logoFloatSubtle {
     0%, 100% {
         transform: translateY(0px) rotate(0deg);
     }
     50% {
-        transform: translateY(-8px) rotate(5deg);
+        transform: translateY(-3px) rotate(2deg);
     }
 }
 
-@keyframes logoPulse {
+@keyframes logoPulseSubtle {
     0%, 100% {
         transform: scale(1);
-        opacity: 0.9;
+        opacity: 0.95;
     }
     50% {
-        transform: scale(1.1);
+        transform: scale(1.03);
         opacity: 1;
     }
 }
 
-@keyframes logoBodyGlow {
+@keyframes logoBodyGlowSubtle {
     0% {
         filter: brightness(1);
     }
     100% {
-        filter: brightness(1.2);
+        filter: brightness(1.05);
     }
 }
 
-@keyframes logoConnectionDraw {
+@keyframes logoConnectionDrawSubtle {
     0% {
-        stroke-dashoffset: 20;
-    opacity: 0.6;
+        stroke-dashoffset: 15;
+        opacity: 0.7;
     }
     50% {
         stroke-dashoffset: 0;
-    opacity: 1;
-}
+        opacity: 0.9;
+    }
     100% {
-        stroke-dashoffset: -20;
-        opacity: 0.6;
+        stroke-dashoffset: -15;
+        opacity: 0.7;
     }
 }
 
-@keyframes logoConnectionPulse {
-    0%, 100% {
-        stroke-width: 2;
-    }
-    50% {
-        stroke-width: 3;
-    }
-}
-
-@keyframes logoTextGlow {
+@keyframes logoTextGlowSubtle {
     0%, 100% {
         text-shadow: 
             0 2px 4px rgba(0, 0, 0, 0.1),
-            0 0 20px rgba(255, 255, 255, 0.3);
+            0 0 15px rgba(255, 255, 255, 0.2);
         transform: scale(1);
     }
     50% {
         text-shadow: 
             0 2px 4px rgba(0, 0, 0, 0.1),
-            0 0 30px rgba(255, 255, 255, 0.6),
-            0 0 40px rgba(32, 178, 170, 0.3);
-    transform: scale(1.02);
+            0 0 20px rgba(255, 255, 255, 0.4),
+            0 0 25px rgba(32, 178, 170, 0.2);
+        transform: scale(1.005);
     }
 }
 
-@keyframes logoAIShimmer {
+@keyframes logoAIShimmerSubtle {
     0% {
         background-position: 0% 50%;
     }
-    50% {
-        background-position: 100% 50%;
-    }
     100% {
-        background-position: 0% 50%;
+        background-position: 200% 50%;
     }
 }
 
