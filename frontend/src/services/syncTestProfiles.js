@@ -160,8 +160,17 @@ const calculateScoreFromAnswers = (answers) => {
  * Call this when the app starts to ensure test profiles are available
  */
 export const autoSyncTestProfiles = async () => {
-    // DISABLED: No longer auto-sync or clear test profiles
-    console.log('⏭️ Test profile operations disabled - keeping all existing profiles');
+    // Sync Alex Chen to ensure he's available in Firebase for all users
+    console.log('🔄 Syncing Alex Chen to Firebase...');
     
-    return { success: true, message: 'Profile operations disabled - all profiles preserved' };
+    try {
+        const result = await syncTestProfilesToFirebase();
+        if (result.success) {
+            console.log('✅ Alex Chen synced to Firebase successfully');
+        }
+        return result;
+    } catch (error) {
+        console.error('Error syncing Alex Chen:', error);
+        return { success: false, error: error.message };
+    }
 }; 
