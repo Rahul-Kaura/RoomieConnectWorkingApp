@@ -74,7 +74,8 @@ function App() {
 
   // Check for profile in Firebase when currentUser changes
   useEffect(() => {
-    if (currentUser) {
+    // Don't load profiles during home loading animation
+    if (currentUser && view !== 'homeLoading') {
       console.log('=== PROFILE LOADING DEBUG ===');
       console.log('Loading profile for user ID:', currentUser.id);
       console.log('Current user object:', currentUser);
@@ -144,7 +145,7 @@ function App() {
         console.log('=== END PROFILE LOADING DEBUG ===');
       })();
     }
-  }, [currentUser]);
+  }, [currentUser, view]);
 
   // Test messaging setup and sync test profiles when app loads
   useEffect(() => {
@@ -172,11 +173,11 @@ function App() {
     if (isAuthenticated) {
       if (userProfile) {
         console.log('✅ User has profile, going to matches view');
-        // Show loading screen for 2 seconds, then go to matches
+        // Show loading screen for 10 seconds to match animation, then go to matches
         setView('loading');
         setTimeout(() => {
           setView('matches');
-        }, 2000);
+        }, 10000);
       } else {
         console.log('❌ No user profile, going to chatbot');
         setView('chatbot');

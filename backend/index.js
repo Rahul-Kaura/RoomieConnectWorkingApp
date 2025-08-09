@@ -16,9 +16,30 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // --- State Management ---
-// Empty profiles array - only real user submissions will be stored
-const profiles = [];
-let nextId = 1;
+// Test profiles including Alex Chen for matching
+const profiles = [
+    {
+        id: 1,
+        userId: 'test-user-1',
+        name: 'Alex Chen',
+        age: '22',
+        major: 'Computer Science',
+        location: 'Berkeley, CA',
+        lat: 37.8715,
+        lng: -122.2730,
+        image: 'https://randomuser.me/api/portraits/men/32.jpg',
+        instagram: 'alexchen_cs',
+        allergies: 'No allergies',
+        answers: [
+            { questionId: 'intro', answer: 'morning' },
+            { questionId: 'cleanliness', answer: 'tidy' },
+            { questionId: 'noise', answer: 'quiet' },
+            { questionId: 'guests', answer: 'private' },
+            { questionId: 'smoking', answer: 'no' }
+        ]
+    }
+];
+let nextId = 2;
 const users = [];
 let nextUserId = 1;
 
