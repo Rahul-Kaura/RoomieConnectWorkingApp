@@ -308,11 +308,14 @@ const FirebaseChat = ({ currentUser, matchedUser, onClose }) => {
             </div>
             ))}
             {isOtherUserTyping && (
-              <div className="message received">
-                <div className="typing-indicator">
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
+              <div className="typing-indicator">
+                <div className="typing-indicator-content">
+                  <span className="typing-text">{matchedUser.name} is typing</span>
+                  <div className="typing-dots">
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                  </div>
                 </div>
               </div>
             )}
@@ -329,8 +332,24 @@ const FirebaseChat = ({ currentUser, matchedUser, onClose }) => {
           placeholder="Type a message..."
           disabled={!chatId}
         />
-        <button type="submit" disabled={!newMessage.trim() || !chatId}>
-          Send
+        <button 
+          type="submit" 
+          className="send-button"
+          disabled={!newMessage.trim() || isLoading}
+          title="Send message"
+        >
+          <svg 
+            className="send-icon"
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22,2 15,22 11,13 2,9"></polygon>
+          </svg>
         </button>
       </form>
     </div>
