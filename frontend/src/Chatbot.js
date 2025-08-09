@@ -414,26 +414,26 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     </div>
                 </div>
             <div className="match-results-carousel">
-                <div className="match-results-grid">
+            <div className="match-results-grid">
                     {getCurrentMatches().map((match, i) => {
-                        const isPinned = pinnedMatches.has(match.id);
-                        return (
-                            <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={match.userId || match.name}>
-                                <div className="match-card-header">
-                                    <div className="match-card-pin-button" onClick={() => handleTogglePin(match.id)}>
-                                        <svg 
-                                            width="20" 
-                                            height="20" 
-                                            viewBox="0 0 24 24" 
-                                            fill={isPinned ? "#FFD700" : "none"} 
-                                            stroke={isPinned ? "#FFD700" : "#6b7280"} 
-                                            strokeWidth="2" 
-                                            strokeLinecap="round" 
-                                            strokeLinejoin="round"
-                                        >
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                        </svg>
-                                    </div>
+                    const isPinned = pinnedMatches.has(match.id);
+                    return (
+                        <div className={`match-card ${isPinned ? 'pinned' : ''}`} key={match.userId || match.name}>
+                            <div className="match-card-header">
+                                <div className="match-card-pin-button" onClick={() => handleTogglePin(match.id)}>
+                                    <svg 
+                                        width="20" 
+                                        height="20" 
+                                        viewBox="0 0 24 24" 
+                                        fill={isPinned ? "#FFD700" : "none"} 
+                                        stroke={isPinned ? "#FFD700" : "#6b7280"} 
+                                        strokeWidth="2" 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round"
+                                    >
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                </div>
                                     <div className="match-card-expand-button" onClick={() => handleExpandCard(match)}>
                                         <svg 
                                             width="20" 
@@ -466,30 +466,30 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                             <line x1="18" y1="18" x2="18" y2="16"></line>
                                         </svg>
                                     </div>
-                                    {isPinned && <div className="pinned-badge">📌 Pinned</div>}
-                                </div>
-                                {renderUserAvatar(match)}
-                                <div className="match-card-name">{match.name}</div>
-                                <div className="match-card-age">Age: {match.age || 'Not specified'}</div>
-                                <div className="match-card-major">Major: {match.major || 'Not specified'}</div>
-                                <div className="match-card-allergies">Allergies: {match.allergyInfo || 'N/A'}</div>
-                                <div className="match-card-instagram">Instagram: {match.instagram && match.instagram.trim() ? `@${match.instagram}` : 'N/A'}</div>
-                                <div className="match-card-info">
-                                    <div>Match: {match.compatibility}%</div>
-                                    {match.distance !== null && <div className="match-card-distance">📍 {match.distance} miles away</div>}
-                                    {match.location && <div className="match-card-location">📍 {match.location}</div>}
-                                </div>
-                                <div className="match-card-chat-icon" onClick={() => onStartChat(match)}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                    {unreadCounts[match.id] > 0 && (
-                                        <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
-                                            {unreadCounts[match.id] > 99 ? '99+' : unreadCounts[match.id]}
-                                        </div>
-                                    )}
-                                </div>
+                                {isPinned && <div className="pinned-badge">📌 Pinned</div>}
                             </div>
-                        );
-                    })}
+                            {renderUserAvatar(match)}
+                            <div className="match-card-name">{match.name}</div>
+                            <div className="match-card-age">Age: {match.age || 'Not specified'}</div>
+                            <div className="match-card-major">Major: {match.major || 'Not specified'}</div>
+                                <div className="match-card-allergies">Allergies: {match.allergyInfo || 'N/A'}</div>
+                            <div className="match-card-instagram">Instagram: {match.instagram && match.instagram.trim() ? `@${match.instagram}` : 'N/A'}</div>
+                            <div className="match-card-info">
+                                <div>Match: {match.compatibility}%</div>
+                                {match.distance !== null && <div className="match-card-distance">📍 {match.distance} miles away</div>}
+                                {match.location && <div className="match-card-location">📍 {match.location}</div>}
+                            </div>
+                            <div className="match-card-chat-icon" onClick={() => onStartChat(match)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                {unreadCounts[match.id] > 0 && (
+                                    <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
+                                        {unreadCounts[match.id] > 99 ? '99+' : unreadCounts[match.id]}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
                 </div>
                 
                 {/* Navigation Controls */}
@@ -513,7 +513,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     onClick={() => setCurrentPage(i)}
                                 />
                             ))}
-                        </div>
+            </div>
                         
                         <button 
                             className="carousel-nav-button carousel-nav-next" 
@@ -583,7 +583,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                 </div>
             </div>
         )}
-    </div>
+        </div>
     );
 }
 
@@ -1109,9 +1109,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
     const handleSend = async () => {
         const trimmedInput = input.trim();
-        if (!trimmedInput) return;
+        console.log('handleSend called:', { trimmedInput, currentQuestionId });
+        if (!trimmedInput) {
+            console.log('Empty input, returning');
+            return;
+        }
 
         if (currentQuestionId === 'name') {
+            console.log('Processing name input:', trimmedInput);
             // Handle name input - no validation needed, just store the name
             const userMessage = { text: trimmedInput, sender: 'user' };
             setMessages(prev => [...prev, userMessage]);
@@ -1148,7 +1153,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         // Handle location detection
         if (currentQuestionId === 'location' && trimmedInput.toLowerCase() === 'detect') {
             const userMessage = { text: 'detect', sender: 'user' };
-            setMessages(prev => [...prev, userMessage]);
+        setMessages(prev => [...prev, userMessage]);
             
             // Show detecting message
             setMessages(prev => [...prev, { text: "🔍 Detecting your location...", sender: 'bot' }]);
@@ -1306,41 +1311,41 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setShowMatchLoading(true);
         
         try {
-            const totalWeight = finalAnswers.reduce((sum, ans) => {
-                const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
-                const question = questions[qId] || {};
-                return sum + (question.weight || 0);
-            }, 0);
+        const totalWeight = finalAnswers.reduce((sum, ans) => {
+            const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
+            const question = questions[qId] || {};
+            return sum + (question.weight || 0);
+        }, 0);
+    
+        const weightedScore = finalAnswers.reduce((sum, ans) => {
+            const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
+            const question = questions[qId] || {};
+            return sum + (ans.score * (question.weight || 0));
+        }, 0);
+    
+        const finalScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
         
-            const weightedScore = finalAnswers.reduce((sum, ans) => {
-                const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
-                const question = questions[qId] || {};
-                return sum + (ans.score * (question.weight || 0));
-            }, 0);
-        
-            const finalScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
-            
-            // Get the stored name from localStorage
-            const storedName = localStorage.getItem('userName') || currentUser?.name || 'Unknown';
-        
-            const profile = {
-                id: currentUser.id,
-                name: storedName,
-                answers: finalAnswers,
-                score: finalScore,
-                image: userImage,
-                major: userMajor,
-                location: userLocation,
-                age: userAge,
-                instagram: userInstagram,
-            };
-        
+        // Get the stored name from localStorage
+        const storedName = localStorage.getItem('userName') || currentUser?.name || 'Unknown';
+    
+        const profile = {
+            id: currentUser.id,
+            name: storedName,
+            answers: finalAnswers,
+            score: finalScore,
+            image: userImage,
+            major: userMajor,
+            location: userLocation,
+            age: userAge,
+            instagram: userInstagram,
+        };
+    
             console.log('Saving profile:', profile);
-            await saveProfile(profile);
+        await saveProfile(profile);
             
             console.log('Loading all profiles for matching...');
-            // After saving, load all profiles and calculate matches
-            const allProfiles = await loadAllProfiles();
+        // After saving, load all profiles and calculate matches
+        const allProfiles = await loadAllProfiles();
             console.log('Found profiles:', allProfiles?.length || 0);
             
             // If we can't load profiles from Firebase, use backend test profiles
@@ -1414,8 +1419,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             }
             
-            setMatchResults({ matches });
-            setShowMatchResults(true);
+        setMatchResults({ matches });
+        setShowMatchResults(true);
         } catch (error) {
             console.error('Error in calculateAndSubmit:', error);
             // Show error message and go back to chatbot
@@ -1424,7 +1429,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 sender: 'bot' 
             }]);
         } finally {
-            setShowMatchLoading(false);
+        setShowMatchLoading(false);
         }
     };
 
@@ -2150,7 +2155,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
                             <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
                         </svg>
-                    </div>
+            </div>
                     <h2 className="chatbot-header-title">
                         <span className="logo-text-roomie">Roomie</span>
                         <span className="logo-text-connect">Connect</span>
@@ -2168,7 +2173,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     messages.map((msg, index) => (
                         <div key={index} className={`message ${msg.sender}`}>
                             {msg.image && <img src={msg.image} alt="User upload" className="message-image" />}
-                            {msg.text && <p>{msg.text}</p>}
+                        {msg.text && <p>{msg.text}</p>}
                         </div>
                     ))
                 )}
@@ -2179,8 +2184,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     type="text"
                     className="chatbot-input"
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    onChange={(e) => {
+                        console.log('Input changed:', e.target.value);
+                        setInput(e.target.value);
+                    }}
+                    onKeyPress={(e) => {
+                        console.log('Key pressed:', e.key);
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleSend();
+                        }
+                    }}
                     placeholder="Type your answer..."
                 />
                 {currentQuestionId === 'upload_image' && (
@@ -2189,7 +2203,10 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                         <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
                     </label>
                 )}
-                <button className="chatbot-send-button" onClick={handleSend}>
+                <button className="chatbot-send-button" onClick={() => {
+                    console.log('Send button clicked');
+                    handleSend();
+                }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
             </div>

@@ -1518,8 +1518,8 @@ textarea:focus {
     }
     50% {
         transform: scale(1.03);
-        opacity: 1;
-    }
+    opacity: 1;
+}
 }
 
 @keyframes logoBodyGlowSubtle {
