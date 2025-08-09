@@ -347,8 +347,35 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     };
     
     const getCurrentMatches = () => {
+        // Sort matches: pinned first, then by unread messages, then by recent activity, then by distance
+        const sortedMatches = [...(matches || [])].sort((a, b) => {
+            const aKey = a.id || a.userId || a.name;
+            const bKey = b.id || b.userId || b.name;
+            const aIsPinned = pinnedMatches.has(aKey);
+            const bIsPinned = pinnedMatches.has(bKey);
+            
+            // Pinned matches come first
+            if (aIsPinned && !bIsPinned) return -1;
+            if (!aIsPinned && bIsPinned) return 1;
+            
+            // Then sort by unread messages
+            const aUnread = unreadCounts[a.id] || 0;
+            const bUnread = unreadCounts[b.id] || 0;
+            if (aUnread !== bUnread) return bUnread - aUnread;
+            
+            // Then by last message timestamp (more recent first)
+            const aTimestamp = a.lastMessageTimestamp || 0;
+            const bTimestamp = b.lastMessageTimestamp || 0;
+            if (aTimestamp !== bTimestamp) return bTimestamp - aTimestamp;
+            
+            // Finally by distance (closer first)
+            const aDistance = a.distance || 999;
+            const bDistance = b.distance || 999;
+            return aDistance - bDistance;
+        });
+        
         const startIndex = currentPage * cardsPerPage;
-        return (matches || []).slice(startIndex, startIndex + cardsPerPage);
+        return sortedMatches.slice(startIndex, startIndex + cardsPerPage);
     };
     const placeholderImages = [
         'https://randomuser.me/api/portraits/women/44.jpg',
