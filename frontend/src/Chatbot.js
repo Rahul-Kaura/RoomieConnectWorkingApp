@@ -1982,13 +1982,13 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             </div>
             <div className="chatbot-messages" ref={messagesEndRef}>
                 {messages.length === 0 ? (
-                    <div className="chatbot-message bot">
+                    <div className="message bot">
                         <p>Loading...</p>
                     </div>
                 ) : (
                     messages.map((msg, index) => (
-                        <div key={index} className={`chatbot-message ${msg.sender}`}>
-                            {msg.image && <img src={msg.image} alt="User upload" className="chatbot-message-image" />}
+                        <div key={index} className={`message ${msg.sender}`}>
+                            {msg.image && <img src={msg.image} alt="User upload" className="message-image" />}
                             {msg.text && <p>{msg.text}</p>}
                         </div>
                     ))
