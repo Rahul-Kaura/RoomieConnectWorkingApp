@@ -547,27 +547,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         <div className="match-results-outer">
                 <div className="shared-header">
                     <div className="header-content">
-                        {/* Animated RoomieConnect Logo */}
-                        <div className="animated-logo-container">
-                            <div className="logo-icon">
-                                <svg className="logo-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    {/* House roof */}
-                                    <polyline className="logo-head" points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    {/* House body */}
-                                    <rect className="logo-body" x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    {/* Door */}
-                                    <path className="logo-companion-1" d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
-                                    {/* Connection lines */}
-                                    <line className="logo-connection" x1="90" y1="55" x2="110" y2="45" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
-                                    <line className="logo-connection" x1="90" y1="55" x2="110" y2="65" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
-                                </svg>
-                            </div>
-                            <div className="logo-text-container">
-                                <span className="logo-text-roomie">Roomie</span>
-                                <span className="logo-text-connect">Connect</span>
-                            </div>
-                        </div>
-                        
                         {/* Animated Header Content */}
                         <div className="animated-header-content">
                             {headerAnimationPhase === 'title' ? (
@@ -2428,6 +2407,38 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     return (
         <div className="chatbot-container-isolated">
             <div className="chatbot-header">
+                <div className="professional-logo-container">
+                    <div className="professional-logo-icon">
+                        <svg viewBox="0 0 48 48" className="professional-logo-svg">
+                            <defs>
+                                <linearGradient id="professionalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95"/>
+                                    <stop offset="100%" stopColor="#e0f2f1" stopOpacity="0.9"/>
+                                </linearGradient>
+                                <filter id="professionalGlow">
+                                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                    <feMerge> 
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            {/* Modern house icon */}
+                            <polyline className="professional-roof" points="12,24 24,8 36,24" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
+                            <rect className="professional-body" x="16" y="24" width="16" height="20" rx="3" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
+                            {/* Door with modern styling */}
+                            <path className="professional-door" d="M24 40 C 24 36, 20 34, 20 28 A 3 3 0 0 1 24 28 A 3 3 0 0 1 28 28 C 28 34, 24 36, 24 40 Z" stroke="url(#professionalGradient)" strokeWidth="2" fill="none" filter="url(#professionalGlow)"/>
+                            {/* Connection dots */}
+                            <circle className="professional-connection-1" cx="36" cy="24" r="1.5" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                            <circle className="professional-connection-2" cx="38" cy="22" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                            <circle className="professional-connection-3" cx="38" cy="26" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                        </svg>
+                    </div>
+                    <div className="professional-logo-text">
+                        <span className="professional-text-roomie">Roomie</span>
+                        <span className="professional-text-connect">Connect</span>
+                    </div>
+                </div>
                 <p className="chatbot-header-subtitle animated-subtitle">Your personal roommate finder</p>
             </div>
             <div className="chatbot-messages">

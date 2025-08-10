@@ -2961,3 +2961,227 @@ textarea:focus {
         left: 100%;
     }
 }
+
+/* =====================================
+   PROFESSIONAL LOGO STYLES
+   ===================================== */
+
+.professional-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    animation: professionalLogoReveal 1.2s ease-out;
+}
+
+.professional-logo-icon {
+    position: relative;
+    z-index: 2;
+    animation: professionalLogoFloat 6s ease-in-out infinite;
+}
+
+.professional-logo-svg {
+    width: 48px;
+    height: 48px;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+.professional-logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.professional-text-roomie {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.8px;
+    animation: professionalTextGlow 4s ease-in-out infinite;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.professional-text-connect {
+    font-size: 18px;
+    font-weight: 500;
+    color: #e0f2f1;
+    letter-spacing: -0.3px;
+    animation: professionalTextGlow 4s ease-in-out infinite 0.5s;
+    text-shadow: 0 2px 6px rgba(224, 242, 241, 0.3);
+}
+
+/* Professional Logo SVG Animations */
+.professional-roof {
+    animation: professionalRoofReveal 1.5s ease-out 0.2s both;
+}
+
+.professional-body {
+    animation: professionalBodyReveal 1.5s ease-out 0.4s both;
+}
+
+.professional-door {
+    animation: professionalDoorReveal 1.5s ease-out 0.6s both;
+}
+
+.professional-connection-1 {
+    animation: professionalConnectionReveal 1.5s ease-out 0.8s both;
+}
+
+.professional-connection-2 {
+    animation: professionalConnectionReveal 1.5s ease-out 1.0s both;
+}
+
+.professional-connection-3 {
+    animation: professionalConnectionReveal 1.5s ease-out 1.2s both;
+}
+
+/* Professional Logo Keyframes */
+@keyframes professionalLogoReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+        filter: blur(4px);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-10px) scale(0.95);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes professionalLogoFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-3px) rotate(0.5deg);
+    }
+    50% {
+        transform: translateY(-1px) rotate(0deg);
+    }
+    75% {
+        transform: translateY(-2px) rotate(-0.5deg);
+    }
+}
+
+@keyframes professionalTextGlow {
+    0%, 100% {
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        opacity: 1;
+    }
+    50% {
+        text-shadow: 0 4px 16px rgba(255, 255, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+        opacity: 1.1;
+    }
+}
+
+@keyframes professionalRoofReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 100;
+        stroke-dashoffset: 100;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 100 0;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+    }
+}
+
+@keyframes professionalBodyReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.7);
+        stroke-dasharray: 0 200;
+        stroke-dashoffset: 200;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 200 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes professionalDoorReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        stroke-dasharray: 0 150;
+        stroke-dashoffset: 150;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 150 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes professionalConnectionReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+        r: 0;
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+        r: 1.5;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        r: 1.5;
+    }
+}
+
+/* Responsive adjustments for professional logo */
+@media (max-width: 768px) {
+    .professional-logo-container {
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .professional-logo-svg {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .professional-text-roomie {
+        font-size: 20px;
+    }
+    
+    .professional-text-connect {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .professional-logo-container {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    
+    .professional-logo-svg {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .professional-text-roomie {
+        font-size: 18px;
+    }
+    
+    .professional-text-connect {
+        font-size: 14px;
+    }
+}
