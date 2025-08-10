@@ -334,6 +334,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [expandedMatch, setExpandedMatch] = React.useState(null);
     const [currentPage, setCurrentPage] = React.useState(0);
     const [isMobile, setIsMobile] = useState(false);
+    const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title'); // 'title' or 'logo'
     
     const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
@@ -531,12 +532,73 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    // Header animation cycle effect
+    useEffect(() => {
+        // Show "Your Top Matches" for 3 seconds, then switch to animated logo
+        const titleTimer = setTimeout(() => {
+            setHeaderAnimationPhase('logo');
+        }, 3000);
+
+        return () => clearTimeout(titleTimer);
+    }, []);
+
     return (
         <div className="chatbot-container-isolated">
         <div className="match-results-outer">
                 <div className="shared-header">
                     <div className="header-content">
-                    <h2 className="shared-header-title">Your Top Matches</h2>
+                        {/* Animated RoomieConnect Logo */}
+                        <div className="animated-logo-container">
+                            <div className="logo-icon">
+                                <svg className="logo-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {/* House roof */}
+                                    <polyline className="logo-head" points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    {/* House body */}
+                                    <rect className="logo-body" x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    {/* Door */}
+                                    <path className="logo-companion-1" d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
+                                    {/* Connection lines */}
+                                    <line className="logo-connection" x1="90" y1="55" x2="110" y2="45" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
+                                    <line className="logo-connection" x1="90" y1="55" x2="110" y2="65" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
+                                </svg>
+                            </div>
+                            <div className="logo-text-container">
+                                <span className="logo-text-roomie">Roomie</span>
+                                <span className="logo-text-connect">Connect</span>
+                            </div>
+                        </div>
+                        
+                        {/* Animated Header Content */}
+                        <div className="animated-header-content">
+                            {headerAnimationPhase === 'title' ? (
+                                <h2 className="shared-header-title animated-title title-phase">Your Top Matches</h2>
+                            ) : (
+                                <div className="animated-logo-header logo-phase">
+                                    <div className="header-logo-icon">
+                                        <svg className="header-logo-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            {/* House roof */}
+                                            <polyline className="header-logo-head" points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                            {/* House body */}
+                                            <rect className="header-logo-body" x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                            {/* Door */}
+                                            <path className="header-logo-door" d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
+                                            {/* Connection lines */}
+                                            <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="45" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
+                                            <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="65" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
+                                        </svg>
+                                    </div>
+                                    <div className="header-logo-text">
+                                        <span className="header-logo-roomie">Roomie</span>
+                                        <span className="header-logo-connect">Connect</span>
+                                    </div>
+                                    {/* Floating particles for enhanced visual effect */}
+                                    <div className="floating-particle"></div>
+                                    <div className="floating-particle"></div>
+                                    <div className="floating-particle"></div>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="header-actions">
                             <div 
                                 className="bouncing-logo-matches"
@@ -2381,7 +2443,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
                             <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
                         </svg>
-            </div>
+                    </div>
                     <h2 className="chatbot-header-title">
                         <span className="logo-text-roomie">Roomie</span>
                         <span className="logo-text-connect">Connect</span>

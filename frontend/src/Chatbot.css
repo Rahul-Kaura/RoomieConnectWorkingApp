@@ -72,7 +72,36 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
+    animation: logoContainerReveal 2s ease-out;
+}
+
+.logo-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.logo-text-roomie {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    animation: logoTextGlowSubtle 4s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.logo-text-connect {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e0f2f1;
+    animation: logoTextGlowSubtle 4s ease-in-out infinite 0.5s;
+    text-shadow: 0 0 8px rgba(224, 242, 241, 0.4);
+}
+
+.animated-title {
+    animation: titleReveal 1.5s ease-out 0.5s both;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .logo-icon {
@@ -2204,4 +2233,731 @@ textarea:focus {
         transform: translateY(-20px) scale(1);
         opacity: 1;
     }
+}
+
+/* New Header Animation Keyframes */
+@keyframes logoContainerReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-10px) scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+    }
+}
+
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+        filter: blur(3px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(8px);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+        filter: blur(0px);
+    }
+}
+
+/* Enhanced logo animations for header */
+.logo-icon .logo-head {
+    animation: logoHeadReveal 2.5s ease-out 0.3s both;
+}
+
+.logo-icon .logo-body {
+    animation: logoBodyReveal 2.5s ease-out 0.6s both;
+}
+
+.logo-icon .logo-companion-1 {
+    animation: logoDoorReveal 2.5s ease-out 0.9s both;
+}
+
+.logo-icon .logo-connection {
+    animation: logoConnectionReveal 2.5s ease-out 1.2s both;
+}
+
+@keyframes logoHeadReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 100;
+        stroke-dashoffset: 100;
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 100 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes logoBodyReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        stroke-dasharray: 0 200;
+        stroke-dashoffset: 200;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 200 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes logoDoorReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+        stroke-dasharray: 0 150;
+        stroke-dashoffset: 150;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 150 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes logoConnectionReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 50;
+        stroke-dashoffset: 50;
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 50 0;
+        stroke-dashoffset: 0;
+    }
 } 
+
+/* Enhanced Header Animations */
+.animated-header-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    overflow: hidden;
+}
+
+.title-phase {
+    animation: titleReveal 0.6s ease-out both;
+}
+
+.logo-phase {
+    animation: logoReveal 0.8s ease-out both;
+}
+
+/* Animated Logo Header */
+.animated-logo-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: logoContainerReveal 0.8s ease-out both;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer effect for logo header */
+.animated-logo-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: headerShimmer 4s ease-in-out infinite;
+}
+
+/* Particle effects for logo header */
+.animated-logo-header::after {
+    content: '';
+    position: absolute;
+    bottom: 20%;
+    right: 10%;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: headerParticleFloat 6s ease-in-out infinite 3s;
+}
+
+/* Additional floating particles */
+.animated-logo-header .floating-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    animation: headerParticleFloat 8s ease-in-out infinite;
+}
+
+.animated-logo-header .floating-particle:nth-child(1) {
+    top: 30%;
+    left: 15%;
+    animation-delay: 1s;
+}
+
+.animated-logo-header .floating-particle:nth-child(2) {
+    top: 70%;
+    left: 20%;
+    animation-delay: 4s;
+}
+
+.animated-logo-header .floating-particle:nth-child(3) {
+    top: 50%;
+    right: 15%;
+    animation-delay: 2s;
+}
+
+.header-logo-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: headerLogoFloat 4s ease-in-out infinite;
+    position: relative;
+}
+
+.header-logo-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.header-logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    position: relative;
+}
+
+.header-logo-roomie {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    animation: headerTextGlow 3s ease-in-out infinite;
+    position: relative;
+}
+
+.header-logo-connect {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.3px;
+    animation: headerTextGlow 3s ease-in-out infinite 0.5s;
+    position: relative;
+}
+
+/* Enhanced text effects */
+.header-logo-roomie::after,
+.header-logo-connect::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    animation: headerTextUnderline 4s ease-in-out infinite;
+}
+
+.header-logo-roomie::after {
+    animation-delay: 0s;
+}
+
+.header-logo-connect::after {
+    animation-delay: 2s;
+}
+
+/* Header Logo SVG Animations */
+.header-logo-head {
+    animation: headerLogoHeadReveal 2s ease-out 0.2s both;
+}
+
+.header-logo-body {
+    animation: headerLogoBodyReveal 2s ease-out 0.4s both;
+}
+
+.header-logo-door {
+    animation: headerLogoDoorReveal 2s ease-out 0.6s both;
+}
+
+.header-logo-connection {
+    animation: headerLogoConnectionReveal 2s ease-out 0.8s both;
+}
+
+/* Header Animation Keyframes */
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(15px) scale(0.95);
+        filter: blur(3px);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(8px) scale(0.98);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes logoReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.9);
+        filter: blur(3px);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-8px) scale(0.95);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes logoContainerReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+        background: rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-10px) scale(0.9);
+        background: rgba(255, 255, 255, 0.08);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+@keyframes headerLogoFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-4px) rotate(1deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(0deg);
+    }
+    75% {
+        transform: translateY(-4px) rotate(-1deg);
+    }
+}
+
+@keyframes headerTextGlow {
+    0%, 100% {
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 15px rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 20px rgba(255, 255, 255, 0.4),
+            0 0 25px rgba(32, 178, 170, 0.3);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes headerTextUnderline {
+    0%, 100% {
+        width: 0;
+        opacity: 0;
+    }
+    50% {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
+@keyframes headerParticleFloat {
+    0%, 100% {
+        transform: translateY(0px) scale(0.5);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translateY(-8px) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-15px) scale(0.8);
+        opacity: 0.5;
+    }
+    75% {
+        transform: translateY(-8px) scale(1.2);
+        opacity: 0.9;
+    }
+}
+
+/* Header Logo SVG Element Animations */
+@keyframes headerLogoHeadReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 100;
+        stroke-dashoffset: 100;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 100 0;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+    }
+}
+
+@keyframes headerLogoBodyReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        stroke-dasharray: 0 200;
+        stroke-dashoffset: 200;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 200 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes headerLogoDoorReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+        stroke-dasharray: 0 150;
+        stroke-dashoffset: 150;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 150 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes headerLogoConnectionReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 50;
+        stroke-dashoffset: 50;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 50 0;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+    }
+}
+
+/* Enhanced title phase animation */
+.title-phase {
+    animation: titleReveal 0.6s ease-out both, titlePulse 4s ease-in-out infinite 0.6s;
+    position: relative;
+}
+
+.title-phase::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -4px;
+    right: -4px;
+    bottom: -2px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(32, 178, 170, 0.1));
+    border-radius: 12px;
+    opacity: 0;
+    animation: titleGlow 4s ease-in-out infinite 0.6s;
+}
+
+@keyframes titleGlow {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes titlePulse {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    25% {
+        transform: scale(1.01);
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 18px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        transform: scale(1.02);
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 20px rgba(255, 255, 255, 0.4),
+            0 0 25px rgba(32, 178, 170, 0.3);
+    }
+    75% {
+        transform: scale(1.01);
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 18px rgba(255, 255, 255, 0.3);
+    }
+}
+
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+        filter: blur(3px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: translateY(8px);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+        filter: blur(0px);
+    }
+}
+
+@keyframes logoReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.9);
+        filter: blur(3px);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateY(-8px) scale(0.95);
+        filter: blur(1px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes logoContainerReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+        background: rgba(255, 255, 255, 0.05);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateY(-10px) scale(0.9);
+        background: rgba(255, 255, 255, 0.08);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+@keyframes headerLogoFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-4px) rotate(1deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(0deg);
+    }
+    75% {
+        transform: translateY(-4px) rotate(-1deg);
+    }
+}
+
+@keyframes headerTextGlow {
+    0%, 100% {
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 15px rgba(255, 255, 255, 0.2);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 
+            0 2px 4px rgba(0, 0, 0, 0.1),
+            0 0 20px rgba(255, 255, 255, 0.4),
+            0 0 25px rgba(32, 178, 170, 0.3);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes headerTextUnderline {
+    0%, 100% {
+        width: 0;
+        opacity: 0;
+    }
+    50% {
+        width: 100%;
+        opacity: 1;
+    }
+}
+
+@keyframes headerParticleFloat {
+    0%, 100% {
+        transform: translateY(0px) scale(0.5);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translateY(-8px) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-15px) scale(0.8);
+        opacity: 0.5;
+    }
+    75% {
+        transform: translateY(-8px) scale(1.2);
+        opacity: 0.9;
+    }
+}
+
+/* Header Logo SVG Element Animations */
+@keyframes headerLogoHeadReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 100;
+        stroke-dashoffset: 100;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 100 0;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+    }
+}
+
+@keyframes headerLogoBodyReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        stroke-dasharray: 0 200;
+        stroke-dashoffset: 200;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 200 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes headerLogoDoorReveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+        stroke-dasharray: 0 150;
+        stroke-dashoffset: 150;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        stroke-dasharray: 150 0;
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes headerLogoConnectionReveal {
+    0% {
+        opacity: 0;
+        stroke-dasharray: 0 50;
+        stroke-dashoffset: 50;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        stroke-dasharray: 50 0;
+        stroke-dashoffset: 0;
+        transform: scale(1);
+    }
+}
+
+/* Smooth transition between phases */
+.animated-header-content > * {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .animated-logo-header {
+        padding: 6px 12px;
+        gap: 12px;
+    }
+    
+    .header-logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .header-logo-roomie {
+        font-size: 16px;
+    }
+    
+    .header-logo-connect {
+        font-size: 14px;
+    }
+}
+
+@keyframes headerShimmer {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: 100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
