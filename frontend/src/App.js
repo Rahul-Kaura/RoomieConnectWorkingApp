@@ -230,10 +230,18 @@ function App() {
 
   const handleLogout = () => {
     console.log('Logging out user');
-    logout({ returnTo: window.location.origin });
+    // Reset app state first
     setCurrentUser(null);
     setUserProfile(null);
     setView('welcome');
+    
+    // Then logout from Auth0 without external redirect
+    logout({ 
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    });
+    
     // Don't remove userProfile from localStorage on logout to preserve data
     // localStorage.removeItem('userProfile');
   };
