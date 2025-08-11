@@ -729,7 +729,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             console.log(`🆕 Periodic refresh found new profiles: ${newProfiles.map(p => p.name).join(', ')}`);
                             notificationService.showMessageNotification(
                                 'New Roommates Found!',
-                                `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} available!`
+                                `${newProfiles.length} new potential roommate${newMatchCount > 1 ? 's' : ''} available!`
                             );
                         }
                     }
@@ -811,7 +811,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         console.log('✅ Profiles refreshed:', validatedProfiles.length);
                                         
                                         // Then sync profiles and chats
-                                        await firebaseProfile.forceSyncAllProfiles();
+                                        const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                                        await forceSyncAllProfiles();
                                         await firebaseMessaging.forceSyncAllChats();
                                         console.log('✅ Comprehensive sync completed');
                                         
