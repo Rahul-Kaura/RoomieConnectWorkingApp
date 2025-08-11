@@ -917,8 +917,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     {/* Red notification badge with 3D effect */}
                                     <circle cx="12" cy="12" r="4" fill="#FF4444" stroke="#CC0000" strokeWidth="1"/>
                                     <circle cx="12" cy="12" r="3" fill="#FF6666" stroke="none"/>
-                                    {/* White number "1" in badge */}
-                                    <text x="12" y="14" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold" fontFamily="Arial, sans-serif">1</text>
                                 </svg>
                                 {/* Show unread count badge if there are unread messages */}
                                 {notificationService.getTotalUnreadCount() > 0 && (
