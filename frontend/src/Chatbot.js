@@ -329,15 +329,51 @@ function MatchLoadingScreen() {
 }
 
 function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings }) {
-    const [unreadCounts, setUnreadCounts] = React.useState({});
-    const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
-    const [expandedMatch, setExpandedMatch] = React.useState(null);
     const [currentPage, setCurrentPage] = useState(0);
-    const [isMobile, setIsMobile] = useState(false);
-    const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title'); // 'title' or 'logo'
-    const [profileMonitor, setProfileMonitor] = React.useState(null);
-    const [allProfiles, setAllProfiles] = React.useState([]);
-    
+    const [expandedCard, setExpandedCard] = useState(null);
+    const [pinnedMatches, setPinnedMatches] = useState(new Set());
+    const [allProfiles, setAllProfiles] = useState([]);
+    const [profileMonitor, setProfileMonitor] = useState(null);
+    const [unreadCounts, setUnreadCounts] = useState({});
+    const [showHelpTooltip, setShowHelpTooltip] = useState(false);
+    const [helpTooltipPosition, setHelpTooltipPosition] = useState({ x: 0, y: 0 });
+    const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title');
+
+    // Function to validate and fix profile data
+    const validateAndFixProfiles = (profileList) => {
+        const fixedProfiles = profileList.map(profile => {
+            // Ensure profile has a valid ID
+            if (!profile.id && !profile.userId) {
+                console.warn(`⚠️ Profile ${profile.name} has no ID, generating one...`);
+                return {
+                    ...profile,
+                    id: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    userId: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                };
+            }
+            
+            // Ensure both id and userId are set
+            if (!profile.id && profile.userId) {
+                return { ...profile, id: profile.userId };
+            }
+            
+            if (profile.id && !profile.userId) {
+                return { ...profile, userId: profile.id };
+            }
+            
+            return profile;
+        });
+        
+        console.log('🔧 Profile validation complete:', fixedProfiles.map(p => ({ name: p.name, id: p.id, userId: p.userId })));
+        return fixedProfiles;
+    };
+
+    // Function to get consistent match ID (not dependent on page position)
+    const getMatchId = (match) => {
+        // Use id or userId if available, otherwise use name + some unique property
+        return match.id || match.userId || match.name || `match-${Math.random()}`;
+    };
+
     const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
     
@@ -349,12 +385,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
     };
     
-    // Function to get consistent match ID (not dependent on page position)
-    const getMatchId = (match) => {
-        // Use id or userId if available, otherwise use name + some unique property
-        return match.id || match.userId || match.name || `match-${Math.random()}`;
-    };
-
     // Function to get consistent chat ID between two users
     const getChatId = (user1Id, user2Id) => {
         // Ensure we have valid IDs
@@ -363,8 +393,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         
         if (!id1 || !id2) {
             console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
-            console.error('❌ Match object:', matches.find(m => m.id === user2Id || m.userId === user2Id));
-            console.error('❌ All matches:', matches.map(m => ({ id: m.id, userId: m.userId, name: m.name })));
             return null;
         }
         
@@ -453,12 +481,12 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
 
     // Handle expand card
     const handleExpandCard = (match) => {
-        setExpandedMatch(match);
+        setExpandedCard(match);
     };
 
     // Handle close expanded card
     const handleCloseExpanded = () => {
-        setExpandedMatch(null);
+        setExpandedCard(null);
     };
 
     // Function to get user initials
@@ -556,7 +584,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                 
                 const chatId = getChatId(currentUser.id, matchId);
                 if (chatId) {
-                    const count = notificationService.getUnreadCount(chatId);
+                const count = notificationService.getUnreadCount(chatId);
                     realCounts[match.name] = count; // Use name as fallback key
                 } else {
                     realCounts[match.name] = 0; // Use name as fallback key
@@ -677,21 +705,21 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 <div className="animated-logo-header logo-phase">
                                     <div className="header-logo-icon">
                                         <svg className="header-logo-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            {/* House roof */}
+                                    {/* House roof */}
                                             <polyline className="header-logo-head" points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                            {/* House body */}
+                                    {/* House body */}
                                             <rect className="header-logo-body" x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                            {/* Door */}
+                                    {/* Door */}
                                             <path className="header-logo-door" d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
-                                            {/* Connection lines */}
+                                    {/* Connection lines */}
                                             <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="45" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
                                             <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="65" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
-                                        </svg>
-                                    </div>
+                                </svg>
+                            </div>
                                     <div className="header-logo-text">
                                         <span className="header-logo-roomie">Roomie</span>
                                         <span className="header-logo-connect">Connect</span>
-                                    </div>
+                            </div>
                                     {/* Floating particles for enhanced visual effect */}
                                     <div className="floating-particle"></div>
                                     <div className="floating-particle"></div>
@@ -699,7 +727,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 </div>
                             )}
                         </div>
-
+                        
                         <div className="header-actions">
                             <div 
                                 className="bouncing-logo-matches"
@@ -944,7 +972,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     return unreadCount > 0 ? (
                                         <div className={`unread-badge ${unreadCount > 0 ? 'has-unread' : ''}`}>
                                             {unreadCount > 99 ? '99+' : unreadCount}
-                                        </div>
+                                    </div>
                                     ) : null;
                                 })()}
                             </div>
@@ -974,7 +1002,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     onClick={() => setCurrentPage(i)}
                                 />
                             ))}
-                        </div>
+            </div>
                         
                         <button 
                             className="carousel-nav-button carousel-nav-next" 
@@ -1083,11 +1111,11 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         </div>
         
         {/* Expanded Card Modal */}
-        {expandedMatch && (
+        {expandedCard && (
             <div className="expanded-card-overlay" onClick={handleCloseExpanded}>
                 <div className="expanded-card-modal" onClick={(e) => e.stopPropagation()}>
                     <div className="expanded-card-header">
-                        <h3 className="expanded-card-title">{expandedMatch.name}</h3>
+                        <h3 className="expanded-card-title">{expandedCard.name}</h3>
                         <button className="expanded-card-close" onClick={handleCloseExpanded}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1097,35 +1125,35 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     </div>
                     <div className="expanded-card-content">
                         <div className="expanded-card-avatar">
-                            {renderUserAvatar(expandedMatch)}
+                            {renderUserAvatar(expandedCard)}
                         </div>
                         <div className="expanded-card-details">
                             <div className="expanded-card-info-item">
-                                <strong>Age:</strong> {expandedMatch.age || 'Not specified'}
+                                <strong>Age:</strong> {expandedCard.age || 'Not specified'}
                             </div>
                             <div className="expanded-card-info-item">
-                                <strong>Major:</strong> {expandedMatch.major || 'Not specified'}
+                                <strong>Major:</strong> {expandedCard.major || 'Not specified'}
                             </div>
                             <div className="expanded-card-info-item">
-                                <strong>Location:</strong> {expandedMatch.location || 'Not specified'}
+                                <strong>Location:</strong> {expandedCard.location || 'Not specified'}
                             </div>
                             <div className="expanded-card-info-item">
-                                <strong>Allergies:</strong> {expandedMatch.allergyInfo || 'N/A'}
+                                <strong>Allergies:</strong> {expandedCard.allergyInfo || 'N/A'}
                             </div>
                             <div className="expanded-card-info-item">
-                                <strong>Instagram:</strong> {expandedMatch.instagram && expandedMatch.instagram.trim() ? `@${expandedMatch.instagram}` : 'N/A'}
+                                <strong>Instagram:</strong> {expandedCard.instagram && expandedCard.instagram.trim() ? `@${expandedCard.instagram}` : 'N/A'}
                             </div>
                             <div className="expanded-card-info-item">
-                                <strong>Match Score:</strong> {expandedMatch.compatibility}%
+                                <strong>Match Score:</strong> {expandedCard.compatibility}%
                             </div>
-                            {expandedMatch.distance !== null && (
+                            {expandedCard.distance !== null && (
                                 <div className="expanded-card-info-item">
-                                    <strong>Distance:</strong> {expandedMatch.distance} miles away
+                                    <strong>Distance:</strong> {expandedCard.distance} miles away
                                 </div>
                             )}
                         </div>
                         <div className="expanded-card-actions">
-                            <button className="expanded-card-chat-button" onClick={() => onStartChat(expandedMatch)}>
+                            <button className="expanded-card-chat-button" onClick={() => onStartChat(expandedCard)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
@@ -2405,13 +2433,13 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 console.log(`✅ Including profile: ${p.name} (ID: ${otherId})`);
                 return true;
             })
-            .map(async (otherUser) => {
-                // Calculate compatibility based on normalized answers
-                let compatibilityScore = 0;
-                let totalQuestions = 0;
-                
-                // Compare answers for each question
-                if (currentProfile.answers && otherUser.answers) {
+                .map(async (otherUser) => {
+                    // Calculate compatibility based on normalized answers
+                    let compatibilityScore = 0;
+                    let totalQuestions = 0;
+                    
+                    // Compare answers for each question
+                    if (currentProfile.answers && otherUser.answers) {
                     currentProfile.answers.forEach(currentAnswer => {
                         const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
                         if (otherAnswer) {
@@ -2430,17 +2458,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             }
                         }
                     });
-                }
-                
-                // Calculate percentage
+                    }
+                    
+                    // Calculate percentage
                 const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 50; // Default to 50% if no answers
-                
-                // Calculate distance if both users have location data
-                let distance = null;
-                if (currentProfile.location && otherUser.location) {
-                    distance = await calculateDistance(currentProfile.location, otherUser.location);
-                }
-                
+                    
+                    // Calculate distance if both users have location data
+                    let distance = null;
+                    if (currentProfile.location && otherUser.location) {
+                        distance = await calculateDistance(currentProfile.location, otherUser.location);
+                    }
+                    
                 // Use consistent ID for matching
                 const matchId = otherUser.id || otherUser.userId;
                 
@@ -2448,10 +2476,10 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     ...otherUser,
                     id: matchId, // Ensure consistent ID field
                     compatibility: compatibility.toFixed(2),
-                    distance: distance,
+                        distance: distance,
                     isPinned: pinnedMatches.has(matchId), // Check if pinned using consistent ID
-                };
-            })
+                    };
+                })
         );
         
         console.log(`🎯 Found ${matchesWithDistance.length} potential matches`);
@@ -2552,11 +2580,11 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     console.log('Profile IDs:', allProfiles.map(p => ({ id: p.id, userId: p.userId, name: p.name })));
                     
                     // Get matches using the consolidated profile list
-                    const matches = await getMatches(existingProfile, allProfiles);
+                const matches = await getMatches(existingProfile, allProfiles);
                     console.log(`✅ Matches found: ${matches.length}`);
                     
                     setMatchResults({ matches, score: existingProfile.score || 0 });
-                    setShowMatchResults(true);
+                setShowMatchResults(true);
                     
                 } catch (error) {
                     console.error('Error loading matches:', error);
@@ -2736,7 +2764,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             
             // Mark messages as read for current user
             if (existingMessages.length > 0) {
-                notificationService.markChatAsRead(chatId);
+        notificationService.markChatAsRead(chatId);
                 console.log('✅ Marked chat as read');
             }
             
@@ -2906,16 +2934,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         try {
             console.log('🔄 Refreshing matches with new profiles...');
-            const matches = await getMatches(existingProfile, allProfiles);
+            const newMatches = await getMatches(existingProfile, allProfiles);
             
             // Update match results if we have new matches
-            if (matches && matches.length > 0) {
-                setMatchResults({ matches, score: existingProfile.score || 0 });
-                console.log(`✅ Matches refreshed: ${matches.length} matches found`);
+            if (newMatches && newMatches.length > 0) {
+                setMatchResults({ matches: newMatches, score: existingProfile.score || 0 });
+                console.log(`✅ Matches refreshed: ${newMatches.length} matches found`);
                 
                 // Show notification about new matches
-                if (matches.length > matchResults.matches.length) {
-                    const newMatchCount = matches.length - matchResults.matches.length;
+                const currentMatchCount = matchResults.matches.length;
+                if (newMatches.length > currentMatchCount) {
+                    const newMatchCount = newMatches.length - currentMatchCount;
                     notificationService.showMessageNotification(
                         'New Matches Available!',
                         `${newMatchCount} new potential roommate${newMatchCount > 1 ? 's' : ''} found!`
@@ -2935,8 +2964,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         if (!id1 || !id2) {
             console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
-            console.error('❌ Match object:', matches.find(m => m.id === user2Id || m.userId === user2Id));
-            console.error('❌ All matches:', matches.map(m => ({ id: m.id, userId: m.userId, name: m.name })));
             return null;
         }
         
@@ -2946,41 +2973,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         console.log(`💬 Generated chat ID: ${id1} + ${id2} = ${chatId}`);
         return chatId;
-    };
-
-    // Function to validate and fix profile data
-    const validateAndFixProfiles = (profileList) => {
-        const fixedProfiles = profileList.map(profile => {
-            // Ensure profile has a valid ID
-            if (!profile.id && !profile.userId) {
-                console.warn(`⚠️ Profile ${profile.name} has no ID, generating one...`);
-                return {
-                    ...profile,
-                    id: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                    userId: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-                };
-            }
-            
-            // Ensure both id and userId are set
-            if (!profile.id && profile.userId) {
-                return { ...profile, id: profile.userId };
-            }
-            
-            if (profile.id && !profile.userId) {
-                return { ...profile, userId: profile.id };
-            }
-            
-            return profile;
-        });
-        
-        console.log('🔧 Profile validation complete:', fixedProfiles.map(p => ({ name: p.name, id: p.id, userId: p.userId })));
-        return fixedProfiles;
-    };
-
-    // Function to get consistent match ID (not dependent on page position)
-    const getMatchId = (match) => {
-        // Use id or userId if available, otherwise use name + some unique property
-        return match.id || match.userId || match.name || `match-${Math.random()}`;
     };
 
     if (activeMatch) {
@@ -3024,7 +3016,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             <circle className="professional-connection-2" cx="38" cy="22" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
                             <circle className="professional-connection-3" cx="38" cy="26" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
                         </svg>
-                    </div>
+            </div>
                     <div className="professional-logo-text">
                         <span className="professional-text-roomie">Roomie</span>
                         <span className="professional-text-connect">Connect</span>
