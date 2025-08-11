@@ -694,57 +694,25 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 </svg>
                             </div>
                             
-                            {/* Manual refresh button for new profiles */}
+                            {/* Comprehensive refresh and sync button */}
                             <button 
-                                className="refresh-button hover-blue-animation"
+                                className="refresh-sync-button hover-blue-animation"
                                 onClick={async () => {
                                     try {
-                                        console.log('🔄 Manual refresh requested...');
+                                        console.log('🔄 Refresh and sync requested...');
+                                        
+                                        // First refresh profiles
                                         const profiles = await loadAllProfiles();
                                         setAllProfiles(profiles);
+                                        console.log('✅ Profiles refreshed:', profiles.length);
                                         
-                                        // Show success message
-                                        notificationService.showMessageNotification(
-                                            'Refresh Complete!',
-                                            `Found ${profiles.length} total profiles`
-                                        );
-                                    } catch (error) {
-                                        console.error('Error during manual refresh:', error);
-                                        notificationService.showMessageNotification(
-                                            'Refresh Failed',
-                                            'Please try again later'
-                                        );
-                                    }
-                                }}
-                                title="Check for new profiles"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 4v6h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M23 20v-6h-6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            </button>
-                            
-                            {/* Comprehensive sync button for profiles and chats */}
-                            <button 
-                                className="comprehensive-sync-button hover-blue-animation"
-                                onClick={async () => {
-                                    try {
-                                        console.log('🔄 Comprehensive sync requested...');
-                                        
-                                        // First sync profiles
+                                        // Then sync profiles and chats
                                         const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
                                         const profileResult = await forceSyncAllProfiles();
-                                        
-                                        // Then sync chats
                                         const chatResult = await firebaseMessaging.forceSyncAllChats();
                                         
                                         if (profileResult.success && chatResult.success) {
-                                            // Reload profiles after sync
-                                            const profiles = await loadAllProfiles();
-                                            setAllProfiles(profiles);
-                                            
-                                            // Refresh unread counts after chat sync
+                                            // Refresh unread counts after sync
                                             const realCounts = {};
                                             for (const match of matches) {
                                                 const chatId = getChatId(currentUser.id, match.id);
@@ -757,24 +725,30 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                             setUnreadCounts(realCounts);
                                             
                                             notificationService.showMessageNotification(
-                                                'Sync Complete!',
-                                                `${profileResult.synced} profiles, ${chatResult.synced} chats synced`
+                                                'Refresh & Sync Complete!',
+                                                `${profiles.length} profiles loaded, ${profileResult.synced} synced, ${chatResult.synced} chats synced`
                                             );
                                         } else {
-                                            throw new Error('Sync failed');
+                                            // Even if sync fails, refresh was successful
+                                            notificationService.showMessageNotification(
+                                                'Refresh Complete!',
+                                                `${profiles.length} profiles loaded (sync had issues)`
+                                            );
                                         }
                                     } catch (error) {
-                                        console.error('Error during comprehensive sync:', error);
+                                        console.error('Error during refresh and sync:', error);
                                         notificationService.showMessageNotification(
-                                            'Sync Failed',
+                                            'Refresh Failed',
                                             'Please try again later'
                                         );
                                     }
                                 }}
-                                title="Sync all profiles and chats"
+                                title="Refresh profiles and sync all data"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M1 4v6h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M23 20v-6h-6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </button>
                             
@@ -1001,11 +975,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         </div>
                                         <div class="help-item">
                                             <span class="help-icon">🔄</span>
-                                            <span class="help-text">Refresh - Check for new profiles</span>
-                                        </div>
-                                        <div class="help-item">
-                                            <span class="help-icon">⚡</span>
-                                            <span class="help-text">Sync - Sync all profiles and chats</span>
+                                            <span class="help-text">Refresh & Sync - Load new profiles and sync all data</span>
                                         </div>
                                         <div class="help-item">
                                             <span class="help-icon">🔔</span>

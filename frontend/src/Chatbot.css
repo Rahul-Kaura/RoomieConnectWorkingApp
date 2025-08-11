@@ -3186,8 +3186,8 @@ textarea:focus {
     }
 }
 
-/* Refresh button styles */
-.refresh-button {
+/* Refresh and sync button styles */
+.refresh-sync-button {
     background: rgba(255, 255, 255, 0.15);
     border: none;
     color: white;
@@ -3204,27 +3204,27 @@ textarea:focus {
     height: 40px;
 }
 
-.refresh-button:hover {
+.refresh-sync-button:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.refresh-button:active {
+.refresh-sync-button:active {
     transform: translateY(0px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Refresh button animation */
-.refresh-button svg {
+/* Refresh and sync button animation */
+.refresh-sync-button svg {
     transition: transform 0.3s ease;
 }
 
-.refresh-button:hover svg {
+.refresh-sync-button:hover svg {
     transform: rotate(180deg);
 }
 
-.refresh-button:active svg {
+.refresh-sync-button:active svg {
     transform: rotate(360deg);
 }
 
@@ -3282,47 +3282,7 @@ textarea:focus {
     animation: unreadBounce 1s infinite;
 }
 
-/* Comprehensive sync button styles */
-.comprehensive-sync-button {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 8px 10px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-}
 
-.comprehensive-sync-button:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.comprehensive-sync-button:active {
-    transform: translateY(0px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Comprehensive sync button animation */
-.comprehensive-sync-button svg {
-    transition: transform 0.3s ease;
-}
-
-.comprehensive-sync-button:hover svg {
-    transform: rotate(180deg);
-}
-
-.comprehensive-sync-button:active svg {
-    transform: rotate(360deg);
-}
 
 /* Carousel help button */
 .carousel-help-button {
