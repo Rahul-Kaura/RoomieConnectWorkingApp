@@ -339,7 +339,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [helpTooltipPosition, setHelpTooltipPosition] = useState({ x: 0, y: 0 });
     const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title');
     const [isMobile, setIsMobile] = useState(false);
-
+    const [isSyncing, setIsSyncing] = useState(false);
+    
     // Function to validate and fix profile data
     const validateAndFixProfiles = (profileList) => {
         const fixedProfiles = profileList.map(profile => {
@@ -656,6 +657,14 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     setAllProfiles(finalProfiles);
                     console.log(`✅ Final profile count after sync: ${finalProfiles.length}`);
                     
+                    // Log all available profiles for debugging
+                    console.log('🔍 All available profiles after sync:', finalProfiles.map(p => ({
+                        name: p.name,
+                        id: p.id,
+                        userId: p.userId,
+                        profileId: p.profileId
+                    })));
+                    
                 } catch (error) {
                     console.error('❌ Error loading initial profiles:', error);
                 }
@@ -683,6 +692,39 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             
             // Run immediate sync after a short delay to ensure Firebase is ready
             setTimeout(immediateSync, 2000);
+            
+            // Force refresh all profiles to ensure visibility
+            const forceRefreshProfiles = async () => {
+                try {
+                    console.log('🚀 Force refreshing all profiles for maximum visibility...');
+                    
+                    // Force sync from backend
+                    const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                    await forceSyncAllProfiles();
+                    
+                    // Force sync all chats
+                    await firebaseMessaging.forceSyncAllChats();
+                    
+                    // Reload profiles
+                    const refreshedProfiles = await loadAllProfiles();
+                    const finalProfiles = validateAndFixProfiles(refreshedProfiles);
+                    setAllProfiles(finalProfiles);
+                    
+                    console.log(`✅ Force refresh complete: ${finalProfiles.length} profiles available`);
+                    console.log('🔍 Force refreshed profiles:', finalProfiles.map(p => ({
+                        name: p.name,
+                        id: p.id,
+                        userId: p.userId,
+                        profileId: p.profileId
+                    })));
+                    
+                } catch (error) {
+                    console.error('❌ Error during force refresh:', error);
+                }
+            };
+            
+            // Run force refresh after a longer delay to ensure everything is loaded
+            setTimeout(forceRefreshProfiles, 5000);
             
             // Monitor for new profiles and automatically refresh
             const monitor = monitorNewProfiles((newProfiles, allCurrentProfiles) => {
@@ -799,9 +841,12 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             
                             {/* Comprehensive refresh and sync button */}
                             <button 
-                                className="refresh-sync-button"
+                                className={`refresh-sync-button hover-blue-animation ${isSyncing ? 'loading' : ''}`}
                                 onClick={async () => {
+                                    if (isSyncing) return; // Prevent multiple clicks
+                                    
                                     try {
+                                        setIsSyncing(true);
                                         console.log('🔄 Starting comprehensive refresh and sync...');
                                         
                                         // First refresh profiles
@@ -827,16 +872,20 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                             'Sync Error',
                                             'There was an issue during synchronization. Please try again.'
                                         );
+                                    } finally {
+                                        setIsSyncing(false);
                                     }
                                 }}
+                                title="Refresh profiles and sync all data"
+                                disabled={isSyncing}
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="refresh-sync-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                                     <path d="M21 3v5h-5"></path>
                                     <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
                                     <path d="M3 21v-5h5"></path>
                                 </svg>
-                                Refresh & Sync
+                                {isSyncing ? 'Syncing...' : 'Refresh & Sync'}
                             </button>
                             
                             {/* Always show notification bell */}
@@ -1032,10 +1081,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         <div class="help-item">
                                             <span class="help-icon">⚙️</span>
                                             <span class="help-text">Settings - Edit your profile</span>
-                                        </div>
-                                        <div class="help-item">
-                                            <span class="help-icon">⭐</span>
-                                            <span class="help-text">Debug - Test messaging functionality</span>
                                         </div>
                                         <div class="help-item">
                                             <span class="help-icon">◀</span>
@@ -1431,6 +1476,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     const [successMessage, setSuccessMessage] = useState(null);
     const [needsName, setNeedsName] = useState(false);
     const [profileMonitor, setProfileMonitor] = useState(null);
+    const [isSyncing, setIsSyncing] = useState(false);
     
     // Track user activity for online status
     useEffect(() => {
