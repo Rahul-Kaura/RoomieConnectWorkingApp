@@ -355,6 +355,25 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         return match.id || match.userId || match.name || `match-${Math.random()}`;
     };
 
+    // Function to get consistent chat ID between two users
+    const getChatId = (user1Id, user2Id) => {
+        // Ensure we have valid IDs
+        const id1 = user1Id || currentUser.id;
+        const id2 = user2Id;
+        
+        if (!id1 || !id2) {
+            console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
+            return null;
+        }
+        
+        // Sort IDs to ensure consistent chat ID regardless of who initiates
+        const sortedIds = [id1, id2].sort();
+        const chatId = sortedIds.join('_');
+        
+        console.log(`💬 Generated chat ID: ${id1} + ${id2} = ${chatId}`);
+        return chatId;
+    };
+
     const getCurrentMatches = () => {
         // Sort matches: pinned first, then by unread messages, then by recent activity, then by distance
         const sortedMatches = [...(matches || [])].sort((a, b) => {
