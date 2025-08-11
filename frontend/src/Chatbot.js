@@ -338,6 +338,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [showHelpTooltip, setShowHelpTooltip] = useState(false);
     const [helpTooltipPosition, setHelpTooltipPosition] = useState({ x: 0, y: 0 });
     const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title');
+    const [isMobile, setIsMobile] = useState(false);
 
     // Function to validate and fix profile data
     const validateAndFixProfiles = (profileList) => {
@@ -373,7 +374,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         // Use id or userId if available, otherwise use name + some unique property
         return match.id || match.userId || match.name || `match-${Math.random()}`;
     };
-
+    
     const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
     
@@ -2471,7 +2472,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     
                 // Use consistent ID for matching
                 const matchId = otherUser.id || otherUser.userId;
-                
+                    
                 return {
                     ...otherUser,
                     id: matchId, // Ensure consistent ID field
