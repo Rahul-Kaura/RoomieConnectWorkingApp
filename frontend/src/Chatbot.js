@@ -634,7 +634,9 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     // If no profiles loaded, try to force sync from backend
                     if (!profiles || profiles.length === 0) {
                         console.log('⚠️ No profiles loaded, attempting backend sync...');
-                        await firebaseProfile.forceSyncAllProfiles();
+                        // Import and use forceSyncAllProfiles dynamically
+                        const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                        await forceSyncAllProfiles();
                         profiles = await loadAllProfiles();
                     }
                     
@@ -645,7 +647,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     
                     // Force a comprehensive sync to ensure all users can see each other
                     console.log('🔄 Force syncing all profiles to ensure visibility...');
-                    await firebaseProfile.forceSyncAllProfiles();
+                    const { forceSyncAllProfiles: syncProfiles } = await import('./services/firebaseProfile');
+                    await syncProfiles();
                     
                     // Reload profiles after sync
                     const syncedProfiles = await loadAllProfiles();
@@ -664,7 +667,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             const immediateSync = async () => {
                 try {
                     console.log('🚀 Performing immediate profile sync for visibility...');
-                    await firebaseProfile.forceSyncAllProfiles();
+                    const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                    await forceSyncAllProfiles();
                     await firebaseMessaging.forceSyncAllChats();
                     
                     // Reload profiles after immediate sync
@@ -707,7 +711,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     // If profiles seem stale, force a sync
                     if (profiles.length < allProfiles.length) {
                         console.log('⚠️ Profile count decreased, forcing sync...');
-                        await firebaseProfile.forceSyncAllProfiles();
+                        const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                        await forceSyncAllProfiles();
                         profiles = await loadAllProfiles();
                     }
                     
