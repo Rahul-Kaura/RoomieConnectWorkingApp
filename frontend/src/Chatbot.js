@@ -363,6 +363,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         
         if (!id1 || !id2) {
             console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
+            console.error('❌ Match object:', matches.find(m => m.id === user2Id || m.userId === user2Id));
+            console.error('❌ All matches:', matches.map(m => ({ id: m.id, userId: m.userId, name: m.name })));
             return null;
         }
         
@@ -493,11 +495,19 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             const realCounts = {};
             
             for (const match of matches) {
-                const chatId = getChatId(currentUser.id, match.id);
+                // Ensure match has a valid ID
+                const matchId = match.id || match.userId;
+                if (!matchId) {
+                    console.error(`❌ Match ${match.name} has no valid ID:`, match);
+                    realCounts[match.name] = 0; // Use name as fallback key
+                    continue;
+                }
+                
+                const chatId = getChatId(currentUser.id, matchId);
                 
                 if (!chatId) {
-                    console.error(`❌ Could not generate chat ID for ${match.name}`);
-                    realCounts[match.id] = 0;
+                    console.error(`❌ Could not generate chat ID for ${match.name} (ID: ${matchId})`);
+                    realCounts[match.name] = 0; // Use name as fallback key
                     continue;
                 }
                 
@@ -508,17 +518,17 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                     // If this is the first time loading this chat, mark all existing messages as read
                     if (!notificationService.lastReadTimestamps.has(chatId)) {
                         notificationService.markAllExistingAsRead(chatId, messages);
-                        realCounts[match.id] = 0;
+                        realCounts[match.name] = 0;
                         console.log(`First time loading ${match.name} - marked all existing as read`);
                     } else {
                         // Calculate unread count for messages since last read
                         const unreadCount = notificationService.updateUnreadCountFromMessages(chatId, messages, currentUser.id);
-                        realCounts[match.id] = unreadCount;
+                        realCounts[match.name] = unreadCount;
                         console.log(`Initialized unread count for ${match.name}: ${unreadCount}`);
                     }
                 } catch (error) {
                     console.error(`Error getting chat history for ${match.name}:`, error);
-                    realCounts[match.id] = 0;
+                    realCounts[match.name] = 0;
                 }
             }
             
@@ -536,12 +546,20 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         const interval = setInterval(() => {
             const realCounts = {};
             matches.forEach((match) => {
-                const chatId = getChatId(currentUser.id, match.id);
+                // Ensure match has a valid ID
+                const matchId = match.id || match.userId;
+                if (!matchId) {
+                    console.error(`❌ Match ${match.name} has no valid ID during periodic update:`, match);
+                    realCounts[match.name] = 0; // Use name as fallback key
+                    return;
+                }
+                
+                const chatId = getChatId(currentUser.id, matchId);
                 if (chatId) {
                     const count = notificationService.getUnreadCount(chatId);
-                    realCounts[match.id] = count;
+                    realCounts[match.name] = count; // Use name as fallback key
                 } else {
-                    realCounts[match.id] = 0;
+                    realCounts[match.name] = 0; // Use name as fallback key
                 }
             });
             setUnreadCounts(realCounts);
@@ -582,8 +600,9 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             const loadInitialProfiles = async () => {
                 try {
                     const profiles = await loadAllProfiles();
-                    setAllProfiles(profiles);
-                    console.log(`📊 Loaded ${profiles.length} initial profiles`);
+                    const validatedProfiles = validateAndFixProfiles(profiles);
+                    setAllProfiles(validatedProfiles);
+                    console.log(`📊 Loaded ${validatedProfiles.length} initial profiles`);
                 } catch (error) {
                     console.error('Error loading initial profiles:', error);
                 }
@@ -703,8 +722,9 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         
                                         // First refresh profiles
                                         const profiles = await loadAllProfiles();
-                                        setAllProfiles(profiles);
-                                        console.log('✅ Profiles refreshed:', profiles.length);
+                                        const validatedProfiles = validateAndFixProfiles(profiles);
+                                        setAllProfiles(validatedProfiles);
+                                        console.log('✅ Profiles refreshed:', validatedProfiles.length);
                                         
                                         // Then sync profiles and chats
                                         const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
@@ -912,8 +932,15 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             <div className="match-card-chat-icon hover-blue-animation" onClick={() => onStartChat(match)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                                 {(() => {
-                                    const chatId = getChatId(currentUser.id, match.id);
-                                    const unreadCount = chatId ? unreadCounts[match.id] || 0 : 0;
+                                    // Ensure match has a valid ID
+                                    const matchId = match.id || match.userId;
+                                    if (!matchId) {
+                                        console.error(`❌ Match ${match.name} has no valid ID for unread badge:`, match);
+                                        return null;
+                                    }
+                                    
+                                    const chatId = getChatId(currentUser.id, matchId);
+                                    const unreadCount = chatId ? unreadCounts[match.name] || 0 : 0; // Use name as key
                                     return unreadCount > 0 ? (
                                         <div className={`unread-badge ${unreadCount > 0 ? 'has-unread' : ''}`}>
                                             {unreadCount > 99 ? '99+' : unreadCount}
@@ -2908,6 +2935,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         if (!id1 || !id2) {
             console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
+            console.error('❌ Match object:', matches.find(m => m.id === user2Id || m.userId === user2Id));
+            console.error('❌ All matches:', matches.map(m => ({ id: m.id, userId: m.userId, name: m.name })));
             return null;
         }
         
@@ -2917,6 +2946,41 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         console.log(`💬 Generated chat ID: ${id1} + ${id2} = ${chatId}`);
         return chatId;
+    };
+
+    // Function to validate and fix profile data
+    const validateAndFixProfiles = (profileList) => {
+        const fixedProfiles = profileList.map(profile => {
+            // Ensure profile has a valid ID
+            if (!profile.id && !profile.userId) {
+                console.warn(`⚠️ Profile ${profile.name} has no ID, generating one...`);
+                return {
+                    ...profile,
+                    id: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    userId: `generated_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                };
+            }
+            
+            // Ensure both id and userId are set
+            if (!profile.id && profile.userId) {
+                return { ...profile, id: profile.userId };
+            }
+            
+            if (profile.id && !profile.userId) {
+                return { ...profile, userId: profile.id };
+            }
+            
+            return profile;
+        });
+        
+        console.log('🔧 Profile validation complete:', fixedProfiles.map(p => ({ name: p.name, id: p.id, userId: p.userId })));
+        return fixedProfiles;
+    };
+
+    // Function to get consistent match ID (not dependent on page position)
+    const getMatchId = (match) => {
+        // Use id or userId if available, otherwise use name + some unique property
+        return match.id || match.userId || match.name || `match-${Math.random()}`;
     };
 
     if (activeMatch) {
