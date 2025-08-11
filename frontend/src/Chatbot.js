@@ -474,7 +474,13 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             const realCounts = {};
             
             for (const match of matches) {
-                const chatId = [currentUser.id, match.id].sort().join('_');
+                const chatId = getChatId(currentUser.id, match.id);
+                
+                if (!chatId) {
+                    console.error(`❌ Could not generate chat ID for ${match.name}`);
+                    realCounts[match.id] = 0;
+                    continue;
+                }
                 
                 // Get chat history to calculate real unread count
                 try {
@@ -511,9 +517,13 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         const interval = setInterval(() => {
             const realCounts = {};
             matches.forEach((match) => {
-                const chatId = [currentUser.id, match.id].sort().join('_');
-                const count = notificationService.getUnreadCount(chatId);
-                realCounts[match.id] = count;
+                const chatId = getChatId(currentUser.id, match.id);
+                if (chatId) {
+                    const count = notificationService.getUnreadCount(chatId);
+                    realCounts[match.id] = count;
+                } else {
+                    realCounts[match.id] = 0;
+                }
             });
             setUnreadCounts(realCounts);
             console.log('Updated unread counts:', realCounts);
@@ -732,6 +742,51 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 </svg>
                             </button>
                             
+                            {/* Chat sync button to ensure message consistency */}
+                            <button 
+                                className="chat-sync-button hover-blue-animation"
+                                onClick={async () => {
+                                    try {
+                                        console.log('🔄 Chat sync requested...');
+                                        const result = await firebaseMessaging.forceSyncAllChats();
+                                        
+                                        if (result.success) {
+                                            notificationService.showMessageNotification(
+                                                'Chat Sync Complete!',
+                                                `${result.synced} chats synchronized`
+                                            );
+                                            
+                                            // Refresh unread counts after chat sync
+                                            const realCounts = {};
+                                            for (const match of matches) {
+                                                const chatId = getChatId(currentUser.id, match.id);
+                                                if (chatId) {
+                                                    const messages = await firebaseMessaging.getChatHistory(chatId);
+                                                    const unreadCount = notificationService.updateUnreadCountFromMessages(chatId, messages, currentUser.id);
+                                                    realCounts[match.id] = unreadCount;
+                                                }
+                                            }
+                                            setUnreadCounts(realCounts);
+                                            
+                                        } else {
+                                            throw new Error(result.error);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error during chat sync:', error);
+                                        notificationService.showMessageNotification(
+                                            'Chat Sync Failed',
+                                            'Please try again later'
+                                        );
+                                    }
+                                }}
+                                title="Sync all chats"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M8 12h8M8 16h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                            
                             {/* Always show notification bell */}
                             <button 
                                 className="notification-bell-button hover-blue-animation"
@@ -850,11 +905,15 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             </div>
                             <div className="match-card-chat-icon hover-blue-animation" onClick={() => onStartChat(match)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                                {unreadCounts[match.id] > 0 && (
-                                    <div className={`unread-badge ${unreadCounts[match.id] > 0 ? 'has-unread' : ''}`}>
-                                        {unreadCounts[match.id] > 99 ? '99+' : unreadCounts[match.id]}
-                                    </div>
-                                )}
+                                {(() => {
+                                    const chatId = getChatId(currentUser.id, match.id);
+                                    const unreadCount = chatId ? unreadCounts[match.id] || 0 : 0;
+                                    return unreadCount > 0 ? (
+                                        <div className={`unread-badge ${unreadCount > 0 ? 'has-unread' : ''}`}>
+                                            {unreadCount > 99 ? '99+' : unreadCount}
+                                        </div>
+                                    ) : null;
+                                })()}
                             </div>
                         </div>
                     );
@@ -882,7 +941,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     onClick={() => setCurrentPage(i)}
                                 />
                             ))}
-            </div>
+                        </div>
                         
                         <button 
                             className="carousel-nav-button carousel-nav-next" 
@@ -891,6 +950,78 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="9,18 15,12 9,6"></polyline>
+                            </svg>
+                        </button>
+                        
+                        {/* Help button for navigation */}
+                        <button 
+                            className="carousel-help-button"
+                            onClick={() => {
+                                // Show help tooltip
+                                const helpTooltip = document.createElement('div');
+                                helpTooltip.className = 'carousel-help-tooltip';
+                                helpTooltip.innerHTML = `
+                                    <div class="help-content">
+                                        <h4>Navigation Help</h4>
+                                        <div class="help-item">
+                                            <span class="help-icon">◀</span>
+                                            <span class="help-text">Previous page - Go to previous matches</span>
+                                        </div>
+                                        <div class="help-item">
+                                            <span class="help-icon">●</span>
+                                            <span class="help-text">Page dots - Click to jump to specific page</span>
+                                        </div>
+                                        <div class="help-item">
+                                            <span class="help-icon">▶</span>
+                                            <span class="help-text">Next page - Go to next matches</span>
+                                        </div>
+                                        <div class="help-item">
+                                            <span class="help-icon">📌</span>
+                                            <span class="help-text">Pin matches to keep them at the top</span>
+                                        </div>
+                                        <div class="help-item">
+                                            <span class="help-icon">💬</span>
+                                            <span class="help-text">Chat button to start conversation</span>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // Position tooltip
+                                helpTooltip.style.position = 'absolute';
+                                helpTooltip.style.bottom = '60px';
+                                helpTooltip.style.right = '20px';
+                                helpTooltip.style.zIndex = '1000';
+                                
+                                // Add to DOM
+                                document.body.appendChild(helpTooltip);
+                                
+                                // Auto-remove after 10 seconds
+                                setTimeout(() => {
+                                    if (helpTooltip.parentNode) {
+                                        helpTooltip.parentNode.removeChild(helpTooltip);
+                                    }
+                                }, 10000);
+                                
+                                // Also remove on click outside
+                                const removeTooltip = (e) => {
+                                    if (!helpTooltip.contains(e.target) && !e.target.closest('.carousel-help-button')) {
+                                        if (helpTooltip.parentNode) {
+                                            helpTooltip.parentNode.removeChild(helpTooltip);
+                                        }
+                                        document.removeEventListener('click', removeTooltip);
+                                    }
+                                };
+                                
+                                setTimeout(() => {
+                                    document.addEventListener('click', removeTooltip);
+                                }, 100);
+                            }}
+                            title="Navigation Help"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         </button>
                     </div>
@@ -2528,10 +2659,37 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     };
 
     const handleStartChat = async (match) => {
-        const chatId = [currentUser.id, match.id].sort().join('_');
+        console.log('🚀 Starting chat with:', match);
+        console.log('Current user:', currentUser);
+        console.log('Match user:', match);
         
-        // Mark this chat as read when user clicks on it
-        notificationService.markChatAsRead(chatId);
+        // Generate consistent chat ID
+        const chatId = getChatId(currentUser.id, match.id);
+        console.log('💬 Generated chat ID:', chatId);
+        
+        if (!chatId) {
+            console.error('❌ Failed to generate chat ID');
+            return;
+        }
+        
+        // Ensure both users are in the chat
+        try {
+            await firebaseMessaging.createChat(chatId, [currentUser.id, match.id]);
+            console.log('✅ Chat created/verified for ID:', chatId);
+            
+            // Force sync messages to ensure consistency
+            const existingMessages = await firebaseMessaging.getChatHistory(chatId);
+            console.log(`📨 Found ${existingMessages.length} existing messages in chat`);
+            
+            // Mark messages as read for current user
+            if (existingMessages.length > 0) {
+                notificationService.markChatAsRead(chatId);
+                console.log('✅ Marked chat as read');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error setting up chat:', error);
+        }
         
         setActiveMatch(match);
     };
@@ -2714,6 +2872,25 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         } catch (error) {
             console.error('Error refreshing matches with new profiles:', error);
         }
+    };
+
+    // Function to get consistent chat ID between two users
+    const getChatId = (user1Id, user2Id) => {
+        // Ensure we have valid IDs
+        const id1 = user1Id || currentUser.id;
+        const id2 = user2Id;
+        
+        if (!id1 || !id2) {
+            console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
+            return null;
+        }
+        
+        // Sort IDs to ensure consistent chat ID regardless of who initiates
+        const sortedIds = [id1, id2].sort();
+        const chatId = sortedIds.join('_');
+        
+        console.log(`💬 Generated chat ID: ${id1} + ${id2} = ${chatId}`);
+        return chatId;
     };
 
     if (activeMatch) {

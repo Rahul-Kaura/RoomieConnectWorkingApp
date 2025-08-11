@@ -243,27 +243,113 @@ class FirebaseMessagingService {
     }
   }
 
-  // Get user's chats
-  async getUserChats(userId) {
-    const chatsRef = ref(database, 'chats');
-    
+  // Force sync all chats to ensure consistency
+  async forceSyncAllChats() {
     try {
-      const snapshot = await get(chatsRef);
-      const chats = [];
+      console.log('🔄 Force syncing all chats...');
       
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnapshot) => {
-          const chat = childSnapshot.val();
-          if (chat.participants && chat.participants.includes(userId)) {
-            chats.push(chat);
-          }
-        });
+      // Get all chat references
+      const chatsSnapshot = await get(ref(database, 'messages'));
+      if (!chatsSnapshot.exists()) {
+        console.log('No chats found to sync');
+        return { success: true, synced: 0 };
       }
       
-      return chats;
+      let syncedCount = 0;
+      const chatIds = Object.keys(chatsSnapshot.val());
+      
+      for (const chatId of chatIds) {
+        try {
+          // Get chat messages
+          const chatRef = ref(database, `messages/${chatId}`);
+          const chatSnapshot = await get(chatRef);
+          
+          if (chatSnapshot.exists()) {
+            const messages = [];
+            chatSnapshot.forEach((childSnapshot) => {
+              messages.push({
+                id: childSnapshot.key,
+                ...childSnapshot.val()
+              });
+            });
+            
+            // Sort messages by timestamp
+            messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            
+            // Update last message in chat
+            if (messages.length > 0) {
+              const lastMessage = messages[messages.length - 1];
+              await this.updateLastMessage(chatId, lastMessage);
+              syncedCount++;
+              console.log(`✅ Synced chat ${chatId}: ${messages.length} messages`);
+            }
+          }
+        } catch (chatError) {
+          console.error(`Error syncing chat ${chatId}:`, chatError);
+        }
+      }
+      
+      console.log(`✅ Force sync complete: ${syncedCount} chats synced`);
+      return { success: true, synced: syncedCount };
+      
+    } catch (error) {
+      console.error('❌ Error during force sync:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get all chat IDs for a user
+  async getUserChats(userId) {
+    try {
+      const chatsSnapshot = await get(ref(database, 'messages'));
+      if (!chatsSnapshot.exists()) {
+        return [];
+      }
+      
+      const userChats = [];
+      const chatIds = Object.keys(chatsSnapshot.val());
+      
+      for (const chatId of chatIds) {
+        // Check if this chat involves the user
+        if (chatId.includes(userId)) {
+          userChats.push(chatId);
+        }
+      }
+      
+      return userChats;
     } catch (error) {
       console.error('Error getting user chats:', error);
       return [];
+    }
+  }
+
+  // Verify chat consistency between users
+  async verifyChatConsistency(user1Id, user2Id) {
+    try {
+      const chatId = [user1Id, user2Id].sort().join('_');
+      console.log(`🔍 Verifying chat consistency for: ${chatId}`);
+      
+      // Check if chat exists
+      const chatRef = ref(database, `messages/${chatId}`);
+      const chatSnapshot = await get(chatRef);
+      
+      if (!chatSnapshot.exists()) {
+        console.log(`❌ Chat ${chatId} does not exist`);
+        return { exists: false, messageCount: 0 };
+      }
+      
+      // Count messages
+      let messageCount = 0;
+      chatSnapshot.forEach(() => {
+        messageCount++;
+      });
+      
+      console.log(`✅ Chat ${chatId} exists with ${messageCount} messages`);
+      return { exists: true, messageCount };
+      
+    } catch (error) {
+      console.error('Error verifying chat consistency:', error);
+      return { exists: false, messageCount: 0, error: error.message };
     }
   }
 
