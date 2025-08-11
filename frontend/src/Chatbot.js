@@ -1146,14 +1146,29 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         </button>
                         
                         {/* Settings button moved to bottom navigation */}
-                                                    <button
+                            <button
                                 className="carousel-settings-button"
                                 onClick={onOpenSettings}
                                 title="Edit Profile"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    {/* Main gear body with 12 teeth */}
                                     <path d="M12 2a10 10 0 0 0-7.35 16.76l.65-.65a2 2 0 0 1 2.83 0L9 19.17a2 2 0 0 1 0 2.83l-.65.65A10 10 0 0 0 12 22a10 10 0 0 0 7.35-16.76l-.65.65a2 2 0 0 1-2.83 0L15 4.83a2 2 0 0 1 0-2.83l.65-.65A10 10 0 0 0 12 2z"/>
+                                    {/* Center circle */}
                                     <circle cx="12" cy="12" r="3"/>
+                                    {/* 12 gear teeth around the perimeter */}
+                                    <path d="M12 1v3" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M12 20v3" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M23 12h-3" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M4 12H1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M20.5 3.5l-2.1 2.1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M5.6 18.4L3.5 20.5" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M20.5 20.5l-2.1-2.1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M5.6 5.6L3.5 3.5" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M18.4 5.6l2.1-2.1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M3.5 3.5l2.1 2.1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M18.4 18.4l2.1 2.1" stroke="currentColor" strokeWidth="1.5"/>
+                                    <path d="M3.5 20.5l2.1-2.1" stroke="currentColor" strokeWidth="1.5"/>
                                 </svg>
                             </button>
                     </div>

@@ -3189,36 +3189,38 @@ textarea:focus {
 
 /* Refresh & Sync Button */
 .refresh-sync-button {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: rgba(255, 255, 255, 0.15); /* Match other buttons */
     border: none;
-    color: white;
-    font-size: 14px; /* Smaller font */
+    color: #ffffff; /* White text like other buttons */
+    font-size: 16px; /* Consistent font size */
     font-weight: 600;
-    padding: 8px 16px; /* Reduced padding */
-    border-radius: 20px;
+    padding: 10px 16px; /* Match other button padding */
+    border-radius: 12px; /* Match other button radius */
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    min-width: 80px; /* Fixed minimum width */
+    backdrop-filter: blur(10px); /* Match other buttons */
+    width: auto; /* Auto width for content */
+    min-width: 100px; /* Minimum width for consistency */
     justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow like other buttons */
 }
 
 .refresh-sync-button:hover {
+    background: rgba(255, 255, 255, 0.25); /* Match other button hover */
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .refresh-sync-button:active {
     transform: translateY(0px);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .refresh-sync-button.loading {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    background: rgba(255, 255, 255, 0.25);
     cursor: not-allowed;
 }
 
@@ -3256,26 +3258,34 @@ textarea:focus {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Bouncing logo matches - reduced margin */
+/* Bouncing logo matches - match other button sizes */
 .bouncing-logo-matches {
-    margin-left: 8px; /* Reduced margin for better spacing */
+    background: rgba(255, 255, 255, 0.15); /* Match other buttons */
+    border: none;
+    padding: 10px;
+    border-radius: 12px; /* Match other button radius */
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px); /* Match other buttons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px; /* Match other button width */
+    height: 44px; /* Match other button height */
+    margin-left: 8px;
     animation: bounce 2s infinite;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow like other buttons */
 }
 
 .bouncing-logo-matches:hover {
+    background: rgba(255, 255, 255, 0.25); /* Match other button hover */
     transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .bouncing-logo-matches:active {
     transform: scale(0.95);
-}
-
-/* Notification bell button spacing */
-.notification-bell-button {
-    margin-left: 8px; /* Reduce left margin */
-    margin-right: 8px; /* Add right margin for better spacing */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Notification badge */
@@ -3459,29 +3469,47 @@ textarea:focus {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhanced gear icon animations */
+/* Enhanced gear icon animations with metallic look */
 .carousel-settings-button svg {
     transition: all 0.3s ease;
+    color: #6b7280; /* Default grey color like in the image */
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)); /* Subtle metallic shadow */
 }
 
 .carousel-settings-button:hover svg {
     transform: rotate(90deg) scale(1.1);
-    color: #20b2aa; /* Change color on hover */
+    color: #374151; /* Darker grey on hover for metallic effect */
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)); /* Enhanced shadow on hover */
 }
 
 .carousel-settings-button:active svg {
     transform: rotate(180deg) scale(0.95);
+    color: #1f2937; /* Even darker grey when clicked */
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 /* Continuous spinning animation for settings button */
 .carousel-settings-button.loading svg {
     animation: spin 1s linear infinite;
+    color: #20b2aa; /* Teal color when loading */
 }
 
-/* Gear rotation animation */
+/* Gear rotation animation with metallic effect */
 @keyframes gearSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { 
+        transform: rotate(0deg); 
+        color: #6b7280;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
+    50% { 
+        color: #374151;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+    100% { 
+        transform: rotate(360deg); 
+        color: #6b7280;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    }
 }
 
 .carousel-settings-button:hover svg {
