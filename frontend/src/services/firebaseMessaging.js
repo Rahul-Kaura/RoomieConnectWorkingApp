@@ -13,6 +13,8 @@ class FirebaseMessagingService {
 
   // Send a message
   async sendMessage(chatId, message) {
+    console.log('🚀 Sending message:', { chatId, message });
+    
     const messageData = {
       id: Date.now().toString(),
       text: message.text,
@@ -27,10 +29,19 @@ class FirebaseMessagingService {
     
     try {
       await set(newMessageRef, messageData);
-      console.log('Message sent successfully:', messageData);
+      console.log('✅ Message sent successfully:', messageData);
+      
+      // Verify message was actually saved
+      const savedMessage = await get(newMessageRef);
+      if (savedMessage.exists()) {
+        console.log('✅ Message verified in database:', savedMessage.val());
+      } else {
+        console.error('❌ Message not found in database after sending');
+      }
+      
       return { success: true, messageId: newMessageRef.key };
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error sending message:', error);
       return { success: false, error: error.message };
     }
   }
@@ -154,38 +165,52 @@ class FirebaseMessagingService {
 
   // Listen to messages in a chat
   listenToMessages(chatId, callback, currentUserId = null) {
+    console.log('👂 Setting up message listener for chat:', chatId, 'User:', currentUserId);
+    
     const chatRef = ref(database, `messages/${chatId}`);
     
     // Remove existing listener if any
     if (this.listeners.has(chatId)) {
+      console.log('🔄 Removing existing listener for chat:', chatId);
       off(chatRef, 'value', this.listeners.get(chatId));
     }
 
     const listener = onValue(chatRef, (snapshot) => {
+      console.log('📨 Message listener triggered for chat:', chatId);
+      console.log('Snapshot exists:', snapshot.exists());
+      console.log('Snapshot value:', snapshot.val());
+      
       const messages = [];
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
-          messages.push({
+          const message = {
             id: childSnapshot.key,
             ...childSnapshot.val()
-          });
+          };
+          messages.push(message);
+          console.log('📝 Found message:', message);
         });
       }
+      
       // Sort messages by timestamp
       messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-      console.log('Received messages:', messages);
+      console.log('📊 Total messages in chat:', messages.length);
+      console.log('📋 Sorted messages:', messages);
       
       // Update unread count based on real messages
       if (currentUserId && messages.length > 0) {
-        notificationService.updateUnreadCountFromMessages(chatId, messages, currentUserId);
+        const unreadCount = notificationService.updateUnreadCountFromMessages(chatId, messages, currentUserId);
+        console.log('🔔 Updated unread count for user:', currentUserId, 'Count:', unreadCount);
       }
       
       callback(messages);
     }, (error) => {
-      console.error('Error listening to messages:', error);
+      console.error('❌ Error listening to messages for chat:', chatId, error);
     });
 
     this.listeners.set(chatId, listener);
+    console.log('✅ Message listener set up successfully for chat:', chatId);
+    return listener;
   }
 
   // Stop listening to messages
@@ -199,27 +224,36 @@ class FirebaseMessagingService {
 
   // Get chat history
   async getChatHistory(chatId) {
+    console.log('📚 Getting chat history for chat:', chatId);
+    
     const chatRef = ref(database, `messages/${chatId}`);
     
     try {
       const snapshot = await get(chatRef);
+      console.log('📖 Chat history snapshot exists:', snapshot.exists());
+      console.log('📖 Chat history snapshot value:', snapshot.val());
+      
       const messages = [];
       
       if (snapshot.exists()) {
         snapshot.forEach((childSnapshot) => {
-          messages.push({
+          const message = {
             id: childSnapshot.key,
             ...childSnapshot.val()
-          });
+          };
+          messages.push(message);
+          console.log('📝 Retrieved message:', message);
         });
       }
       
       // Sort messages by timestamp
       messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-      console.log('Loaded chat history:', messages);
+      console.log('📊 Total messages retrieved:', messages.length);
+      console.log('📋 Sorted chat history:', messages);
+      
       return messages;
     } catch (error) {
-      console.error('Error getting chat history:', error);
+      console.error('❌ Error getting chat history for chat:', chatId, error);
       return [];
     }
   }
@@ -383,6 +417,87 @@ class FirebaseMessagingService {
     } catch (error) {
       console.error('Error checking user online status:', error);
       return false;
+    }
+  }
+
+  // Test messaging between specific users
+  async testMessagingBetweenUsers(user1Id, user2Id) {
+    try {
+      console.log('🧪 Testing messaging between users:', user1Id, 'and', user2Id);
+      
+      // Generate chat ID
+      const chatId = [user1Id, user2Id].sort().join('_');
+      console.log('💬 Generated chat ID:', chatId);
+      
+      // Check if chat exists
+      const chatRef = ref(database, `messages/${chatId}`);
+      const chatSnapshot = await get(chatRef);
+      console.log('📁 Chat exists:', chatSnapshot.exists());
+      
+      if (chatSnapshot.exists()) {
+        console.log('📁 Chat data:', chatSnapshot.val());
+      }
+      
+      // Check if users can access the chat
+      const canRead = await get(chatRef);
+      console.log('👀 Can read chat:', canRead.exists());
+      
+      // Try to send a test message
+      const testMessage = {
+        text: `Test message from ${user1Id} to ${user2Id} at ${new Date().toISOString()}`,
+        senderId: user1Id,
+        senderName: `Test User ${user1Id}`,
+        type: 'text'
+      };
+      
+      console.log('📤 Sending test message:', testMessage);
+      const result = await this.sendMessage(chatId, testMessage);
+      console.log('📤 Test message result:', result);
+      
+      // Wait a moment and check if message was received
+      setTimeout(async () => {
+        const updatedHistory = await this.getChatHistory(chatId);
+        console.log('📥 Updated chat history after test message:', updatedHistory);
+      }, 1000);
+      
+      return { success: true, chatId, testMessage: result };
+      
+    } catch (error) {
+      console.error('❌ Error testing messaging between users:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Debug chat access for a specific user
+  async debugUserChatAccess(userId) {
+    try {
+      console.log('🔍 Debugging chat access for user:', userId);
+      
+      // Get all chats
+      const chatsSnapshot = await get(ref(database, 'messages'));
+      if (!chatsSnapshot.exists()) {
+        console.log('❌ No chats found in database');
+        return { success: false, error: 'No chats found' };
+      }
+      
+      const chatIds = Object.keys(chatsSnapshot.val());
+      console.log('📁 Found chat IDs:', chatIds);
+      
+      const userChats = [];
+      for (const chatId of chatIds) {
+        if (chatId.includes(userId)) {
+          const chatData = chatsSnapshot.val()[chatId];
+          console.log(`📁 Chat ${chatId} data:`, chatData);
+          userChats.push({ chatId, data: chatData });
+        }
+      }
+      
+      console.log('👤 User chats:', userChats);
+      return { success: true, userChats, totalChats: chatIds.length };
+      
+    } catch (error) {
+      console.error('❌ Error debugging user chat access:', error);
+      return { success: false, error: error.message };
     }
   }
 

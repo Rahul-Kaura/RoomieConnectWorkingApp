@@ -3282,8 +3282,8 @@ textarea:focus {
     animation: unreadBounce 1s infinite;
 }
 
-/* Force sync button styles */
-.force-sync-button {
+/* Comprehensive sync button styles */
+.comprehensive-sync-button {
     background: rgba(255, 255, 255, 0.15);
     border: none;
     color: white;
@@ -3300,27 +3300,27 @@ textarea:focus {
     height: 40px;
 }
 
-.force-sync-button:hover {
+.comprehensive-sync-button:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.force-sync-button:active {
+.comprehensive-sync-button:active {
     transform: translateY(0px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Force sync button animation */
-.force-sync-button svg {
+/* Comprehensive sync button animation */
+.comprehensive-sync-button svg {
     transition: transform 0.3s ease;
 }
 
-.force-sync-button:hover svg {
+.comprehensive-sync-button:hover svg {
     transform: rotate(180deg);
 }
 
-.force-sync-button:active svg {
+.comprehensive-sync-button:active svg {
     transform: rotate(360deg);
 }
 
@@ -3437,8 +3437,8 @@ textarea:focus {
     }
 }
 
-/* Chat sync button styles */
-.chat-sync-button {
+/* Debug button styles */
+.debug-button {
     background: rgba(255, 255, 255, 0.15);
     border: none;
     color: white;
@@ -3455,26 +3455,27 @@ textarea:focus {
     height: 40px;
 }
 
-.chat-sync-button:hover {
+.debug-button:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.chat-sync-button:active {
+.debug-button:active {
     transform: translateY(0px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Chat sync button animation */
-.chat-sync-button svg {
+/* Debug button animation */
+.debug-button svg {
     transition: transform 0.3s ease;
 }
 
-.chat-sync-button:hover svg {
+.debug-button:hover svg {
     transform: scale(1.1);
 }
 
-.chat-sync-button:active svg {
+.debug-button:active svg {
     transform: scale(0.95);
 }
+
