@@ -827,18 +827,6 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         </div>
                         
                         <div className="header-actions">
-                            <div 
-                                className="bouncing-logo-matches"
-                                onClick={onResetToHome}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <svg width="32" height="32" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <polyline points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    <rect x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    <path d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
-                                </svg>
-                            </div>
-                            
                             {/* Comprehensive refresh and sync button */}
                             <button 
                                 className={`refresh-sync-button hover-blue-animation ${isSyncing ? 'loading' : ''}`}
@@ -921,25 +909,25 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                                 {/* Show unread count badge if there are unread messages */}
-                            {notificationService.getTotalUnreadCount() > 0 && (
+                                {notificationService.getTotalUnreadCount() > 0 && (
                                     <div className="notification-badge">
-                                    {notificationService.getTotalUnreadCount() > 99 ? '99+' : notificationService.getTotalUnreadCount()}
-                                </div>
-                            )}
+                                        {notificationService.getTotalUnreadCount() > 99 ? '99+' : notificationService.getTotalUnreadCount()}
+                                    </div>
+                                )}
                             </button>
                             
-                            {/* Home button moved to far right */}
-                            <button 
-                                className="home-button hover-blue-animation"
+                            {/* Roomie Connect button moved to far right */}
+                            <div 
+                                className="bouncing-logo-matches"
                                 onClick={onResetToHome}
-                                title="Return to Home"
+                                style={{ cursor: 'pointer' }}
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
-                                    <path d="M12 12l0 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg width="32" height="32" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <polyline points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    <rect x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    <path d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
                                 </svg>
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </div>

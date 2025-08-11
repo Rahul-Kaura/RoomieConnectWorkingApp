@@ -3356,6 +3356,24 @@ textarea:focus {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Spinning animation for settings button */
+.carousel-settings-button svg {
+    transition: transform 0.3s ease;
+}
+
+.carousel-settings-button:hover svg {
+    transform: rotate(180deg);
+}
+
+.carousel-settings-button:active svg {
+    transform: rotate(360deg);
+}
+
+/* Continuous spinning animation for settings button */
+.carousel-settings-button.loading svg {
+    animation: spin 1s linear infinite;
+}
+
 /* Help tooltip */
 .carousel-help-tooltip {
     background: white;
