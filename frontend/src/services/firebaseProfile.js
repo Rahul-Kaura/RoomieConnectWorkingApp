@@ -79,4 +79,122 @@ export const monitorNewProfiles = (callback) => {
   });
   
   return listener;
+};
+
+// Force sync all profiles to ensure consistency
+export const forceSyncAllProfiles = async () => {
+  try {
+    console.log('🔄 Force syncing all profiles...');
+    
+    // Load profiles from backend
+    const response = await fetch('/api/profiles');
+    if (!response.ok) {
+      throw new Error('Failed to fetch backend profiles');
+    }
+    
+    const backendProfiles = await response.json();
+    console.log(`📊 Backend profiles found: ${backendProfiles.length}`);
+    
+    // Load current Firebase profiles
+    const currentFirebaseProfiles = await loadAllProfiles();
+    console.log(`📊 Current Firebase profiles: ${currentFirebaseProfiles.length}`);
+    
+    // Create a map of existing Firebase profiles
+    const firebaseProfileMap = new Map();
+    currentFirebaseProfiles.forEach(profile => {
+      const key = profile.id || profile.userId;
+      if (key) firebaseProfileMap.set(key, profile);
+    });
+    
+    // Sync backend profiles to Firebase
+    let syncedCount = 0;
+    let updatedCount = 0;
+    
+    for (const backendProfile of backendProfiles) {
+      const profileKey = backendProfile.userId || backendProfile.id;
+      
+      if (!firebaseProfileMap.has(profileKey)) {
+        // New profile - save to Firebase
+        const firebaseProfile = {
+          id: profileKey,
+          userId: profileKey,
+          name: backendProfile.name,
+          age: backendProfile.age,
+          major: backendProfile.major,
+          location: backendProfile.location,
+          image: backendProfile.image,
+          instagram: backendProfile.instagram,
+          allergies: backendProfile.allergies,
+          answers: backendProfile.answers,
+          score: backendProfile.score,
+          isTestProfile: true,
+          lastSynced: Date.now()
+        };
+        
+        await saveProfile(firebaseProfile);
+        syncedCount++;
+        console.log(`✅ Synced new profile: ${backendProfile.name}`);
+      } else {
+        // Profile exists - check if update needed
+        const existingProfile = firebaseProfileMap.get(profileKey);
+        if (existingProfile.lastSynced < Date.now() - 86400000) { // 24 hours
+          // Update existing profile
+          const updatedProfile = {
+            ...existingProfile,
+            name: backendProfile.name,
+            age: backendProfile.age,
+            major: backendProfile.major,
+            location: backendProfile.location,
+            image: backendProfile.image,
+            instagram: backendProfile.instagram,
+            allergies: backendProfile.allergies,
+            answers: backendProfile.answers,
+            score: backendProfile.score,
+            lastSynced: Date.now()
+          };
+          
+          await saveProfile(updatedProfile);
+          updatedCount++;
+          console.log(`🔄 Updated profile: ${backendProfile.name}`);
+        }
+      }
+    }
+    
+    console.log(`✅ Force sync complete: ${syncedCount} new, ${updatedCount} updated`);
+    return { success: true, synced: syncedCount, updated: updatedCount };
+    
+  } catch (error) {
+    console.error('❌ Error during force sync:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Get profile by any ID field
+export const getProfileById = async (profileId) => {
+  try {
+    // Try Firebase first
+    let profile = await loadProfile(profileId);
+    
+    if (!profile) {
+      // Try backend as fallback
+      try {
+        const response = await fetch(`/api/profile/user/${profileId}`);
+        if (response.ok) {
+          const backendProfile = await response.json();
+          if (backendProfile.hasProfile) {
+            profile = backendProfile.profile;
+            // Save to Firebase for future use
+            await saveProfile(profile);
+          }
+        }
+      } catch (backendError) {
+        console.error('Backend fallback failed:', backendError);
+      }
+    }
+    
+    return profile;
+  } catch (error) {
+    console.error('Error getting profile by ID:', error);
+    return null;
+  }
 }; 

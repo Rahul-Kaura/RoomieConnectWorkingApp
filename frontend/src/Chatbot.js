@@ -696,6 +696,71 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 </svg>
                             </button>
                             
+                            {/* Force sync button to ensure all profiles are visible */}
+                            <button 
+                                className="force-sync-button hover-blue-animation"
+                                onClick={async () => {
+                                    try {
+                                        console.log('🔄 Force sync requested...');
+                                        const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
+                                        const result = await forceSyncAllProfiles();
+                                        
+                                        if (result.success) {
+                                            // Reload profiles after sync
+                                            const profiles = await loadAllProfiles();
+                                            setAllProfiles(profiles);
+                                            
+                                            notificationService.showMessageNotification(
+                                                'Sync Complete!',
+                                                `${result.synced} new profiles, ${result.updated} updated`
+                                            );
+                                        } else {
+                                            throw new Error(result.error);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error during force sync:', error);
+                                        notificationService.showMessageNotification(
+                                            'Sync Failed',
+                                            'Please try again later'
+                                        );
+                                    }
+                                }}
+                                title="Force sync all profiles"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                            
+                            {/* Always show notification bell */}
+                            <button 
+                                className="notification-bell-button hover-blue-animation"
+                                onClick={() => {
+                                    // Show notification permission request or notification center
+                                    if ('Notification' in window && Notification.permission === 'default') {
+                                        Notification.requestPermission();
+                                    } else {
+                                        // Show notification center or refresh matches
+                                        notificationService.showMessageNotification(
+                                            'Notifications',
+                                            'You have notifications enabled!'
+                                        );
+                                    }
+                                }}
+                                title="Notifications"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                {/* Show unread count badge if there are unread messages */}
+                                {notificationService.getTotalUnreadCount() > 0 && (
+                                    <div className="notification-badge">
+                                        {notificationService.getTotalUnreadCount() > 99 ? '99+' : notificationService.getTotalUnreadCount()}
+                                    </div>
+                                )}
+                            </button>
+                            
                             <button 
                                 className="settings-button hover-blue-animation"
                                 onClick={onOpenSettings}
@@ -2127,16 +2192,42 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         const storedPinned = localStorage.getItem(`pinnedMatches_${currentUser.id}`);
         const pinnedMatches = storedPinned ? new Set(JSON.parse(storedPinned)) : new Set();
         
+        console.log('🔍 getMatches debug:', {
+            currentProfile: currentProfile,
+            currentProfileId: currentProfile.id,
+            allProfilesCount: allProfiles.length,
+            allProfileIds: allProfiles.map(p => ({ id: p.id, userId: p.userId, name: p.name }))
+        });
+        
         const matchesWithDistance = await Promise.all(
             allProfiles
-            .filter(p => p.id !== currentProfile.id)
-                .map(async (otherUser) => {
-                    // Calculate compatibility based on normalized answers
-                    let compatibilityScore = 0;
-                    let totalQuestions = 0;
-                    
-                    // Compare answers for each question
-                    if (currentProfile.answers && otherUser.answers) {
+            .filter(p => {
+                // Fix: Handle multiple ID field variations to ensure all profiles are visible
+                const currentId = currentProfile.id || currentProfile.userId;
+                const otherId = p.id || p.userId;
+                
+                // Don't match with self
+                if (currentId === otherId) {
+                    console.log(`❌ Filtering out self: ${currentId} === ${otherId}`);
+                    return false;
+                }
+                
+                // Ensure profile has required fields
+                if (!p.name) {
+                    console.log(`❌ Filtering out profile without name:`, p);
+                    return false;
+                }
+                
+                console.log(`✅ Including profile: ${p.name} (ID: ${otherId})`);
+                return true;
+            })
+            .map(async (otherUser) => {
+                // Calculate compatibility based on normalized answers
+                let compatibilityScore = 0;
+                let totalQuestions = 0;
+                
+                // Compare answers for each question
+                if (currentProfile.answers && otherUser.answers) {
                     currentProfile.answers.forEach(currentAnswer => {
                         const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
                         if (otherAnswer) {
@@ -2155,25 +2246,31 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                             }
                         }
                     });
-                    }
-                    
-                    // Calculate percentage
-                    const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 0;
-                    
-                    // Calculate distance if both users have location data
-                    let distance = null;
-                    if (currentProfile.location && otherUser.location) {
-                        distance = await calculateDistance(currentProfile.location, otherUser.location);
-                    }
-                    
+                }
+                
+                // Calculate percentage
+                const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 50; // Default to 50% if no answers
+                
+                // Calculate distance if both users have location data
+                let distance = null;
+                if (currentProfile.location && otherUser.location) {
+                    distance = await calculateDistance(currentProfile.location, otherUser.location);
+                }
+                
+                // Use consistent ID for matching
+                const matchId = otherUser.id || otherUser.userId;
+                
                 return {
                     ...otherUser,
+                    id: matchId, // Ensure consistent ID field
                     compatibility: compatibility.toFixed(2),
-                        distance: distance,
-                        isPinned: pinnedMatches.has(otherUser.id), // Check if pinned
-                    };
-                })
+                    distance: distance,
+                    isPinned: pinnedMatches.has(matchId), // Check if pinned using consistent ID
+                };
+            })
         );
+        
+        console.log(`🎯 Found ${matchesWithDistance.length} potential matches`);
         
         return matchesWithDistance
             .sort((a, b) => {
@@ -2222,10 +2319,76 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     useEffect(() => {
         if (existingProfile && existingProfile.id) {
             (async () => {
-                const allProfiles = await loadAllProfiles();
-                const matches = await getMatches(existingProfile, allProfiles);
-                setMatchResults({ matches });
-                setShowMatchResults(true);
+                try {
+                    console.log('🔄 Loading matches for existing profile:', existingProfile.id);
+                    
+                    // First try to load from Firebase
+                    let allProfiles = await loadAllProfiles();
+                    console.log(`📊 Firebase profiles loaded: ${allProfiles.length}`);
+                    
+                    // If no Firebase profiles, try backend
+                    if (!allProfiles || allProfiles.length === 0) {
+                        console.log('🔄 No Firebase profiles, trying backend...');
+                        try {
+                            const backendResponse = await axios.get(`${API_URL}/profiles`);
+                            if (backendResponse.data && backendResponse.data.length > 0) {
+                                // Convert backend profiles to Firebase format
+                                allProfiles = backendResponse.data.map(backendProfile => ({
+                                    id: backendProfile.userId || backendProfile.id,
+                                    userId: backendProfile.userId || backendProfile.id,
+                                    name: backendProfile.name,
+                                    age: backendProfile.age,
+                                    major: backendProfile.major,
+                                    location: backendProfile.location,
+                                    image: backendProfile.image,
+                                    instagram: backendProfile.instagram,
+                                    allergies: backendProfile.allergies,
+                                    answers: backendProfile.answers,
+                                    score: backendProfile.score,
+                                    isTestProfile: true
+                                }));
+                                console.log(`📊 Backend profiles converted: ${allProfiles.length}`);
+                            }
+                        } catch (backendError) {
+                            console.error('Error loading backend profiles:', backendError);
+                        }
+                    }
+                    
+                    // Ensure current profile is included in allProfiles
+                    const currentProfileExists = allProfiles.some(p => 
+                        (p.id === existingProfile.id) || (p.userId === existingProfile.id)
+                    );
+                    
+                    if (!currentProfileExists) {
+                        console.log('➕ Adding current profile to allProfiles');
+                        allProfiles.push(existingProfile);
+                    }
+                    
+                    console.log(`🎯 Total profiles available: ${allProfiles.length}`);
+                    console.log('Profile IDs:', allProfiles.map(p => ({ id: p.id, userId: p.userId, name: p.name })));
+                    
+                    // Get matches using the consolidated profile list
+                    const matches = await getMatches(existingProfile, allProfiles);
+                    console.log(`✅ Matches found: ${matches.length}`);
+                    
+                    setMatchResults({ matches, score: existingProfile.score || 0 });
+                    setShowMatchResults(true);
+                    
+                } catch (error) {
+                    console.error('Error loading matches:', error);
+                    // Fallback: try to get matches from backend API
+                    try {
+                        console.log('🔄 Fallback: trying backend API...');
+                        const matchResponse = await axios.get(`${API_URL}/match/${existingProfile.id}`);
+                        setMatchResults({
+                            matches: matchResponse.data.matches,
+                            score: matchResponse.data.compatibilityScore
+                        });
+                        setShowMatchResults(true);
+                    } catch (fallbackError) {
+                        console.error('Fallback also failed:', fallbackError);
+                    }
+                }
             })();
         }
     }, [existingProfile]);
