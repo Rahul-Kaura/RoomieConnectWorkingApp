@@ -1,30 +1,82 @@
+import { ref, set, get, child, onValue, off } from 'firebase/database';
 import { database } from '../firebase';
-import { ref, set, get, child } from 'firebase/database';
 
 export const saveProfile = async (profile) => {
-  console.log('Saving profile to Firebase:', profile);
-  console.log('Profile ID:', profile.id);
-  console.log('Firebase path: profiles/' + profile.id);
-  await set(ref(database, `profiles/${profile.id}`), profile);
-  console.log('Profile saved successfully');
+  const profileRef = ref(database, `profiles/${profile.id}`);
+  await set(profileRef, profile);
+  return profile;
 };
 
 export const loadProfile = async (userId) => {
-  console.log('Loading profile from Firebase for user ID:', userId);
-  console.log('Firebase path: profiles/' + userId);
   const snapshot = await get(child(ref(database), `profiles/${userId}`));
-  console.log('Firebase snapshot exists:', snapshot.exists());
-  if (snapshot.exists()) {
-    const profile = snapshot.val();
-    console.log('Loaded profile data:', profile);
-    return profile;
-  } else {
-    console.log('No profile found for user ID:', userId);
-    return null;
-  }
+  return snapshot.exists() ? snapshot.val() : null;
 };
 
 export const loadAllProfiles = async () => {
   const snapshot = await get(child(ref(database), 'profiles'));
   return snapshot.exists() ? Object.values(snapshot.val()) : [];
+};
+
+// Real-time profile listening for automatic updates
+export const listenToProfiles = (callback) => {
+  const profilesRef = ref(database, 'profiles');
+  
+  const listener = onValue(profilesRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const profiles = Object.values(snapshot.val());
+      callback(profiles);
+    } else {
+      callback([]);
+    }
+  }, (error) => {
+    console.error('Error listening to profiles:', error);
+    callback([]);
+  });
+  
+  return listener;
+};
+
+// Stop listening to profiles
+export const stopListeningToProfiles = (listener) => {
+  if (listener) {
+    off(ref(database, 'profiles'), 'value', listener);
+  }
+};
+
+// Get profile count for monitoring
+export const getProfileCount = async () => {
+  const snapshot = await get(child(ref(database, 'profiles')));
+  return snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+};
+
+// Monitor for new profile additions
+export const monitorNewProfiles = (callback) => {
+  let previousCount = 0;
+  let previousProfiles = [];
+  
+  const listener = onValue(ref(database, 'profiles'), (snapshot) => {
+    if (snapshot.exists()) {
+      const currentProfiles = Object.values(snapshot.val());
+      const currentCount = currentProfiles.length;
+      
+      // Check if new profiles were added
+      if (currentCount > previousCount) {
+        const newProfiles = currentProfiles.filter(profile => 
+          !previousProfiles.some(prev => prev.id === profile.id)
+        );
+        
+        if (newProfiles.length > 0) {
+          console.log(`🆕 New profiles detected: ${newProfiles.length}`, newProfiles.map(p => p.name));
+          callback(newProfiles, currentProfiles);
+        }
+      }
+      
+      previousCount = currentCount;
+      previousProfiles = currentProfiles;
+    }
+  }, (error) => {
+    console.error('Error monitoring new profiles:', error);
+  });
+  
+  return listener;
 }; 

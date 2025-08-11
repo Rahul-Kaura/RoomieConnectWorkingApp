@@ -4,7 +4,7 @@ import Login from './Login';
 import './App.css';
 import AnimatedCredits from './AnimatedCredits';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { loadProfile } from './services/firebaseProfile';
+import { loadProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
 import { autoSyncTestProfiles } from './services/syncTestProfiles';
 
@@ -13,6 +13,7 @@ function App() {
   const [view, setView] = useState('homeLoading'); // Start with home loading animation
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+  const [globalProfileMonitor, setGlobalProfileMonitor] = useState(null);
 
   // Remove auto-transition - let homeLoading stay until user clicks
 
@@ -154,6 +155,45 @@ function App() {
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Global profile monitoring for all users
+  useEffect(() => {
+    if (isAuthenticated && currentUser && currentUser.id) {
+      console.log('🌍 App: Starting global profile monitoring...');
+      
+      // Monitor for new profiles globally
+      const monitor = monitorNewProfiles((newProfiles, allProfiles) => {
+        console.log(`🆕 App: Global new profiles detected: ${newProfiles.map(p => p.name).join(', ')}`);
+        
+        // Show global notification about new profiles
+        if (newProfiles.length > 0) {
+          // Use browser notification if available
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Roommates Available!', {
+              body: `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} just joined RoomieConnect!`,
+              icon: '/logo192.png',
+              tag: 'new-profiles'
+            });
+          }
+          
+          // Also show in-app notification if user is not on matches screen
+          if (view !== 'matches') {
+            // You could add a toast notification here
+            console.log('💡 User not on matches screen, new profiles available');
+          }
+        }
+      });
+      
+      setGlobalProfileMonitor(monitor);
+      
+      return () => {
+        if (monitor) {
+          console.log('🛑 App: Stopping global profile monitoring...');
+          stopListeningToProfiles(monitor);
+        }
+      };
+    }
+  }, [isAuthenticated, currentUser, view]);
 
   const handleWelcomeContinue = () => {
     console.log('=== WELCOME CONTINUE DEBUG ===');

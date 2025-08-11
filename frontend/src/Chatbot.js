@@ -3,7 +3,7 @@ import Sentiment from 'sentiment';
 import axios from 'axios';
 import './Chatbot.css';
 import ChatScreen from './ChatScreen';
-import { saveProfile, loadProfile, loadAllProfiles } from './services/firebaseProfile';
+import { saveProfile, loadProfile, loadAllProfiles, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import notificationService from './services/notificationService';
 import firebaseMessaging from './services/firebaseMessaging';
 import { DISTANCE_API_CONFIG, getDistanceAPI, API_URL } from './config';
@@ -332,9 +332,11 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const [unreadCounts, setUnreadCounts] = React.useState({});
     const [pinnedMatches, setPinnedMatches] = React.useState(new Set());
     const [expandedMatch, setExpandedMatch] = React.useState(null);
-    const [currentPage, setCurrentPage] = React.useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
     const [headerAnimationPhase, setHeaderAnimationPhase] = useState('title'); // 'title' or 'logo'
+    const [profileMonitor, setProfileMonitor] = React.useState(null);
+    const [allProfiles, setAllProfiles] = React.useState([]);
     
     const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
@@ -542,6 +544,78 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         return () => clearTimeout(titleTimer);
     }, []);
 
+    // Real-time profile monitoring for automatic updates
+    React.useEffect(() => {
+        if (currentUser && currentUser.id) {
+            console.log('🔍 MatchResultsGrid: Starting real-time profile monitoring...');
+            
+            // Load initial profiles
+            const loadInitialProfiles = async () => {
+                try {
+                    const profiles = await loadAllProfiles();
+                    setAllProfiles(profiles);
+                    console.log(`📊 Loaded ${profiles.length} initial profiles`);
+                } catch (error) {
+                    console.error('Error loading initial profiles:', error);
+                }
+            };
+            
+            loadInitialProfiles();
+            
+            // Monitor for new profiles and automatically refresh
+            const monitor = monitorNewProfiles((newProfiles, allCurrentProfiles) => {
+                console.log(`🆕 MatchResultsGrid: New profiles detected: ${newProfiles.map(p => p.name).join(', ')}`);
+                
+                // Update all profiles list
+                setAllProfiles(allCurrentProfiles);
+                
+                // Show notification about new potential matches
+                if (newProfiles.length > 0) {
+                    notificationService.showMessageNotification(
+                        'New Roommates Available!',
+                        `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} just joined!`
+                    );
+                }
+            });
+            
+            setProfileMonitor(monitor);
+            
+            // Periodic refresh as backup (every 2 minutes)
+            const periodicRefresh = setInterval(async () => {
+                try {
+                    console.log('🔄 MatchResultsGrid: Periodic profile refresh...');
+                    const profiles = await loadAllProfiles();
+                    setAllProfiles(profiles);
+                    
+                    // Check if we have new profiles that weren't detected by real-time monitoring
+                    if (profiles.length > allProfiles.length) {
+                        const newProfiles = profiles.filter(profile => 
+                            !allProfiles.some(existing => existing.id === profile.id)
+                        );
+                        
+                        if (newProfiles.length > 0) {
+                            console.log(`🆕 Periodic refresh found new profiles: ${newProfiles.map(p => p.name).join(', ')}`);
+                            notificationService.showMessageNotification(
+                                'New Roommates Found!',
+                                `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} available!`
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error during periodic profile refresh:', error);
+                }
+            }, 120000); // 2 minutes
+            
+            return () => {
+                if (monitor) {
+                    console.log('🛑 MatchResultsGrid: Stopping profile monitoring...');
+                    stopListeningToProfiles(monitor);
+                }
+                clearInterval(periodicRefresh);
+            };
+        }
+    }, [currentUser]);
+
     return (
         <div className="chatbot-container-isolated">
         <div className="match-results-outer">
@@ -590,6 +664,38 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     <path d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
                                 </svg>
                             </div>
+                            
+                            {/* Manual refresh button for new profiles */}
+                            <button 
+                                className="refresh-button hover-blue-animation"
+                                onClick={async () => {
+                                    try {
+                                        console.log('🔄 Manual refresh requested...');
+                                        const profiles = await loadAllProfiles();
+                                        setAllProfiles(profiles);
+                                        
+                                        // Show success message
+                                        notificationService.showMessageNotification(
+                                            'Refresh Complete!',
+                                            `Found ${profiles.length} total profiles`
+                                        );
+                                    } catch (error) {
+                                        console.error('Error during manual refresh:', error);
+                                        notificationService.showMessageNotification(
+                                            'Refresh Failed',
+                                            'Please try again later'
+                                        );
+                                    }
+                                }}
+                                title="Check for new profiles"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 4v6h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M23 20v-6h-6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                            
                             <button 
                                 className="settings-button hover-blue-animation"
                                 onClick={onOpenSettings}
@@ -1054,6 +1160,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [needsName, setNeedsName] = useState(false);
+    const [profileMonitor, setProfileMonitor] = useState(null);
     
     // Track user activity for online status
     useEffect(() => {
@@ -2391,6 +2498,60 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         existingProfile: !!existingProfile,
         currentUser: !!currentUser
     });
+
+    // Real-time profile monitoring for automatic match updates
+    useEffect(() => {
+        if (currentUser && currentUser.id) {
+            console.log('🔍 Starting real-time profile monitoring...');
+            
+            // Monitor for new profiles and automatically refresh matches
+            const monitor = monitorNewProfiles((newProfiles, allProfiles) => {
+                console.log(`🆕 New profiles detected: ${newProfiles.map(p => p.name).join(', ')}`);
+                
+                // If we have an existing profile, refresh matches with new profiles
+                if (existingProfile && existingProfile.id) {
+                    console.log('🔄 Refreshing matches due to new profiles...');
+                    refreshMatchesWithNewProfiles(allProfiles);
+                }
+            });
+            
+            setProfileMonitor(monitor);
+            
+            return () => {
+                if (monitor) {
+                    console.log('🛑 Stopping profile monitoring...');
+                    stopListeningToProfiles(monitor);
+                }
+            };
+        }
+    }, [currentUser, existingProfile]);
+
+    // Function to refresh matches when new profiles are detected
+    const refreshMatchesWithNewProfiles = async (allProfiles) => {
+        if (!existingProfile || !existingProfile.id) return;
+        
+        try {
+            console.log('🔄 Refreshing matches with new profiles...');
+            const matches = await getMatches(existingProfile, allProfiles);
+            
+            // Update match results if we have new matches
+            if (matches && matches.length > 0) {
+                setMatchResults({ matches, score: existingProfile.score || 0 });
+                console.log(`✅ Matches refreshed: ${matches.length} matches found`);
+                
+                // Show notification about new matches
+                if (matches.length > matchResults.matches.length) {
+                    const newMatchCount = matches.length - matchResults.matches.length;
+                    notificationService.showMessageNotification(
+                        'New Matches Available!',
+                        `${newMatchCount} new potential roommate${newMatchCount > 1 ? 's' : ''} found!`
+                    );
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing matches with new profiles:', error);
+        }
+    };
 
     if (activeMatch) {
         return <ChatScreen 
