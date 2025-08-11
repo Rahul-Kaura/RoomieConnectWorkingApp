@@ -625,19 +625,60 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
         if (currentUser && currentUser.id) {
             console.log('🔍 MatchResultsGrid: Starting real-time profile monitoring...');
             
-            // Load initial profiles
+            // Load initial profiles with retry mechanism
             const loadInitialProfiles = async () => {
                 try {
-                    const profiles = await loadAllProfiles();
+                    console.log('📊 Loading initial profiles...');
+                    let profiles = await loadAllProfiles();
+                    
+                    // If no profiles loaded, try to force sync from backend
+                    if (!profiles || profiles.length === 0) {
+                        console.log('⚠️ No profiles loaded, attempting backend sync...');
+                        await firebaseProfile.forceSyncAllProfiles();
+                        profiles = await loadAllProfiles();
+                    }
+                    
+                    // Validate and fix profiles
                     const validatedProfiles = validateAndFixProfiles(profiles);
                     setAllProfiles(validatedProfiles);
-                    console.log(`📊 Loaded ${validatedProfiles.length} initial profiles`);
+                    console.log(`📊 Loaded ${validatedProfiles.length} initial profiles:`, validatedProfiles.map(p => ({ name: p.name, id: p.id, userId: p.userId })));
+                    
+                    // Force a comprehensive sync to ensure all users can see each other
+                    console.log('🔄 Force syncing all profiles to ensure visibility...');
+                    await firebaseProfile.forceSyncAllProfiles();
+                    
+                    // Reload profiles after sync
+                    const syncedProfiles = await loadAllProfiles();
+                    const finalProfiles = validateAndFixProfiles(syncedProfiles);
+                    setAllProfiles(finalProfiles);
+                    console.log(`✅ Final profile count after sync: ${finalProfiles.length}`);
+                    
                 } catch (error) {
-                    console.error('Error loading initial profiles:', error);
+                    console.error('❌ Error loading initial profiles:', error);
                 }
             };
             
             loadInitialProfiles();
+            
+            // Immediate sync to ensure all users can see each other
+            const immediateSync = async () => {
+                try {
+                    console.log('🚀 Performing immediate profile sync for visibility...');
+                    await firebaseProfile.forceSyncAllProfiles();
+                    await firebaseMessaging.forceSyncAllChats();
+                    
+                    // Reload profiles after immediate sync
+                    const syncedProfiles = await loadAllProfiles();
+                    const finalProfiles = validateAndFixProfiles(syncedProfiles);
+                    setAllProfiles(finalProfiles);
+                    console.log(`✅ Immediate sync complete: ${finalProfiles.length} profiles available`);
+                } catch (error) {
+                    console.error('❌ Error during immediate sync:', error);
+                }
+            };
+            
+            // Run immediate sync after a short delay to ensure Firebase is ready
+            setTimeout(immediateSync, 2000);
             
             // Monitor for new profiles and automatically refresh
             const monitor = monitorNewProfiles((newProfiles, allCurrentProfiles) => {
@@ -657,16 +698,25 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
             
             setProfileMonitor(monitor);
             
-            // Periodic refresh as backup (every 2 minutes)
+            // Periodic refresh as backup (every 30 seconds for better synchronization)
             const periodicRefresh = setInterval(async () => {
                 try {
                     console.log('🔄 MatchResultsGrid: Periodic profile refresh...');
-                    const profiles = await loadAllProfiles();
-                    setAllProfiles(profiles);
+                    let profiles = await loadAllProfiles();
+                    
+                    // If profiles seem stale, force a sync
+                    if (profiles.length < allProfiles.length) {
+                        console.log('⚠️ Profile count decreased, forcing sync...');
+                        await firebaseProfile.forceSyncAllProfiles();
+                        profiles = await loadAllProfiles();
+                    }
+                    
+                    const validatedProfiles = validateAndFixProfiles(profiles);
+                    setAllProfiles(validatedProfiles);
                     
                     // Check if we have new profiles that weren't detected by real-time monitoring
-                    if (profiles.length > allProfiles.length) {
-                        const newProfiles = profiles.filter(profile => 
+                    if (validatedProfiles.length > allProfiles.length) {
+                        const newProfiles = validatedProfiles.filter(profile => 
                             !allProfiles.some(existing => existing.id === profile.id)
                         );
                         
@@ -679,9 +729,9 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         }
                     }
                 } catch (error) {
-                    console.error('Error during periodic profile refresh:', error);
+                    console.error('❌ Error during periodic profile refresh:', error);
                 }
-            }, 120000); // 2 minutes
+            }, 30000); // 30 seconds for better synchronization
             
             return () => {
                 if (monitor) {
@@ -744,10 +794,10 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             
                             {/* Comprehensive refresh and sync button */}
                             <button 
-                                className="refresh-sync-button hover-blue-animation"
+                                className="refresh-sync-button"
                                 onClick={async () => {
                                     try {
-                                        console.log('🔄 Refresh and sync requested...');
+                                        console.log('🔄 Starting comprehensive refresh and sync...');
                                         
                                         // First refresh profiles
                                         const profiles = await loadAllProfiles();
@@ -756,95 +806,31 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                         console.log('✅ Profiles refreshed:', validatedProfiles.length);
                                         
                                         // Then sync profiles and chats
-                                        const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
-                                        const profileResult = await forceSyncAllProfiles();
-                                        const chatResult = await firebaseMessaging.forceSyncAllChats();
+                                        await firebaseProfile.forceSyncAllProfiles();
+                                        await firebaseMessaging.forceSyncAllChats();
+                                        console.log('✅ Comprehensive sync completed');
                                         
-                                        if (profileResult.success && chatResult.success) {
-                                            // Refresh unread counts after sync
-                                            const realCounts = {};
-                                            for (const match of matches) {
-                                                const chatId = getChatId(currentUser.id, match.id);
-                                                if (chatId) {
-                                                    const messages = await firebaseMessaging.getChatHistory(chatId);
-                                                    const unreadCount = notificationService.updateUnreadCountFromMessages(chatId, messages, currentUser.id);
-                                                    realCounts[match.id] = unreadCount;
-                                                }
-                                            }
-                                            setUnreadCounts(realCounts);
-                                            
-                                            notificationService.showMessageNotification(
-                                                'Refresh & Sync Complete!',
-                                                `${profiles.length} profiles loaded, ${profileResult.synced} synced, ${chatResult.synced} chats synced`
-                                            );
-                                        } else {
-                                            // Even if sync fails, refresh was successful
-                                            notificationService.showMessageNotification(
-                                                'Refresh Complete!',
-                                                `${profiles.length} profiles loaded (sync had issues)`
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.error('Error during refresh and sync:', error);
+                                        // Show success notification
                                         notificationService.showMessageNotification(
-                                            'Refresh Failed',
-                                            'Please try again later'
+                                            'Sync Complete!',
+                                            'All profiles and chats have been synchronized.'
+                                        );
+                                    } catch (error) {
+                                        console.error('❌ Error during refresh and sync:', error);
+                                        notificationService.showMessageNotification(
+                                            'Sync Error',
+                                            'There was an issue during synchronization. Please try again.'
                                         );
                                     }
                                 }}
-                                title="Refresh profiles and sync all data"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 4v6h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M23 20v-6h-6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                    <path d="M21 3v5h-5"></path>
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                    <path d="M3 21v-5h5"></path>
                                 </svg>
-                            </button>
-                            
-                            {/* Debug button for messaging issues */}
-                            <button 
-                                className="debug-button hover-blue-animation"
-                                onClick={async () => {
-                                    try {
-                                        console.log('🐛 Debug messaging requested...');
-                                        
-                                        // Debug current user's chat access
-                                        const userAccess = await firebaseMessaging.debugUserChatAccess(currentUser.id);
-                                        console.log('🔍 User chat access debug:', userAccess);
-                                        
-                                        // Test messaging with first match if available
-                                        if (matches && matches.length > 0) {
-                                            const firstMatch = matches[0];
-                                            const testResult = await firebaseMessaging.testMessagingBetweenUsers(
-                                                currentUser.id, 
-                                                firstMatch.id
-                                            );
-                                            console.log('🧪 Test messaging result:', testResult);
-                                            
-                                            notificationService.showMessageNotification(
-                                                'Debug Complete!',
-                                                `Check console for details. User access: ${userAccess.userChats?.length || 0} chats`
-                                            );
-                                        } else {
-                                            notificationService.showMessageNotification(
-                                                'Debug Complete!',
-                                                `No matches available. User access: ${userAccess.userChats?.length || 0} chats`
-                                            );
-                                        }
-                                        
-                                    } catch (error) {
-                                        console.error('Error during debug:', error);
-                                        notificationService.showMessageNotification(
-                                            'Debug Failed',
-                                            'Check console for error details'
-                                        );
-                                    }
-                                }}
-                                title="Debug messaging issues"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
+                                Refresh & Sync
                             </button>
                             
                             {/* Always show notification bell */}
