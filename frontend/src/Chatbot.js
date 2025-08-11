@@ -771,7 +771,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             console.log(`🆕 Periodic refresh found new profiles: ${newProfiles.map(p => p.name).join(', ')}`);
                             notificationService.showMessageNotification(
                                 'New Roommates Found!',
-                                `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} available!`
+                                `${newProfiles.length} new potential roommate${newMatchCount > 1 ? 's' : ''} available!`
                             );
                         }
                     }
@@ -827,7 +827,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         </div>
                         
                         <div className="header-actions">
-                            {/* Comprehensive refresh and sync button */}
+                            {/* Sync button */}
                             <button 
                                 className={`refresh-sync-button hover-blue-animation ${isSyncing ? 'loading' : ''}`}
                                 onClick={async () => {
@@ -884,10 +884,10 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
                                     <path d="M3 21v-5h5"></path>
                                 </svg>
-                                {isSyncing ? 'Syncing...' : 'Refresh & Sync'}
+                                {isSyncing ? 'Syncing...' : 'Sync'}
                             </button>
                             
-                            {/* Always show notification bell */}
+                            {/* Notification bell */}
                             <button 
                                 className="notification-bell-button hover-blue-animation"
                                 onClick={() => {
@@ -916,7 +916,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 )}
                             </button>
                             
-                            {/* Roomie Connect button moved to far right */}
+                            {/* Roomie Connect button */}
                             <div 
                                 className="bouncing-logo-matches"
                                 onClick={onResetToHome}
@@ -1146,16 +1146,16 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         </button>
                         
                         {/* Settings button moved to bottom navigation */}
-                        <button 
-                            className="carousel-settings-button"
-                            onClick={onOpenSettings}
-                            title="Edit Profile"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-                            </svg>
-                        </button>
+                                                    <button
+                                className="carousel-settings-button"
+                                onClick={onOpenSettings}
+                                title="Edit Profile"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 2a10 10 0 0 0-7.35 16.76l.65-.65a2 2 0 0 1 2.83 0L9 19.17a2 2 0 0 1 0 2.83l-.65.65A10 10 0 0 0 12 22a10 10 0 0 0 7.35-16.76l-.65.65a2 2 0 0 1-2.83 0L15 4.83a2 2 0 0 1 0-2.83l.65-.65A10 10 0 0 0 12 2z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
                     </div>
                 )}
             </div>
