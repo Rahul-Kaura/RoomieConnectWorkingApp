@@ -904,19 +904,32 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 }}
                                 title="Notifications"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    {/* 3D Bell with glossy gold appearance */}
-                                    {/* Main bell body - glossy gold fill */}
-                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="#FFD700" stroke="#FFA500" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    {/* Bell clapper - darker gold */}
-                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="#FFA500" stroke="#FF8C00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    {/* 3D highlights for glossy effect */}
-                                    <path d="M7 9a4 4 0 0 1 10 0c0 5 2 7 2 7H5s2-2 2-7" fill="none" stroke="#FFEF40" strokeWidth="1" opacity="0.8"/>
-                                    {/* Bell loop at top */}
-                                    <circle cx="12" cy="7" r="1" fill="#FFA500" stroke="#FF8C00" strokeWidth="1"/>
-                                    {/* Red notification badge with 3D effect */}
-                                    <circle cx="12" cy="12" r="4" fill="#FF4444" stroke="#CC0000" strokeWidth="1"/>
-                                    <circle cx="12" cy="12" r="3" fill="#FF6666" stroke="none"/>
+                                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="bellGold" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#FFE585"/>
+                                            <stop offset="45%" stopColor="#F5C94C"/>
+                                            <stop offset="70%" stopColor="#D9A628"/>
+                                            <stop offset="100%" stopColor="#B17A18"/>
+                                        </linearGradient>
+                                        <radialGradient id="bellHighlight" cx="35%" cy="30%" r="60%">
+                                            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.75"/>
+                                            <stop offset="60%" stopColor="#FFFFFF" stopOpacity="0"/>
+                                        </radialGradient>
+                                        <filter id="bellShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feDropShadow dx="0" dy="1" stdDeviation="0.6" floodColor="#000000" floodOpacity="0.25"/>
+                                        </filter>
+                                    </defs>
+                                    <g filter="url(#bellShadow)">
+                                        {/* Bell body */}
+                                        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="url(#bellGold)" stroke="#9A6A12" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                                        {/* Top loop */}
+                                        <circle cx="12" cy="7" r="1.2" fill="#D5A12A" stroke="#9A6A12" strokeWidth="0.6"/>
+                                        {/* Clapper */}
+                                        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="#C1861C" stroke="#8E5B0C" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                        {/* Gloss highlight */}
+                                        <path d="M7.2 9.2c.8-2.6 3.2-3.6 5.4-3.4" fill="none" stroke="url(#bellHighlight)" strokeWidth="1.1" strokeLinecap="round"/>
+                                    </g>
                                 </svg>
                                 {/* Show unread count badge if there are unread messages */}
                                 {notificationService.getTotalUnreadCount() > 0 && (
