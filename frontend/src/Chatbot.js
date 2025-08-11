@@ -905,8 +905,20 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 title="Notifications"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#cd7f32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" stroke="#cd7f32" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    {/* 3D Bell with glossy gold appearance */}
+                                    {/* Main bell body - glossy gold fill */}
+                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="#FFD700" stroke="#FFA500" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    {/* Bell clapper - darker gold */}
+                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="#FFA500" stroke="#FF8C00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    {/* 3D highlights for glossy effect */}
+                                    <path d="M7 9a4 4 0 0 1 10 0c0 5 2 7 2 7H5s2-2 2-7" fill="none" stroke="#FFEF40" strokeWidth="1" opacity="0.8"/>
+                                    {/* Bell loop at top */}
+                                    <circle cx="12" cy="7" r="1" fill="#FFA500" stroke="#FF8C00" strokeWidth="1"/>
+                                    {/* Red notification badge with 3D effect */}
+                                    <circle cx="12" cy="12" r="4" fill="#FF4444" stroke="#CC0000" strokeWidth="1"/>
+                                    <circle cx="12" cy="12" r="3" fill="#FF6666" stroke="none"/>
+                                    {/* White number "1" in badge */}
+                                    <text x="12" y="14" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold" fontFamily="Arial, sans-serif">1</text>
                                 </svg>
                                 {/* Show unread count badge if there are unread messages */}
                                 {notificationService.getTotalUnreadCount() > 0 && (
