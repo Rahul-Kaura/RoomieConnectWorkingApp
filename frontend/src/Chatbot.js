@@ -379,6 +379,16 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     const cardsPerPage = 2; // Keep consistent 2 cards per page for both mobile and desktop
     const totalPages = Math.ceil((matches || []).length / cardsPerPage);
     
+    // Debug logging for pagination
+    console.log(`📱 MatchResultsGrid Pagination Debug:`, {
+        totalMatches: matches?.length || 0,
+        cardsPerPage,
+        totalPages,
+        currentPage,
+        isMobile,
+        matchNames: matches?.map(m => m.name) || []
+    });
+    
     const handlePreviousPage = () => {
         setCurrentPage(prev => Math.max(0, prev - 1));
     };
@@ -1075,33 +1085,33 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                         {/* Only show pagination arrows if there are multiple pages */}
                         {totalPages > 1 ? (
                             <>
-                                <button 
-                                    className="carousel-nav-button carousel-nav-prev" 
-                                    onClick={handlePreviousPage}
-                                    disabled={currentPage === 0}
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="15,18 9,12 15,6"></polyline>
-                                    </svg>
-                                </button>
-                                
-                                <div className="carousel-indicators">
-                                    {Array.from({ length: totalPages }, (_, i) => (
-                                        <div 
-                                            key={i} 
-                                            className={`carousel-indicator ${i === currentPage ? 'active' : ''}`}
-                                            onClick={() => setCurrentPage(i)}
-                                        />
-                                    ))}
-                                </div>
-                                
-                                <button 
-                                    className="carousel-nav-button carousel-nav-next" 
-                                    onClick={handleNextPage}
-                                    disabled={currentPage === totalPages - 1}
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="9,18 15,12 9,6"></polyline>
+                        <button 
+                            className="carousel-nav-button carousel-nav-prev" 
+                            onClick={handlePreviousPage}
+                            disabled={currentPage === 0}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                            </svg>
+                        </button>
+                        
+                        <div className="carousel-indicators">
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`carousel-indicator ${i === currentPage ? 'active' : ''}`}
+                                    onClick={() => setCurrentPage(i)}
+                                />
+                            ))}
+            </div>
+                        
+                        <button 
+                            className="carousel-nav-button carousel-nav-next" 
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages - 1}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="9,18 15,12 9,6"></polyline>
                                     </svg>
                                 </button>
                             </>
@@ -2664,7 +2674,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 // Fifth priority: Compatibility score
                 return parseFloat(b.compatibility) - parseFloat(a.compatibility);
             })
-            .slice(0, 10); // Show more matches since we're sorting by multiple criteria
+            .slice(0, 50); // Show more matches since we're sorting by multiple criteria
     };
 
     // On mount, if existingProfile is present, fetch matches for that profile
@@ -3125,7 +3135,11 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     
     if (showMatchLoading) return <MatchLoadingScreen />;
     if (showSettings) return <SettingsScreen currentUser={currentUser} userProfile={existingProfile} onBack={handleCloseSettings} onSave={handleSaveSettings} />;
-    if (showMatchResults) return <MatchResultsGrid matches={matchResults.matches} onStartChat={handleStartChat} currentUser={currentUser} onResetToHome={handleResetToHome} onOpenSettings={handleOpenSettings} />;
+    if (showMatchResults) {
+        console.log(`📊 MatchResultsGrid Debug: matches=${matchResults.matches.length}, score=${matchResults.score}`);
+        console.log(`📊 Match names:`, matchResults.matches.map(m => m.name));
+        return <MatchResultsGrid matches={matchResults.matches} onStartChat={handleStartChat} currentUser={currentUser} onResetToHome={handleResetToHome} onOpenSettings={handleOpenSettings} />;
+    }
 
     return (
         <div className="chatbot-container-isolated">
