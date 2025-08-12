@@ -1051,40 +1051,66 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                 </div>
                 
                 {/* Navigation Controls */}
-                {totalPages > 1 && (
+                {(totalPages > 1 || isMobile) && (
                     <div className="carousel-navigation">
                         {console.log(`🔍 Rendering navigation: totalPages=${totalPages}, isMobile=${isMobile}`)}
-                        <button 
-                            className="carousel-nav-button carousel-nav-prev" 
-                            onClick={handlePreviousPage}
-                            disabled={currentPage === 0}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="15,18 9,12 15,6"></polyline>
-                            </svg>
-                        </button>
                         
-                        <div className="carousel-indicators">
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <div 
-                                    key={i} 
-                                    className={`carousel-indicator ${i === currentPage ? 'active' : ''}`}
-                                    onClick={() => setCurrentPage(i)}
-                                />
-                            ))}
-            </div>
+                        {/* Debug info - only show on mobile */}
+                        {isMobile && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '-20px',
+                                left: '10px',
+                                background: 'red',
+                                color: 'white',
+                                padding: '2px 6px',
+                                fontSize: '10px',
+                                borderRadius: '4px',
+                                zIndex: 1000
+                            }}>
+                                Mobile: {totalPages} pages
+                            </div>
+                        )}
                         
-                        <button 
-                            className="carousel-nav-button carousel-nav-next" 
-                            onClick={handleNextPage}
-                            disabled={currentPage === totalPages - 1}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="9,18 15,12 9,6"></polyline>
-                            </svg>
-                        </button>
+                        {/* Only show pagination arrows if there are multiple pages */}
+                        {totalPages > 1 ? (
+                            <>
+                                <button 
+                                    className="carousel-nav-button carousel-nav-prev" 
+                                    onClick={handlePreviousPage}
+                                    disabled={currentPage === 0}
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="15,18 9,12 15,6"></polyline>
+                                    </svg>
+                                </button>
+                                
+                                <div className="carousel-indicators">
+                                    {Array.from({ length: totalPages }, (_, i) => (
+                                        <div 
+                                            key={i} 
+                                            className={`carousel-indicator ${i === currentPage ? 'active' : ''}`}
+                                            onClick={() => setCurrentPage(i)}
+                                        />
+                                    ))}
+                                </div>
+                                
+                                <button 
+                                    className="carousel-nav-button carousel-nav-next" 
+                                    onClick={handleNextPage}
+                                    disabled={currentPage === totalPages - 1}
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="9,18 15,12 9,6"></polyline>
+                                    </svg>
+                                </button>
+                            </>
+                        ) : (
+                            /* On mobile with single page, show placeholder for spacing */
+                            <div style={{ flex: 1 }}></div>
+                        )}
                         
-                        {/* Help button for navigation */}
+                        {/* Help button for navigation - always show on mobile */}
                         <button 
                             className="carousel-help-button"
                             onClick={() => {

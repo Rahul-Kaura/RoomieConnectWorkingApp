@@ -3823,3 +3823,44 @@ textarea:focus {
     left: 10px !important;
     width: auto !important;
 }
+
+/* Ensure proper mobile layout */
+.carousel-navigation {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    min-height: 60px !important;
+}
+
+/* Force navigation to always be visible on mobile */
+.carousel-navigation {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-top: 1px solid rgba(32, 178, 170, 0.1) !important;
+    padding: 16px 20px !important;
+    margin-top: auto !important;
+}
+
+/* Ensure help and settings buttons are always visible on mobile */
+.carousel-help-button,
+.carousel-settings-button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 5 !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Mobile-specific spacing for single-page navigation */
+.carousel-navigation:has(.carousel-help-button:only-child) {
+    justify-content: center !important;
+    gap: 16px !important;
+}
