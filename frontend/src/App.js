@@ -14,6 +14,8 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [globalProfileMonitor, setGlobalProfileMonitor] = useState(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileLoadingStartTime, setProfileLoadingStartTime] = useState(null);
 
   // Remove auto-transition - let homeLoading stay until user clicks
 
@@ -71,6 +73,11 @@ function App() {
       console.log('=== PROFILE LOADING DEBUG ===');
       console.log('Loading profile for user ID:', currentUser.id);
       console.log('Current user object:', currentUser);
+      
+      // Start profile loading timer
+      setIsProfileLoading(true);
+      setProfileLoadingStartTime(Date.now());
+      
       (async () => {
         try {
           // First try to load from localStorage for faster loading
@@ -87,6 +94,8 @@ function App() {
               if (parsedProfile.id === currentUser.id) {
                 setUserProfile(parsedProfile);
                 console.log('✅ Using profile from localStorage - should go to matches!');
+                // Profile loaded quickly from localStorage
+                setIsProfileLoading(false);
                 return; // Early return if localStorage profile is valid
               } else {
                 console.log('❌ localStorage profile ID mismatch, will load from Firebase');
@@ -134,10 +143,13 @@ function App() {
             }
           }
         }
+        
+        // Profile loading complete (either success or failure)
+        setIsProfileLoading(false);
         console.log('=== END PROFILE LOADING DEBUG ===');
       })();
     }
-  }, [currentUser]); // Removed 'view' dependency so it loads immediately
+  }, [currentUser]);
 
   // Test messaging setup and sync test profiles when app loads
   useEffect(() => {
@@ -204,11 +216,53 @@ function App() {
     if (isAuthenticated) {
       if (userProfile) {
         console.log('✅ User has profile, going to matches view');
-        // Show loading screen for 6.5 seconds
+        // Start loading screen with minimum 6.5 seconds
         setView('loading');
-        setTimeout(() => {
-          setView('matches');
-        }, 6500);
+        
+        // Calculate dynamic loading time based on profile loading performance
+        const startTime = Date.now();
+        const minLoadingTime = 6500; // 6.5 seconds minimum
+        
+        // Check if profile is still loading from Firebase/backend
+        const checkProfileLoading = () => {
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+          
+          if (remainingTime > 0) {
+            // Still need to wait for minimum time
+            setTimeout(() => {
+              // Check if profile is still loading when minimum time is met
+              if (isProfileLoading) {
+                // Profile still loading, extend by additional time
+                const extendedTime = 3000; // Add 3 more seconds for ongoing profile operations
+                console.log(`🔄 Profile still loading, extending by ${extendedTime}ms`);
+                setTimeout(() => {
+                  setView('matches');
+                }, extendedTime);
+              } else {
+                // Profile loading complete, go to matches
+                setView('matches');
+              }
+            }, remainingTime);
+          } else {
+            // Minimum time met, check if we should extend for profile sync
+            if (isProfileLoading) {
+              // Profile still loading, extend for additional time
+              const extendedTime = 3000; // Add 3 more seconds
+              console.log(`🔄 Extending loading by ${extendedTime}ms for ongoing profile operations`);
+              setTimeout(() => {
+                setView('matches');
+              }, extendedTime);
+            } else {
+              // No sync needed, go to matches immediately
+              setView('matches');
+            }
+          }
+        };
+        
+        // Start the dynamic loading timer
+        checkProfileLoading();
+        
       } else {
         console.log('❌ No user profile, going to chatbot');
         setView('chatbot');
@@ -430,6 +484,21 @@ function App() {
             <p className="loading-text">
               Connecting you to your perfect roommates...
             </p>
+            
+            {/* Dynamic loading indicator */}
+            {isProfileLoading && (
+              <div style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '20px',
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                animation: 'pulse 2s ease-in-out infinite'
+              }}>
+                🔄 Syncing profile data...
+              </div>
+            )}
           </div>
         );
       case 'login':
