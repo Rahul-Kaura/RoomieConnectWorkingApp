@@ -602,7 +602,10 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
     // Detect mobile screen size
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
+            const width = window.innerWidth;
+            const isMobileDevice = width <= 768;
+            console.log(`📱 Mobile detection: width=${width}px, isMobile=${isMobileDevice}`);
+            setIsMobile(isMobileDevice);
         };
         
         checkMobile();
@@ -1050,6 +1053,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                 {/* Navigation Controls */}
                 {totalPages > 1 && (
                     <div className="carousel-navigation">
+                        {console.log(`🔍 Rendering navigation: totalPages=${totalPages}, isMobile=${isMobile}`)}
                         <button 
                             className="carousel-nav-button carousel-nav-prev" 
                             onClick={handlePreviousPage}
@@ -1212,8 +1216,8 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     <path d="M3.5 3.5l2.1 2.1" stroke="currentColor" strokeWidth="1.5"/>
                                     <path d="M18.4 18.4l2.1 2.1" stroke="currentColor" strokeWidth="1.5"/>
                                     <path d="M3.5 20.5l2.1-2.1" stroke="currentColor" strokeWidth="1.5"/>
-                                </svg>
-                            </button>
+                            </svg>
+                        </button>
                     </div>
                 )}
             </div>

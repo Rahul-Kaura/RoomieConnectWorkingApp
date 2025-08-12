@@ -3508,6 +3508,48 @@ textarea:focus {
         width: 32px;
         height: 32px;
         margin-left: 8px;
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    .carousel-settings-button {
+        width: 32px;
+        height: 32px;
+        margin-left: 8px;
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    .carousel-navigation {
+        padding: 16px 20px;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(32, 178, 170, 0.1);
+        position: relative;
+        z-index: 10;
+        overflow: visible; /* Ensure buttons are not cut off */
+    }
+    
+    .carousel-nav-button {
+        min-width: 44px;
+        height: 44px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%) !important;
+        color: white !important;
+        box-shadow: 
+            0 4px 12px rgba(32, 178, 170, 0.3),
+            0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .carousel-indicators {
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
     }
     
     .carousel-help-tooltip {
@@ -3620,3 +3662,164 @@ textarea:focus {
     animation: gearSpin 2s linear infinite;
 }
 
+.carousel-indicators {
+    display: flex !important; /* Force display on mobile */
+    visibility: visible !important; /* Ensure visibility */
+    opacity: 1 !important; /* Ensure opacity */
+}
+
+/* Ensure proper spacing between navigation elements on mobile */
+.carousel-navigation > * {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Mobile-specific button sizing and spacing */
+.carousel-help-button,
+.carousel-settings-button {
+    min-width: 32px !important;
+    min-height: 32px !important;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+/* Ensure navigation buttons don't get hidden */
+.carousel-nav-button {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .carousel-help-button {
+        width: 32px;
+        height: 32px;
+        margin-left: 8px;
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    .carousel-settings-button {
+        width: 32px;
+        height: 32px;
+        margin-left: 8px;
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    .carousel-navigation {
+        padding: 16px 20px;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(32, 178, 170, 0.1);
+        position: relative;
+        z-index: 10;
+        overflow: visible; /* Ensure buttons are not cut off */
+    }
+    
+    .carousel-nav-button {
+        min-width: 44px;
+        height: 44px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%) !important;
+        color: white !important;
+        box-shadow: 
+            0 4px 12px rgba(32, 178, 170, 0.3),
+            0 2px 6px rgba(0, 0, 0, 0.1) !important;
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    .carousel-indicators {
+        display: flex !important; /* Force display on mobile */
+        visibility: visible !important; /* Ensure visibility */
+        opacity: 1 !important; /* Ensure opacity */
+    }
+    
+    /* Ensure proper spacing between navigation elements on mobile */
+    .carousel-navigation > * {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Mobile-specific button sizing and spacing */
+    .carousel-help-button,
+    .carousel-settings-button {
+        min-width: 32px !important;
+        min-height: 32px !important;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 5;
+    }
+    
+    /* Ensure navigation buttons don't get hidden */
+    .carousel-nav-button {
+        flex-shrink: 0;
+        position: relative;
+        z-index: 5;
+    }
+    
+    .carousel-help-tooltip {
+        max-width: 280px;
+        padding: 16px;
+        right: 10px !important;
+        left: 10px !important;
+        width: auto !important;
+    }
+    
+    .help-content h4 {
+        font-size: 15px;
+    }
+    
+    .help-text {
+        font-size: 13px;
+    }
+}
+
+/* Ensure navigation buttons don't get hidden */
+.carousel-nav-button {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+/* Force all carousel navigation elements to be visible on mobile */
+.carousel-navigation,
+.carousel-navigation *,
+.carousel-nav-button,
+.carousel-indicators,
+.carousel-indicator,
+.carousel-help-button,
+.carousel-settings-button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 5 !important;
+}
+
+/* Ensure proper mobile layout */
+.carousel-navigation {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    min-height: 60px !important;
+}
+
+.carousel-help-tooltip {
+    max-width: 280px;
+    padding: 16px;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+}
