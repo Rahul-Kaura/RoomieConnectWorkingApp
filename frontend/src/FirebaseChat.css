@@ -95,10 +95,10 @@
 }
 
 .user-status.online {
-  color: #ffffff; /* White text for maximum contrast */
+  color: #065f46; /* Dark green text for better visibility */
   font-size: 13px; /* Original font size */
   font-weight: 700; /* Much bolder than before */
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Stronger shadow for better visibility */
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.3); /* White shadow for contrast against dark green */
   letter-spacing: 0.2px; /* Slight letter spacing for clarity */
   background: none; /* Remove background */
   padding: 0; /* Remove padding */
