@@ -12,62 +12,28 @@ import { DISTANCE_API_CONFIG, getDistanceAPI, API_URL } from './config';
 const CLAUDE_API_KEY = process.env.REACT_APP_CLAUDE_API_KEY || 'YOUR_CLAUDE_API_KEY';
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
-// Roommate Specialist System
-const ROOMMATE_SPECIALIST_PROMPT = `You are a professional roommate compatibility specialist with expertise in psychology, sociology, and conflict resolution. Your role is to:
+// AI Roommate Analyst System Prompt
+const ROOMMATE_ANALYST_PROMPT = `You are an expert roommate compatibility analyst with deep expertise in psychology, sociology, and conflict resolution. Your role is to:
 
-1. Gather comprehensive background information about potential roommates
-2. Ask insightful follow-up questions based on their responses
-3. Evaluate compatibility factors using a sophisticated scoring system
-4. Provide detailed analysis and recommendations
+1. ANALYZE user responses to understand their personality, lifestyle, and preferences
+2. ASK 1-2 targeted follow-up questions based on what's unclear or needs more detail
+3. EVALUATE compatibility factors and provide detailed scoring
+4. CREATE comprehensive user backgrounds for roommate matching
+5. PROVIDE specific recommendations based on AI analysis
 
-IMPORTANT: Always ask about allergies, dietary restrictions, and medical conditions that could affect living arrangements.
+CRITICAL GUIDELINES:
+- Ask about ALLERGIES, DIETARY RESTRICTIONS, and MEDICAL CONDITIONS if not mentioned
+- Focus on areas that need clarification (e.g., if they say "I'm clean" but don't elaborate)
+- Ask about COMMUNICATION preferences, NOISE tolerance, STUDY habits
+- Ask about SOCIAL preferences, GUEST policies, FINANCIAL expectations
+- Ask about SCHEDULE conflicts, MAJOR/ACTIVITY impacts on living
+- Vary questions based on their specific background and responses
+- Be warm, professional, and thorough in your approach
 
-You should be warm, professional, and thorough in your approach. Always ask follow-up questions that reveal deeper insights about living habits, communication styles, and potential compatibility issues.
+IMPORTANT: Always ask follow-up questions that reveal deeper insights about living habits, communication styles, and potential compatibility issues.`;
 
-When providing analysis or summaries, use bullet points for better readability.`;
-
-const INITIAL_QUESTIONS = [
-    {
-        id: 'background',
-        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-        category: 'background',
-        weight: 0.3,
-        isInitial: true
-    }
-];
-
-// Roommate Specialist Question Flow
-const questions = {
-    'background': {
-        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-        category: 'background',
-        weight: 0.3,
-        isInitial: true,
-        isAI: true
-    },
-    'followup_1': {
-        text: "Based on your response, I'd like to ask a few follow-up questions to better understand your living preferences. This will help me find the most compatible roommate for you.",
-        category: 'followup',
-        weight: 0.2,
-        isAI: true,
-        isFollowUp: true
-    },
-    'followup_2': {
-        text: "Great insights! Let me ask one more set of questions to complete your compatibility profile.",
-        category: 'followup',
-        weight: 0.2,
-        isAI: true,
-        isFollowUp: true
-    },
-    'end': {
-        text: "Perfect! I've gathered comprehensive information about your preferences and lifestyle. Now I'll analyze your responses and find your best roommate matches. This may take a moment as I process all the details.",
-        isEnd: true,
-        isAI: true
-    }
-};
-
-// Claude API Integration Functions
-const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_SPECIALIST_PROMPT) => {
+// AI Analysis Functions
+const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_ANALYST_PROMPT) => {
     if (CLAUDE_API_KEY === 'YOUR_CLAUDE_API_KEY') {
         console.warn('Claude API key not configured. Please set REACT_APP_CLAUDE_API_KEY environment variable.');
         return {
@@ -86,7 +52,7 @@ const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_SPECIALIST_PROMPT
             },
             body: JSON.stringify({
                 model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 1000,
+                max_tokens: 1500,
                 system: systemPrompt,
                 messages: messages
             })
@@ -111,6 +77,7 @@ const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_SPECIALIST_PROMPT
     }
 };
 
+// Analyze user's initial response and generate follow-up questions
 const analyzeUserResponse = async (userResponse, conversationHistory) => {
     const messages = [
         ...conversationHistory.map(msg => ({
@@ -119,7 +86,21 @@ const analyzeUserResponse = async (userResponse, conversationHistory) => {
         })),
         {
             role: 'user',
-            content: `User response: ${userResponse}\n\nAs a roommate compatibility specialist, analyze this specific response and provide:\n1. A brief acknowledgment that references specific details from their response\n2. 2-3 targeted follow-up questions that address specific areas needing more detail\n3. A preliminary compatibility score (0-100) based on what you've learned so far\n\nIMPORTANT GUIDELINES:\n- Make your acknowledgment PERSONAL and specific to what they shared\n- Ask about allergies, dietary restrictions, or medical conditions if not mentioned\n- Focus on areas that need more specification (e.g., if they say "I'm clean" but don't elaborate, ask about specific cleaning habits)\n- Ask about communication preferences if not mentioned\n- Ask about noise tolerance and study habits if not detailed\n- Ask about social preferences and guest policies if not specified\n- Ask about financial expectations for shared expenses if not mentioned\n- Vary your questions based on their specific background (e.g., if they're a night owl, ask about morning routines)\n- If they mentioned specific majors or activities, ask about how that affects their schedule\n\nFormat your response as:\nAcknowledgment: [personal acknowledgment referencing their specific details]\n\nFollow-up Questions:\n1. [specific, targeted question based on what needs more detail]\n2. [specific, targeted question based on what needs more detail]\n3. [specific, targeted question based on what needs more detail]\n\nPreliminary Score: [score]/100`
+            content: `User Response: "${userResponse}"
+
+As a roommate compatibility analyst, analyze this response and provide:
+
+1. PERSONAL ACKNOWLEDGMENT: Acknowledge specific details they shared
+2. FOLLOW-UP QUESTIONS: Ask 1-2 targeted questions about areas that need clarification
+3. PRELIMINARY ANALYSIS: Brief analysis of what you've learned so far
+
+CRITICAL: Ask about allergies, dietary restrictions, medical conditions if not mentioned.
+Focus on areas that need more detail based on their specific response.
+
+Format your response exactly as:
+ACKNOWLEDGMENT: [personal acknowledgment]
+FOLLOW-UP: [1-2 specific questions]
+ANALYSIS: [brief analysis]`
         }
     ];
 
@@ -129,55 +110,43 @@ const analyzeUserResponse = async (userResponse, conversationHistory) => {
             acknowledgment: `Thank you for sharing that information with me. I can see you're ${userResponse.includes('major') ? 'a student' : 'someone'} who values ${userResponse.includes('clean') ? 'cleanliness' : 'organization'}.`,
             followUpQuestions: [
                 "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
-                "What's your approach to sharing common spaces and household responsibilities?",
                 "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?"
             ],
-            preliminaryScore: Math.floor(Math.random() * 20) + 70 // Random score between 70-90
+            analysis: "I'm gathering information about your lifestyle and preferences to find the best roommate match."
         };
     }
 
     // Parse Claude's response
     const content = result.content;
-    const acknowledgment = content.match(/Acknowledgment:\s*(.+?)(?=\n|$)/)?.[1] || "Thank you for sharing that information with me.";
+    const acknowledgment = content.match(/ACKNOWLEDGMENT:\s*(.+?)(?=\n|$)/)?.[1] || "Thank you for sharing that information with me.";
+    
     const followUpQuestions = [];
-    const questionsMatch = content.match(/Follow-up Questions:\s*\n((?:[0-9]+\.\s*.+\n?)+)/);
-    if (questionsMatch) {
-        const questionsText = questionsMatch[1];
-        const questionMatches = questionsText.matchAll(/[0-9]+\.\s*(.+?)(?=\n[0-9]+\.|$)/g);
-        for (const match of questionMatches) {
-            followUpQuestions.push(match[1].trim());
-        }
+    const followUpMatch = content.match(/FOLLOW-UP:\s*(.+?)(?=\n|$)/);
+    if (followUpMatch) {
+        const questionsText = followUpMatch[1];
+        // Split by common question separators
+        const questions = questionsText.split(/[.!?]\s+/).filter(q => q.trim().length > 10);
+        followUpQuestions.push(...questions.slice(0, 2)); // Take first 2 questions
     }
     
     // Fallback questions if parsing fails
     if (followUpQuestions.length === 0) {
-        // Generate varied fallback questions based on the user's response
-        const fallbackOptions = [
-            "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
-            "What's your approach to sharing common spaces and household responsibilities?",
-            "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?",
-            "How do you prefer to handle conflicts or disagreements with roommates?",
-            "What's your policy on having guests over and how often do you socialize at home?",
-            "How do you feel about sharing food or groceries with roommates?",
-            "What's your typical daily routine and how does it affect your living space usage?",
-            "How do you prefer to communicate with roommates about household matters?"
-        ];
-        
-        // Randomly select 3 unique questions
-        const shuffled = fallbackOptions.sort(() => 0.5 - Math.random());
-        followUpQuestions.push(...shuffled.slice(0, 3));
+        followUpQuestions.push(
+            "Can you tell me more about your study schedule and noise preferences?",
+            "Do you have any allergies, dietary restrictions, or medical conditions I should know about?"
+        );
     }
 
-    const scoreMatch = content.match(/Preliminary Score:\s*(\d+)/);
-    const preliminaryScore = scoreMatch ? parseInt(scoreMatch[1]) : 75;
+    const analysis = content.match(/ANALYSIS:\s*(.+?)(?=\n|$)/)?.[1] || "I'm analyzing your responses to understand your compatibility factors.";
 
     return {
         acknowledgment,
         followUpQuestions,
-        preliminaryScore
+        analysis
     };
 };
 
+// Generate final comprehensive analysis and user background
 const generateFinalAnalysis = async (conversationHistory, userProfile) => {
     const messages = [
         ...conversationHistory.map(msg => ({
@@ -186,43 +155,64 @@ const generateFinalAnalysis = async (conversationHistory, userProfile) => {
         })),
         {
             role: 'user',
-            content: `Based on the entire conversation, please provide:\n1. A comprehensive summary of the user's background and preferences\n2. Key compatibility factors for roommate matching\n3. A final compatibility score (0-100) with detailed breakdown\n4. Specific roommate recommendations\n\nIMPORTANT GUIDELINES:\n- Use bullet points (•) for better readability in all sections\n- Make the summary PERSONAL and specific to what they shared\n- Vary the compatibility factors based on their unique background\n- Adjust scores based on the quality and detail of their responses\n- Make recommendations specific to their personality and preferences\n- Consider their major, study habits, social preferences, and any special requirements\n\nFormat as:\nSummary:\n• [comprehensive summary in bullet points]\n\nCompatibility Factors:\n• [factor 1]: [score]/10\n• [factor 2]: [score]/10\n• [factor 3]: [score]/10\n\nFinal Score: [total]/100\n\nRecommendations:\n• [specific roommate recommendations in bullet points]`
+            content: `Based on the entire conversation, provide a comprehensive roommate compatibility analysis:
+
+1. USER BACKGROUND: Create a detailed background summary for their profile
+2. COMPATIBILITY SCORE: Overall score (0-100) with detailed breakdown
+3. KEY FACTORS: Specific compatibility factors with scores (0-10 each)
+4. ROOMMATE RECOMMENDATIONS: Specific recommendations for matching
+
+CRITICAL REQUIREMENTS:
+- Make the background PERSONAL and specific to what they shared
+- Include their major, study habits, social preferences, cleanliness standards
+- Mention any allergies, dietary restrictions, or medical conditions
+- Provide specific, actionable roommate recommendations
+- Use bullet points (•) for better readability
+
+Format exactly as:
+BACKGROUND: [detailed background summary in bullet points]
+COMPATIBILITY SCORE: [total]/100
+KEY FACTORS:
+• [factor 1]: [score]/10
+• [factor 2]: [score]/10
+• [factor 3]: [score]/10
+RECOMMENDATIONS: [specific roommate recommendations in bullet points]`
         }
     ];
 
     const result = await callClaudeAPI(messages);
     if (!result.success) {
         return {
-            summary: "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.",
-            compatibilityFactors: [
-                "• Communication Style: 8/10",
-                "• Living Habits: 7/10",
-                "• Social Preferences: 8/10",
-                "• Study Environment: 9/10",
-                "• Conflict Resolution: 7/10"
+            background: "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.",
+            compatibilityScore: 75,
+            keyFactors: [
+                "Communication Style: 8/10",
+                "Living Habits: 7/10",
+                "Social Preferences: 8/10",
+                "Study Environment: 9/10",
+                "Conflict Resolution: 7/10"
             ],
-            finalScore: Math.floor(Math.random() * 25) + 70, // Random score between 70-95
-            recommendations: "• You would be most compatible with roommates who value open communication\n• Respect quiet study time\n• Have similar cleanliness standards"
+            recommendations: "You would be most compatible with roommates who value open communication, respect quiet study time, and have similar cleanliness standards."
         };
     }
 
     // Parse Claude's response
     const content = result.content;
-    const summary = content.match(/Summary:\s*(.+?)(?=\n|$)/)?.[1] || "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.";
+    const background = content.match(/BACKGROUND:\s*(.+?)(?=\n|$)/)?.[1] || "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.";
     
-    const compatibilityFactors = [];
-    const factorsMatch = content.match(/Compatibility Factors:\s*\n((?:-\s*.+\n?)+)/);
+    const keyFactors = [];
+    const factorsMatch = content.match(/KEY FACTORS:\s*\n((?:•\s*.+\n?)+)/);
     if (factorsMatch) {
         const factorsText = factorsMatch[1];
-        const factorMatches = factorsText.matchAll(/-\s*(.+?):\s*(\d+)\/10/g);
+        const factorMatches = factorsText.matchAll(/•\s*(.+?):\s*(\d+)\/10/g);
         for (const match of factorMatches) {
-            compatibilityFactors.push(`${match[1]}: ${match[2]}/10`);
+            keyFactors.push(`${match[1]}: ${match[2]}/10`);
         }
     }
 
     // Fallback factors if parsing fails
-    if (compatibilityFactors.length === 0) {
-        compatibilityFactors.push(
+    if (keyFactors.length === 0) {
+        keyFactors.push(
             "Communication Style: 8/10",
             "Living Habits: 7/10",
             "Social Preferences: 8/10",
@@ -231,15 +221,15 @@ const generateFinalAnalysis = async (conversationHistory, userProfile) => {
         );
     }
 
-    const scoreMatch = content.match(/Final Score:\s*(\d+)/);
-    const finalScore = scoreMatch ? parseInt(scoreMatch[1]) : 78;
+    const scoreMatch = content.match(/COMPATIBILITY SCORE:\s*(\d+)/);
+    const compatibilityScore = scoreMatch ? parseInt(scoreMatch[1]) : 75;
 
-    const recommendations = content.match(/Recommendations:\s*(.+?)(?=\n|$)/)?.[1] || "You would be most compatible with roommates who value open communication, respect quiet study time, and have similar cleanliness standards.";
+    const recommendations = content.match(/RECOMMENDATIONS:\s*(.+?)(?=\n|$)/)?.[1] || "You would be most compatible with roommates who value open communication, respect quiet study time, and have similar cleanliness standards.";
 
     return {
-        summary,
-        compatibilityFactors,
-        finalScore,
+        background,
+        compatibilityScore,
+        keyFactors,
         recommendations
     };
 };
@@ -832,7 +822,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                             console.log(`🆕 Periodic refresh found new profiles: ${newProfiles.map(p => p.name).join(', ')}`);
                             notificationService.showMessageNotification(
                                 'New Roommates Found!',
-                                `${newProfiles.length} new potential roommate${newProfiles.length > 1 ? 's' : ''} available!`
+                                `${newProfiles.length} new potential roommate${newMatchCount > 1 ? 's' : ''} available!`
                             );
                         }
                     }
@@ -1637,1002 +1627,85 @@ function Notification({ message, type, onClose }) {
     );
 }
 
+// Add missing functions for the AI-powered chatbot
+const getMatches = (userProfile, allProfiles) => {
+    if (!userProfile || !allProfiles || allProfiles.length === 0) {
+        return [];
+    }
+
+    // Filter out the current user
+    const otherProfiles = allProfiles.filter(profile => 
+        profile.id !== userProfile.id && profile.userId !== userProfile.id
+    );
+
+    // Calculate compatibility scores
+    const scoredProfiles = otherProfiles.map(profile => {
+        const score = calculateCompatibilityScore(userProfile, profile);
+        return {
+            ...profile,
+            compatibilityScore: score
+        };
+    });
+
+    // Sort by compatibility score (highest first)
+    return scoredProfiles.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+};
+
+const calculateCompatibilityScore = (user1, user2) => {
+    let score = 0;
+    let totalFactors = 0;
+
+    // Basic compatibility factors
+    if (user1.major && user2.major && user1.major === user2.major) {
+        score += 20; // Same major
+        totalFactors++;
+    }
+
+    if (user1.cleanliness && user2.cleanliness && user1.cleanliness === user2.cleanliness) {
+        score += 15; // Similar cleanliness standards
+        totalFactors++;
+    }
+
+    if (user1.studyHabits && user2.studyHabits && user1.studyHabits === user2.studyHabits) {
+        score += 15; // Similar study habits
+        totalFactors++;
+    }
+
+    if (user1.socialPreferences && user2.socialPreferences && user1.socialPreferences === user2.socialPreferences) {
+        score += 15; // Similar social preferences
+        totalFactors++;
+    }
+
+    // Default score if no factors match
+    if (totalFactors === 0) {
+        score = 50; // Neutral compatibility
+    } else {
+        score = Math.min(100, score); // Cap at 100
+    }
+
+    return score;
+};
+
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
     const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState('');
-    const [currentQuestionId, setCurrentQuestionId] = useState('background');
-    const [answers, setAnswers] = useState([]);
-    const [conversationHistory, setConversationHistory] = useState([]);
-    const [followUpQuestions, setFollowUpQuestions] = useState([]);
-    const [currentFollowUpIndex, setCurrentFollowUpIndex] = useState(0);
-    const [isProcessingAI, setIsProcessingAI] = useState(false);
-    const [userProfile, setUserProfile] = useState({});
+    const [currentQuestion, setCurrentQuestion] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [conversationStep, setConversationStep] = useState('initial');
+    const [userProfile, setUserProfile] = useState(null);
+    const [isComplete, setIsComplete] = useState(false);
+    const [allProfiles, setAllProfiles] = useState([]);
+    const [matches, setMatches] = useState([]);
     const messagesEndRef = useRef(null);
-    const [showMatchLoading, setShowMatchLoading] = useState(false);
-    const [showMatchResults, setShowMatchResults] = useState(false);
-    const [matchResults, setMatchResults] = useState({ matches: [], score: 0 });
-    const [userImage, setUserImage] = useState(null);
-    const [userMajor, setUserMajor] = useState('');
-    const [userLocation, setUserLocation] = useState('');
-    const [userAge, setUserAge] = useState('');
-    const [userInstagram, setUserInstagram] = useState('');
-    const [activeMatch, setActiveMatch] = useState(null);
-    const [showSettings, setShowSettings] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState(null);
-    const [needsName, setNeedsName] = useState(false);
-    const [profileMonitor, setProfileMonitor] = useState(null);
-    const [isSyncing, setIsSyncing] = useState(false);
-    
-    // Track user activity for online status
-    useEffect(() => {
-        if (currentUser && currentUser.id) {
-            // Set user as online when component mounts
-            firebaseMessaging.setUserOnline(currentUser.id, currentUser.name);
-            
-            // Track user activity (mouse movements, clicks, etc.)
-            const trackActivity = () => {
-                firebaseMessaging.updateUserActivity(currentUser.id);
-            };
-            
-            // Handle page visibility changes
-            const handleVisibilityChange = () => {
-                if (document.hidden) {
-                    // User switched tabs or minimized browser
-                    firebaseMessaging.setUserOffline(currentUser.id);
-                } else {
-                    // User returned to the app
-                    firebaseMessaging.setUserOnline(currentUser.id, currentUser.name);
-                }
-            };
-            
-            // Add activity listeners
-            document.addEventListener('mousemove', trackActivity);
-            document.addEventListener('click', trackActivity);
-            document.addEventListener('keypress', trackActivity);
-            document.addEventListener('scroll', trackActivity);
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            
-            return () => {
-                // Set user as offline when component unmounts
-                firebaseMessaging.setUserOffline(currentUser.id);
-                // Remove activity listeners
-                document.removeEventListener('mousemove', trackActivity);
-                document.removeEventListener('click', trackActivity);
-                document.removeEventListener('keypress', trackActivity);
-                document.removeEventListener('scroll', trackActivity);
-                document.removeEventListener('visibilitychange', handleVisibilityChange);
-            };
-        }
-    }, [currentUser]);
 
-    const fetchMatches = async (profileId) => {
-        setShowMatchLoading(true);
-        try {
-            const matchResponse = await axios.get(`${API_URL}/match/${profileId}`);
-            setMatchResults({
-                matches: matchResponse.data.matches,
-                score: matchResponse.data.compatibilityScore
-            });
-            setShowMatchResults(true);
-        } catch (err) {
-            console.error('Error finding matches:', err);
-        } finally {
-            setShowMatchLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        const loadProfile = async () => {
-            console.log('Chatbot loadProfile - existingProfile:', existingProfile);
-            console.log('Chatbot loadProfile - currentUser:', currentUser);
-            
-            // Clear any corrupted profile data
-            if (existingProfile && (!existingProfile.userId || existingProfile.userId === 'undefined:1')) {
-                console.log('Clearing corrupted profile data...');
-                localStorage.removeItem('userProfile');
-                localStorage.removeItem('userName');
-                // Force a fresh start
-                setMessages([]);
-                setCurrentQuestionId('background');
-                const botMessage = {
-                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-                    sender: 'bot'
-                };
-                setMessages([botMessage]);
-                return;
-            }
-            
-            if (existingProfile && existingProfile.userId && existingProfile.userId !== 'undefined:1') {
-                console.log('Found valid existing profile, loading matches...');
-                setShowMatchLoading(true);
-                try {
-                    console.log('Calling API:', `${API_URL}/match/${existingProfile.userId}`);
-                    const matchResponse = await axios.get(`${API_URL}/match/${existingProfile.userId}`);
-                    setMatchResults({
-                        matches: matchResponse.data.matches,
-                        score: matchResponse.data.compatibilityScore
-                    });
-                    setShowMatchResults(true);
-                } catch (err) {
-                    console.error('Error finding matches on load:', err);
-                    console.error('API URL:', API_URL);
-                    // Clear corrupted profile and start fresh
-                    localStorage.removeItem('userProfile');
-                    localStorage.removeItem('userName');
-                    setMessages([]);
-                    setCurrentQuestionId('background');
-                    const botMessage = {
-                        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-                        sender: 'bot'
-                    };
-                    setMessages([botMessage]);
-                } finally {
-                    setShowMatchLoading(false);
-                }
-            } else {
-                console.log('No existing profile, starting with background question...');
-                // Always start with the background question
-                const botMessage = {
-                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-                    sender: 'bot'
-                };
-                setMessages([botMessage]);
-                setCurrentQuestionId('background');
-            }
-        };
-
-        loadProfile();
-    }, [currentUser, existingProfile]);
-
-    // Force initial message if no messages exist and no profile
-    useEffect(() => {
-        if (messages.length === 0 && !existingProfile && currentUser) {
-            const botMessage = {
-                text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-                sender: 'bot'
-            };
-            setMessages([botMessage]);
-            setCurrentQuestionId('background');
-        }
-    }, [messages.length, existingProfile, currentUser]);
-
-    // Fallback - if still no messages after 1 second, force the first question
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (messages.length === 0 && currentUser && !showMatchLoading && !showMatchResults) {
-                const botMessage = {
-                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
-                    sender: 'bot'
-                };
-                setMessages([botMessage]);
-                setCurrentQuestionId('background');
-            }
-        }, 1000);
-
-        return () => clearTimeout(timer);
-    }, [currentUser, showMatchLoading, showMatchResults]);
-
-    useEffect(() => {
-        if (existingProfile && existingProfile.id) {
-            fetchMatches(existingProfile.profileId);
-        }
-    }, [existingProfile]);
-    
-    // This function is no longer needed with the AI-powered system
-    // const askNextQuestion = (prevQuestionId, userAnswer) => { ... };
-
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            if (messagesEndRef.current) {
-                messagesEndRef.current.scrollIntoView({ 
-                    behavior: "smooth", 
-                    block: "end",
-                    inline: "nearest"
-                });
-            }
-        }, 200); // Longer delay to ensure DOM has fully updated
-    };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    const handleSend = async () => {
-        const trimmedInput = input.trim();
-        if (!trimmedInput) return;
-
-        if (isProcessingAI) return; // Prevent multiple submissions while processing
-
-        // Add user message to conversation
-            const userMessage = { text: trimmedInput, sender: 'user' };
-            setMessages(prev => [...prev, userMessage]);
-        setConversationHistory(prev => [...prev, userMessage]);
-        setInput('');
-
-        // Process with AI based on current question
-        if (currentQuestionId === 'background') {
-            await processBackgroundResponse(trimmedInput);
-        } else if (currentQuestionId === 'followup_1' || currentQuestionId === 'followup_2') {
-            await processFollowUpResponse(trimmedInput);
-        } else if (currentQuestionId === 'end') {
-            await processFinalResponse(trimmedInput);
-        }
-    };
-
-    const processBackgroundResponse = async (userResponse) => {
-        setIsProcessingAI(true);
-        
-        try {
-            // Show processing message
-            setMessages(prev => [...prev, { 
-                text: "🤔 AI is thinking... Analyzing your background and preparing targeted follow-up questions...", 
-                sender: 'bot' 
-            }]);
-
-            // Analyze user response with Claude
-            const analysis = await analyzeUserResponse(userResponse, conversationHistory);
-            
-            // Extract user information from response
-            const extractedInfo = extractUserInfo(userResponse);
-            setUserProfile(prev => ({ ...prev, ...extractedInfo }));
-
-            // Show acknowledgment
-            setMessages(prev => [
-                ...prev.slice(0, -1), // Remove processing message
-                { text: analysis.acknowledgment, sender: 'bot' }
-            ]);
-
-            // Store follow-up questions for later use
-            setFollowUpQuestions(analysis.followUpQuestions);
-            setCurrentQuestionId('followup_1');
-            setCurrentFollowUpIndex(0);
-            
-            // Store preliminary score
-            setUserProfile(prev => ({ ...prev, preliminaryScore: analysis.preliminaryScore }));
-
-            // Ask the first follow-up question
-            setTimeout(() => {
-                setMessages(prev => [...prev, { text: analysis.followUpQuestions[0], sender: 'bot' }]);
-            }, 1000);
-
-        } catch (error) {
-            console.error('Error processing background response:', error);
-            setMessages(prev => [
-                ...prev.slice(0, -1), // Remove processing message
-                { text: "I apologize, but I encountered an error processing your response. Let me ask you some standard follow-up questions instead.", sender: 'bot' }
-            ]);
-            
-            // Fallback to standard questions
-            const fallbackQuestions = [
-                "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
-                "What's your approach to sharing common spaces and household responsibilities?",
-                "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?"
-            ];
-            
-            setFollowUpQuestions(fallbackQuestions);
-            setCurrentQuestionId('followup_1');
-            setCurrentFollowUpIndex(0);
-            
-            // Ask the first fallback question
-            setTimeout(() => {
-                setMessages(prev => [...prev, { text: fallbackQuestions[0], sender: 'bot' }]);
-            }, 1000);
-        } finally {
-            setIsProcessingAI(false);
-        }
-    };
-
-    const processFollowUpResponse = async (userResponse) => {
-        setIsProcessingAI(true);
-        
-        try {
-            // Show processing message
-            setMessages(prev => [...prev, { 
-                text: "🤔 AI is thinking... Analyzing your response and preparing the next question...", 
-                sender: 'bot' 
-            }]);
-
-            // Update conversation history
-            setConversationHistory(prev => [...prev, { text: userResponse, sender: 'user' }]);
-
-            // If this was the last follow-up question, move to final analysis
-            if (currentFollowUpIndex >= followUpQuestions.length - 1) {
-                setCurrentQuestionId('end');
-                await processFinalAnalysis();
-            } else {
-                // Move to next follow-up question
-                setCurrentFollowUpIndex(prev => prev + 1);
-                setMessages(prev => [
-                    ...prev.slice(0, -1), // Remove processing message
-                    { text: followUpQuestions[currentFollowUpIndex + 1], sender: 'bot' } // This will be the next question
-                ]);
-            }
-
-        } catch (error) {
-            console.error('Error processing follow-up response:', error);
-            setMessages(prev => [
-                ...prev.slice(0, -1), // Remove processing message
-                { text: "I apologize for the error. Let me continue with the next question.", sender: 'bot' }
-            ]);
-        } finally {
-            setIsProcessingAI(false);
-        }
-    };
-
-    const processFinalResponse = async (userResponse) => {
-        // Add final user response to conversation
-        setConversationHistory(prev => [...prev, { text: userResponse, sender: 'user' }]);
-        
-        // Process final analysis
-        await processFinalAnalysis();
-    };
-
-    const processFinalAnalysis = async () => {
-        setIsProcessingAI(true);
-        
-        try {
-            // Show processing message
-                setMessages(prev => [...prev, { 
-                text: "🎯 Analyzing your complete profile and calculating compatibility scores...", 
-                sender: 'bot' }]);
-
-            // Generate final analysis with Claude
-            const finalAnalysis = await generateFinalAnalysis(conversationHistory, userProfile);
-            
-            // Show final analysis
-            setMessages(prev => [
-                ...prev.slice(0, -1), // Remove processing message
-                { text: finalAnalysis.summary, sender: 'bot' },
-                { text: "Compatibility Factors:", sender: 'bot' }
-            ]);
-
-            // Show compatibility factors
-            finalAnalysis.compatibilityFactors.forEach((factor, index) => {
-                setTimeout(() => {
-                    setMessages(prev => [...prev, { text: `• ${factor}`, sender: 'bot' }]);
-                }, (index + 1) * 500);
-            });
-
-            // Show final score and recommendations
-            setTimeout(() => {
-                setMessages(prev => [
-                    ...prev,
-                    { text: `Final Compatibility Score: ${finalAnalysis.finalScore}/100`, sender: 'bot' },
-                    { text: finalAnalysis.recommendations, sender: 'bot' },
-                    { text: "Now I'll find your best roommate matches!", sender: 'bot' }
-                ]);
-            }, (finalAnalysis.compatibilityFactors.length + 1) * 500);
-
-            // Store final analysis
-            setUserProfile(prev => ({ 
-                ...prev, 
-                finalScore: finalAnalysis.finalScore,
-                compatibilityFactors: finalAnalysis.compatibilityFactors,
-                summary: finalAnalysis.summary,
-                recommendations: finalAnalysis.recommendations
-            }));
-
-            // Move to match loading
-            setTimeout(() => {
-        setShowMatchLoading(true);
-                calculateAndSubmitMatches();
-            }, (finalAnalysis.compatibilityFactors.length + 3) * 500);
-
-        } catch (error) {
-            console.error('Error processing final analysis:', error);
-            setMessages(prev => [
-                ...prev.slice(0, -1), // Remove processing message
-                { text: "I apologize for the error in the final analysis. Let me proceed to find your matches based on what we've discussed.", sender: 'bot' }
-            ]);
-            
-            // Fallback to match loading
-            setTimeout(() => {
-                setShowMatchLoading(true);
-                calculateAndSubmitMatches();
-            }, 2000);
-        } finally {
-            setIsProcessingAI(false);
-        }
-    };
-
-    const extractUserInfo = (response) => {
-        // Extract basic information from user's background response
-        const info = {};
-        
-        // Extract name (look for patterns like "I'm [name]" or "My name is [name]")
-        const nameMatch = response.match(/(?:I'm|I am|My name is|I'm called)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
-        if (nameMatch) {
-            info.name = nameMatch[1];
-            localStorage.setItem('userName', info.name);
-        }
-        
-        // Extract age (look for patterns like "I'm [age] years old" or "age [age]")
-        const ageMatch = response.match(/(?:I'm|I am)\s+(\d+)(?:\s+years?\s+old)?/i) || 
-                        response.match(/age\s+(\d+)/i) ||
-                        response.match(/(\d+)\s+years?\s+old/i);
-        if (ageMatch) {
-            info.age = parseInt(ageMatch[1]);
-        }
-        
-        // Extract major (look for patterns like "majoring in [major]" or "studying [major]")
-        const majorMatch = response.match(/(?:majoring in|studying|major in|I study)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
-        if (majorMatch) {
-            info.major = majorMatch[1];
-        }
-        
-        // Extract location (look for patterns like "from [location]" or "I live in [location]")
-        const locationMatch = response.match(/(?:from|I live in|I'm from)\s+([A-Z][a-z]+(?:\s*,\s*[A-Z][a-z]+)*)/i);
-        if (locationMatch) {
-            info.location = locationMatch[1];
-        }
-        
-        return info;
-    };
-
-    const calculateAndSubmitMatches = async () => {
-        try {
-            // Create comprehensive profile from conversation
-        const profile = {
-            id: currentUser.id,
-                name: userProfile.name || currentUser?.name || 'Unknown',
-                age: userProfile.age,
-                major: userProfile.major,
-                location: userProfile.location,
-            image: userImage,
-            instagram: userInstagram,
-                answers: conversationHistory.filter(msg => msg.sender === 'user').map((msg, index) => ({
-                    questionId: `question_${index}`,
-                    question: `Response ${index + 1}`,
-                    answer: msg.text,
-                    score: 0 // Will be calculated by AI analysis
-                })),
-                score: userProfile.finalScore || 75,
-                compatibilityFactors: userProfile.compatibilityFactors || [],
-                summary: userProfile.summary || '',
-                recommendations: userProfile.recommendations || ''
-            };
-
-            // Save profile
-        await saveProfile(profile);
-
-            // Find matches
-        const allProfiles = await loadAllProfiles();
-            const matches = await getMatches(profile, allProfiles);
-            
-            setMatchResults({ matches, score: profile.score });
-        setShowMatchResults(true);
-            
-        } catch (error) {
-            console.error('Error calculating matches:', error);
-            // Fallback to demo matches
-            const demoMatches = [
-                { 
-                    id: 'demo-1', 
-                    name: 'Alex Chen', 
-                    compatibility: 85, 
-                    major: 'Computer Science', 
-                    location: 'Berkeley, CA',
-                    age: '22',
-                    image: 'https://randomuser.me/api/portraits/men/32.jpg',
-                    instagram: 'alexchen_cs',
-                    allergies: 'No allergies',
-                    background: 'Alex is a computer science major who values quiet study time and prefers a clean, organized living space.'
-                },
-                { 
-                    id: 'demo-2', 
-                    name: 'Maya Patel', 
-                    compatibility: 78, 
-                    major: 'Biology', 
-                    location: 'Stanford, CA',
-                    age: '21',
-                    image: 'https://randomuser.me/api/portraits/women/68.jpg',
-                    instagram: 'maya_bio',
-                    allergies: 'Peanuts',
-                    background: 'Maya is a biology student who enjoys socializing but also needs focused study time. She\'s flexible with living arrangements.'
-                }
-            ];
-            setMatchResults({ matches: demoMatches, score: 78 });
-            setShowMatchResults(true);
-        } finally {
-        setShowMatchLoading(false);
-        }
-    };
-    
-    // This function is no longer needed with the AI-powered system
-    // const calculateAndSubmit = async (finalAnswers) => { ... };
-
-    const calculateDistance = async (location1, location2) => {
-        if (location1.toLowerCase().trim() === location2.toLowerCase().trim()) {
-            return 0;
-        }
-        const apiType = getDistanceAPI();
-        console.log(`Using distance API: ${apiType} for ${location1} to ${location2}`);
-        
-        try {
-            if (apiType === 'GOOGLE_MAPS') {
-                const response = await fetch(
-                    `${DISTANCE_API_CONFIG.GOOGLE_MAPS.url}?origins=${encodeURIComponent(location1)}&destinations=${encodeURIComponent(location2)}&units=imperial&key=${DISTANCE_API_CONFIG.GOOGLE_MAPS.apiKey}`
-                );
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.status === 'OK' && data.rows[0] && data.rows[0].elements[0]) {
-                        const element = data.rows[0].elements[0];
-                        if (element.status === 'OK') {
-                            const distanceInMiles = element.distance.value * 0.000621371;
-                            console.log(`Google Maps distance: ${Math.round(distanceInMiles)} miles`);
-                            return Math.round(distanceInMiles);
-                        }
-                    }
-                }
-            } else if (apiType === 'FREE_DISTANCE' || apiType === 'ALTERNATIVE_FREE' || apiType === 'SIMPLE_DISTANCE') {
-                try {
-                    const response = await fetch(
-                        `${DISTANCE_API_CONFIG.FREE_DISTANCE.url}?origins=${encodeURIComponent(location1)}&destinations=${encodeURIComponent(location2)}&units=imperial&key=free`,
-                        {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                            },
-                            timeout: 5000
-                        }
-                    );
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        // Only log API response if it contains useful data
-                        if (data.status === 'OK') {
-                            console.log(`${apiType} API response: OK`);
-                        }
-                        
-                        if (data.status === 'OK' && data.rows && data.rows[0] && data.rows[0].elements && data.rows[0].elements[0]) {
-                            const element = data.rows[0].elements[0];
-                            if (element.status === 'OK' && element.distance) {
-                                const distanceInMiles = element.distance.value * 0.000621371;
-                                console.log(`${apiType} distance: ${Math.round(distanceInMiles)} miles`);
-                                return Math.round(distanceInMiles);
-                            }
-                        }
-                    }
-                } catch (apiError) {
-                    console.log(`${apiType} API failed:`, apiError);
-                }
-            }
-            
-            console.log('Distance APIs unavailable, using fallback calculation');
-            return calculateDistanceFallback(location1, location2);
-        } catch (error) {
-            console.error('Error calculating distance with API:', error);
-            console.log('Using fallback distance calculation');
-            return calculateDistanceFallback(location1, location2);
-        }
-    };
-
-    // Fallback distance calculation (improved accuracy)
-    const calculateDistanceFallback = (location1, location2) => {
-        const loc1 = location1.toLowerCase().trim();
-        const loc2 = location2.toLowerCase().trim();
-        
-        // Extract city and state from location strings
-        const parseLocation = (location) => {
-            const parts = location.split(',').map(part => part.trim());
-            return {
-                city: parts[0] || '',
-                state: parts[1] || ''
-            };
-        };
-        
-        const loc1Parsed = parseLocation(loc1);
-        const loc2Parsed = parseLocation(loc2);
-        
-        // If same city and state, distance is 0
-        if (loc1Parsed.city === loc2Parsed.city && loc1Parsed.state === loc2Parsed.state) {
-            return 0;
-        }
-        
-        // Major city distances (approximate)
-        const majorCities = {
-            'new york': { lat: 40.7128, lng: -74.0060 },
-            'los angeles': { lat: 34.0522, lng: -118.2437 },
-            'chicago': { lat: 41.8781, lng: -87.6298 },
-            'houston': { lat: 29.7604, lng: -95.3698 },
-            'phoenix': { lat: 33.4484, lng: -112.0740 },
-            'philadelphia': { lat: 39.9526, lng: -75.1652 },
-            'san antonio': { lat: 29.4241, lng: -98.4936 },
-            'san diego': { lat: 32.7157, lng: -117.1611 },
-            'dallas': { lat: 32.7767, lng: -96.7970 },
-            'san jose': { lat: 37.3382, lng: -121.8863 },
-            'austin': { lat: 30.2672, lng: -97.7431 },
-            'jacksonville': { lat: 30.3322, lng: -81.6557 },
-            'fort worth': { lat: 32.7555, lng: -97.3308 },
-            'columbus': { lat: 39.9612, lng: -82.9988 },
-            'charlotte': { lat: 35.2271, lng: -80.8431 },
-            'san francisco': { lat: 37.7749, lng: -122.4194 },
-            'indianapolis': { lat: 39.7684, lng: -86.1581 },
-            'seattle': { lat: 47.6062, lng: -122.3321 },
-            'denver': { lat: 39.7392, lng: -104.9903 },
-            'washington': { lat: 38.9072, lng: -77.0369 },
-            'boston': { lat: 42.3601, lng: -71.0589 },
-            'el paso': { lat: 31.7619, lng: -106.4850 },
-            'nashville': { lat: 36.1627, lng: -86.7816 },
-            'detroit': { lat: 42.3314, lng: -83.0458 },
-            'oklahoma city': { lat: 35.4676, lng: -97.5164 },
-            'portland': { lat: 45.5152, lng: -122.6784 },
-            'las vegas': { lat: 36.1699, lng: -115.1398 },
-            'memphis': { lat: 35.1495, lng: -90.0490 },
-            'louisville': { lat: 38.2527, lng: -85.7585 },
-            'baltimore': { lat: 39.2904, lng: -76.6122 },
-            'milwaukee': { lat: 43.0389, lng: -87.9065 },
-            'albuquerque': { lat: 35.0844, lng: -106.6504 },
-            'tucson': { lat: 32.2226, lng: -110.9747 },
-            'fresno': { lat: 36.7378, lng: -119.7871 },
-            'sacramento': { lat: 38.5816, lng: -121.4944 },
-            'atlanta': { lat: 33.7490, lng: -84.3880 },
-            'kansas city': { lat: 39.0997, lng: -94.5786 },
-            'long beach': { lat: 33.7701, lng: -118.1937 },
-            'colorado springs': { lat: 38.8339, lng: -104.8214 },
-            'miami': { lat: 25.7617, lng: -80.1918 },
-            'raleigh': { lat: 35.7796, lng: -78.6382 },
-            'omaha': { lat: 41.2565, lng: -95.9345 },
-            'minneapolis': { lat: 44.9778, lng: -93.2650 },
-            'cleveland': { lat: 41.4993, lng: -81.6944 },
-            'tulsa': { lat: 36.1540, lng: -95.9928 },
-            'arlington': { lat: 32.7357, lng: -97.1081 },
-            'new orleans': { lat: 29.9511, lng: -90.0715 },
-            'wichita': { lat: 37.6872, lng: -97.3301 },
-            'bakersfield': { lat: 35.3733, lng: -119.0187 },
-            'tampa': { lat: 27.9506, lng: -82.4572 },
-            'aurora': { lat: 39.7294, lng: -104.8319 },
-            'honolulu': { lat: 21.3099, lng: -157.8581 },
-            'anaheim': { lat: 33.8366, lng: -117.9143 },
-            'santa ana': { lat: 33.7455, lng: -117.8677 },
-            'corpus christi': { lat: 27.8006, lng: -97.3964 },
-            'riverside': { lat: 33.9533, lng: -117.3962 },
-            'lexington': { lat: 38.0406, lng: -84.5037 },
-            'stockton': { lat: 37.9577, lng: -121.2908 },
-            'henderson': { lat: 36.0395, lng: -114.9817 },
-            'saint paul': { lat: 44.9537, lng: -93.0900 },
-            'st. louis': { lat: 38.6270, lng: -90.1994 },
-            'cincinnati': { lat: 39.1031, lng: -84.5120 },
-            'pittsburgh': { lat: 40.4406, lng: -79.9959 },
-            'greensboro': { lat: 36.0726, lng: -79.7920 },
-            'anchorage': { lat: 61.2181, lng: -149.9003 },
-            'plano': { lat: 33.0198, lng: -96.6989 },
-            'orlando': { lat: 28.5383, lng: -81.3792 },
-            'newark': { lat: 40.7357, lng: -74.1724 },
-            'durham': { lat: 35.9940, lng: -78.8986 },
-            'chula vista': { lat: 32.6401, lng: -117.0842 },
-            'toledo': { lat: 41.6528, lng: -83.5379 },
-            'fort wayne': { lat: 41.0793, lng: -85.1394 },
-            'st. petersburg': { lat: 27.7731, lng: -82.6400 },
-            'laredo': { lat: 27.5064, lng: -99.5075 },
-            'jersey city': { lat: 40.7178, lng: -74.0431 },
-            'chandler': { lat: 33.3062, lng: -111.8413 },
-            'madison': { lat: 43.0731, lng: -89.4012 },
-            'lubbock': { lat: 33.5779, lng: -101.8552 },
-            'scottsdale': { lat: 33.4942, lng: -111.9261 },
-            'reno': { lat: 39.5296, lng: -119.8138 },
-            'buffalo': { lat: 42.8864, lng: -78.8784 },
-            'gilbert': { lat: 33.3528, lng: -111.7890 },
-            'glendale': { lat: 33.5387, lng: -112.1860 },
-            'north las vegas': { lat: 36.1989, lng: -115.1175 },
-            'winston-salem': { lat: 36.0999, lng: -80.2442 },
-            'chesapeake': { lat: 36.7682, lng: -76.2875 },
-            'norfolk': { lat: 36.8508, lng: -76.2859 },
-            'fremont': { lat: 37.5485, lng: -121.9886 },
-            'garland': { lat: 32.9126, lng: -96.6389 },
-            'irvine': { lat: 33.6846, lng: -117.8265 },
-            'hialeah': { lat: 25.8576, lng: -80.2781 },
-            'richmond': { lat: 37.5407, lng: -77.4360 },
-            'boise': { lat: 43.6150, lng: -116.2023 },
-            'spokane': { lat: 47.6588, lng: -117.4260 },
-            'baton rouge': { lat: 30.4515, lng: -91.1871 },
-            'tacoma': { lat: 47.2529, lng: -122.4443 },
-            'san bernardino': { lat: 34.1083, lng: -117.2898 },
-            'grand rapids': { lat: 42.9634, lng: -85.6681 },
-            'huntsville': { lat: 34.7304, lng: -86.5861 },
-            'salt lake city': { lat: 40.7608, lng: -111.8910 },
-            'frisco': { lat: 33.1507, lng: -96.8236 },
-            'yonkers': { lat: 40.9312, lng: -73.8987 },
-            'norwalk': { lat: 33.9022, lng: -118.0817 },
-            'new haven': { lat: 41.3083, lng: -72.9279 },
-            'north hialeah': { lat: 25.9053, lng: -80.3100 },
-            'gilbert': { lat: 33.3528, lng: -111.7890 },
-            'glendale': { lat: 33.5387, lng: -112.1860 },
-            'north las vegas': { lat: 36.1989, lng: -115.1175 },
-            'winston-salem': { lat: 36.0999, lng: -80.2442 },
-            'chesapeake': { lat: 36.7682, lng: -76.2875 },
-            'norfolk': { lat: 36.8508, lng: -76.2859 },
-            'fremont': { lat: 37.5485, lng: -121.9886 },
-            'garland': { lat: 32.9126, lng: -96.6389 },
-            'irvine': { lat: 33.6846, lng: -117.8265 },
-            'hialeah': { lat: 25.8576, lng: -80.2781 },
-            'richmond': { lat: 37.5407, lng: -77.4360 },
-            'boise': { lat: 43.6150, lng: -116.2023 },
-            'spokane': { lat: 47.6588, lng: -117.4260 },
-            'baton rouge': { lat: 30.4515, lng: -91.1871 },
-            'tacoma': { lat: 47.2529, lng: -122.4443 },
-            'san bernardino': { lat: 34.1083, lng: -117.2898 },
-            'grand rapids': { lat: 42.9634, lng: -85.6681 },
-            'huntsville': { lat: 34.7304, lng: -86.5861 },
-            'salt lake city': { lat: 40.7608, lng: -111.8910 },
-            'frisco': { lat: 33.1507, lng: -96.8236 },
-            'yonkers': { lat: 40.9312, lng: -73.8987 },
-            'norwalk': { lat: 33.9022, lng: -118.0817 },
-            'new haven': { lat: 41.3083, lng: -72.9279 },
-            'north hialeah': { lat: 25.9053, lng: -80.3100 }
-        };
-        
-        // Check if both locations are major cities
-        const city1 = majorCities[loc1Parsed.city];
-        const city2 = majorCities[loc2Parsed.city];
-        
-        if (city1 && city2) {
-            // Calculate distance using Haversine formula
-            const R = 3959; // Earth's radius in miles
-            const dLat = (city2.lat - city1.lat) * Math.PI / 180;
-            const dLng = (city2.lng - city1.lng) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                     Math.cos(city1.lat * Math.PI / 180) * Math.cos(city2.lat * Math.PI / 180) *
-                     Math.sin(dLng/2) * Math.sin(dLng/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;
-            console.log(`Calculated distance between ${loc1Parsed.city} and ${loc2Parsed.city}: ${Math.round(distance)} miles`);
-            return Math.round(distance);
-        }
-        
-        // If same state but different city, estimate based on state size
-        if (loc1Parsed.state === loc2Parsed.state && loc1Parsed.state) {
-            const stateDistances = {
-                'ca': 120, 'tx': 180, 'ny': 100, 'fl': 150, 'il': 80,
-                'pa': 90, 'oh': 70, 'mi': 100, 'ga': 120, 'nc': 90,
-                'va': 80, 'tn': 100, 'mo': 90, 'in': 70, 'ky': 80,
-                'al': 100, 'ms': 80, 'ar': 90, 'la': 100, 'ok': 120,
-                'ks': 100, 'ne': 120, 'nd': 100, 'sd': 100, 'mn': 100,
-                'ia': 80, 'wi': 80, 'az': 120, 'nm': 120, 'co': 120,
-                'ut': 100, 'wy': 120, 'mt': 150, 'id': 120, 'wa': 100,
-                'or': 100, 'nv': 120, 'ak': 200, 'hi': 50, 'me': 80,
-                'nh': 60, 'vt': 60, 'ma': 70, 'ri': 30, 'ct': 50,
-                'nj': 60, 'de': 30, 'md': 50, 'wv': 60, 'sc': 80
-            };
-            
-            const stateKey = loc1Parsed.state.toLowerCase();
-            const distance = stateDistances[stateKey] || 80;
-            console.log(`Same state distance (${loc1Parsed.state}): ${distance} miles`);
-            return distance;
-        }
-        
-        // If different states, estimate based on region
-        const getRegionDistance = (state1, state2) => {
-            const regions = {
-                northeast: ['ny', 'ma', 'ct', 'ri', 'nh', 'vt', 'me', 'nj', 'pa', 'de', 'md'],
-                southeast: ['fl', 'ga', 'sc', 'nc', 'va', 'wv', 'ky', 'tn', 'al', 'ms', 'ar', 'la'],
-                midwest: ['il', 'in', 'oh', 'mi', 'wi', 'mn', 'ia', 'mo', 'ks', 'ne', 'nd', 'sd'],
-                southwest: ['tx', 'ok', 'nm', 'az'],
-                west: ['ca', 'or', 'wa', 'nv', 'id', 'ut', 'co', 'wy', 'mt', 'ak', 'hi']
-            };
-            
-            const getRegion = (state) => {
-                for (const [region, states] of Object.entries(regions)) {
-                    if (states.includes(state.toLowerCase())) {
-                        return region;
-                    }
-                }
-                return 'other';
-            };
-            
-            const region1 = getRegion(state1);
-            const region2 = getRegion(state2);
-            
-            if (region1 === region2) {
-                return 300; // Same region
-            }
-            
-            // Cross-region distances
-            const regionDistances = {
-                'northeast-southeast': 800, 'northeast-midwest': 600, 'northeast-southwest': 1200, 'northeast-west': 2500,
-                'southeast-midwest': 800, 'southeast-southwest': 600, 'southeast-west': 2200,
-                'midwest-southwest': 800, 'midwest-west': 1500,
-                'southwest-west': 800
-            };
-            
-            const key = [region1, region2].sort().join('-');
-            return regionDistances[key] || 1500;
-        };
-        
-        const distance = getRegionDistance(loc1Parsed.state, loc2Parsed.state);
-        console.log(`Cross-region distance: ${distance} miles`);
-        return distance;
-    };
-
-    const getMatches = async (currentProfile, allProfiles) => {
-        // Get pinned matches from localStorage
-        const storedPinned = localStorage.getItem(`pinnedMatches_${currentUser.id}`);
-        const pinnedMatches = storedPinned ? new Set(JSON.parse(storedPinned)) : new Set();
-        
-        console.log('🔍 getMatches debug:', {
-            currentProfile: currentProfile,
-            currentProfileId: currentProfile.id,
-            allProfilesCount: allProfiles.length,
-            allProfileIds: allProfiles.map(p => ({ id: p.id, userId: p.userId, name: p.name }))
-        });
-        
-        const matchesWithDistance = await Promise.all(
-            allProfiles
-            .filter(p => {
-                // Fix: Handle multiple ID field variations to ensure all profiles are visible
-                const currentId = currentProfile.id || currentProfile.userId;
-                const otherId = p.id || p.userId;
-                
-                // Don't match with self
-                if (currentId === otherId) {
-                    console.log(`❌ Filtering out self: ${currentId} === ${otherId}`);
-                    return false;
-                }
-                
-                // Ensure profile has required fields
-                if (!p.name) {
-                    console.log(`❌ Filtering out profile without name:`, p);
-                    return false;
-                }
-                
-                console.log(`✅ Including profile: ${p.name} (ID: ${otherId})`);
-                return true;
-            })
-                .map(async (otherUser) => {
-                                    // Calculate compatibility based on AI analysis and profile data
-                let compatibilityScore = 0;
-                let totalFactors = 0;
-                
-                // Use AI-generated compatibility factors if available
-                if (currentProfile.compatibilityFactors && otherUser.compatibilityFactors) {
-                    // Compare compatibility factors
-                    currentProfile.compatibilityFactors.forEach(factor => {
-                        const factorName = factor.split(':')[0].replace('• ', '').trim();
-                        const otherFactor = otherUser.compatibilityFactors.find(f => 
-                            f.split(':')[0].replace('• ', '').trim() === factorName
-                        );
-                        if (otherFactor) {
-                            totalFactors++;
-                            const currentScore = parseInt(factor.match(/(\d+)\/10/)?.[1] || 5);
-                            const otherScore = parseInt(otherFactor.match(/(\d+)\/10/)?.[1] || 5);
-                            // Higher compatibility for similar scores
-                            const scoreDiff = Math.abs(currentScore - otherScore);
-                            if (scoreDiff <= 1) compatibilityScore += 1;
-                            else if (scoreDiff <= 2) compatibilityScore += 0.7;
-                            else if (scoreDiff <= 3) compatibilityScore += 0.4;
-                            else compatibilityScore += 0.1;
-                        }
-                    });
-                }
-                
-                // Fallback to basic compatibility if no AI factors
-                if (totalFactors === 0) {
-                    // Use profile data for basic compatibility
-                    const factors = [
-                        { name: 'study_habits', current: currentProfile.studyHabits || 'unknown', other: otherUser.studyHabits || 'unknown' },
-                        { name: 'cleanliness', current: currentProfile.cleanliness || 'unknown', other: otherUser.cleanliness || 'unknown' },
-                        { name: 'social_preference', current: currentProfile.socialPreference || 'unknown', other: otherUser.socialPreference || 'unknown' }
-                    ];
-                    
-                    factors.forEach(factor => {
-                        totalFactors++;
-                        if (factor.current === factor.other && factor.current !== 'unknown') {
-                            compatibilityScore += 1;
-                        } else if (factor.current !== 'unknown' && factor.other !== 'unknown') {
-                            compatibilityScore += 0.3; // Some compatibility
-                        } else {
-                            compatibilityScore += 0.5; // Neutral
-                        }
-                    });
-                }
-                
-                // Calculate percentage with fallback
-                const compatibility = totalFactors > 0 ? (compatibilityScore / totalFactors) * 100 : Math.floor(Math.random() * 30) + 60; // Random 60-90% if no data
-                    
-                    // Calculate distance if both users have location data
-                    let distance = null;
-                    if (currentProfile.location && otherUser.location) {
-                        distance = await calculateDistance(currentProfile.location, otherUser.location);
-                    }
-                    
-                // Use consistent ID for matching
-                const matchId = otherUser.id || otherUser.userId;
-                    
-                return {
-                    ...otherUser,
-                    id: matchId, // Ensure consistent ID field
-                    compatibility: compatibility.toFixed(2),
-                        distance: distance,
-                    isPinned: pinnedMatches.has(matchId), // Check if pinned using consistent ID
-                    };
-                })
-        );
-        
-        console.log(`🎯 Found ${matchesWithDistance.length} potential matches`);
-        
-        return matchesWithDistance
-            .sort((a, b) => {
-                // First priority: Pinned matches
-                if (a.isPinned && !b.isPinned) return -1;
-                if (!a.isPinned && b.isPinned) return 1;
-                
-                // Second priority: Unread notifications
-                const aUnreadCount = notificationService.getUnreadCount([currentUser.id, a.id].sort().join('_'));
-                const bUnreadCount = notificationService.getUnreadCount([currentUser.id, b.id].sort().join('_'));
-                if (aUnreadCount > 0 && bUnreadCount === 0) return -1;
-                if (aUnreadCount === 0 && bUnreadCount > 0) return 1;
-                
-                // Third priority: Recent message activity (users with recent conversations)
-                const aChatId = [currentUser.id, a.id].sort().join('_');
-                const bChatId = [currentUser.id, b.id].sort().join('_');
-                const aLastRead = notificationService.lastReadTimestamps.get(aChatId) || 0;
-                const bLastRead = notificationService.lastReadTimestamps.get(bChatId) || 0;
-                
-                // If one user has recent activity and the other doesn't, prioritize the active one
-                const hasRecentActivityA = aLastRead > 0;
-                const hasRecentActivityB = bLastRead > 0;
-                
-                if (hasRecentActivityA && !hasRecentActivityB) return -1;
-                if (!hasRecentActivityA && hasRecentActivityB) return 1;
-                
-                // If both have recent activity, sort by most recent
-                if (hasRecentActivityA && hasRecentActivityB) {
-                    return bLastRead - aLastRead; // Most recent first
-                }
-                
-                // Fourth priority: Distance (closer first)
-                if (a.distance !== null && b.distance !== null) {
-                    return a.distance - b.distance;
-                }
-                if (a.distance !== null && b.distance === null) return -1;
-                if (a.distance === null && b.distance !== null) return 1;
-                
-                // Fifth priority: Compatibility score
-                return parseFloat(b.compatibility) - parseFloat(a.compatibility);
-            })
-            .slice(0, 50); // Show more matches since we're sorting by multiple criteria
-    };
-
-    // On mount, if existingProfile is present, fetch matches for that profile
     useEffect(() => {
         if (existingProfile && existingProfile.id) {
             (async () => {
                 try {
-                    console.log('🔄 Loading matches for existing profile:', existingProfile.id);
+                    console.log('🔄 Loading existing profile and profiles for matching...');
                     
-                    // First try to load from Firebase
+                    // Load all profiles from Firebase
                     let allProfiles = await loadAllProfiles();
-                    console.log(`📊 Firebase profiles loaded: ${allProfiles.length}`);
-                    
-                    // If no Firebase profiles, try backend
-                    if (!allProfiles || allProfiles.length === 0) {
-                        console.log('🔄 No Firebase profiles, trying backend...');
-                        try {
-                            const backendResponse = await axios.get(`${API_URL}/profiles`);
-                            if (backendResponse.data && backendResponse.data.length > 0) {
-                                // Convert backend profiles to Firebase format
-                                allProfiles = backendResponse.data.map(backendProfile => ({
-                                    id: backendProfile.userId || backendProfile.id,
-                                    userId: backendProfile.userId || backendProfile.id,
-                                    name: backendProfile.name,
-                                    age: backendProfile.age,
-                                    major: backendProfile.major,
-                                    location: backendProfile.location,
-                                    image: backendProfile.image,
-                                    instagram: backendProfile.instagram,
-                                    allergies: backendProfile.allergies,
-                                    answers: backendProfile.answers,
-                                    score: backendProfile.score,
-                                    isTestProfile: true
-                                }));
-                                console.log(`📊 Backend profiles converted: ${allProfiles.length}`);
-                            }
-                        } catch (backendError) {
-                            console.error('Error loading backend profiles:', backendError);
-                        }
-                    }
+                    console.log(`📊 Firebase profiles found: ${allProfiles.length}`);
                     
                     // Ensure current profile is included in allProfiles
                     const currentProfileExists = allProfiles.some(p => 
@@ -2648,406 +1721,290 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     setAllProfiles(allProfiles);
                     
                     // Get matches using the consolidated profile list
-                const matches = await getMatches(existingProfile, allProfiles);
-                    console.log(`✅ Matches found: ${matches.length}`);
-                    
-                    setMatchResults({ matches, score: existingProfile.score || 0 });
-                setShowMatchResults(true);
+                    const matches = getMatches(existingProfile, allProfiles);
+                    setMatches(matches);
+                    console.log(`🎯 Found ${matches.length} potential matches`);
                     
                 } catch (error) {
-                    console.error('Error loading matches:', error);
-                    // Fallback: try to get matches from backend API
-                    try {
-                        console.log('🔄 Fallback: trying backend API...');
-                        const matchResponse = await axios.get(`${API_URL}/match/${existingProfile.id}`);
-                        setMatchResults({
-                            matches: matchResponse.data.matches,
-                            score: matchResponse.data.compatibilityScore
-                        });
-                        setShowMatchResults(true);
-                    } catch (fallbackError) {
-                        console.error('Fallback also failed:', fallbackError);
-                    }
+                    console.error('❌ Error loading profiles:', error);
                 }
             })();
         }
     }, [existingProfile]);
 
-    // This function is no longer needed with the AI-powered system
-    // const normalizeAnswer = (answer, questionId) => { ... };
-
-    const scoreAnswer = (answer, questionId) => {
-        const sentiment = new Sentiment();
-        const result = sentiment.analyze(answer);
-        return result.score;
+    // Start the AI-powered conversation
+    const startConversation = () => {
+        const initialMessage = {
+            id: Date.now(),
+            text: "Hi! I'm your AI roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
+            sender: 'assistant',
+            timestamp: new Date()
+        };
+        
+        setMessages([initialMessage]);
+        setConversationStep('waiting_for_response');
     };
-    
-    const submitProfile = async (profile) => {
+
+    // Handle user response with AI analysis
+    const handleUserResponse = async (userInput) => {
+        if (!userInput.trim()) return;
+
+        // Add user message
+        const userMessage = {
+            id: Date.now(),
+            text: userInput,
+            sender: 'user',
+            timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, userMessage]);
+        setIsAnalyzing(true);
+        setConversationStep('analyzing');
+
         try {
-            const response = await axios.post(`${API_URL}/submit`, profile);
-            return response.data;
-        } catch (error) {
-            console.error('Error submitting profile:', error);
-            return null;
-        }
-    };
-
-    const handleImageUpload = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            if (e.target.files[0].size > 5 * 1024 * 1024) {
-                alert("File is too large! Please select a file smaller than 5MB.");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setUserImage(event.target.result);
-                const userMessage = { text: 'Image uploaded!', sender: 'user' };
-                setMessages(prev => [...prev, userMessage]);
-                // Image upload handled by AI system now
-                setMessages(prev => [...prev, { text: "Great! Your profile picture has been uploaded. Now let's continue with your background information.", sender: 'bot' }]);
+            // Analyze user response with AI
+            const analysis = await analyzeUserResponse(userInput, messages);
+            
+            // Add AI acknowledgment
+            const acknowledgmentMessage = {
+                id: Date.now() + 1,
+                text: analysis.acknowledgment,
+                sender: 'assistant',
+                timestamp: new Date()
             };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    };
+            
+            setMessages(prev => [...prev, acknowledgmentMessage]);
 
-    const handleStartChat = async (match) => {
-        console.log('🚀 Starting chat with:', match);
-        console.log('Current user:', currentUser);
-        console.log('Match user:', match);
-        
-        // Generate consistent chat ID
-        const chatId = getChatId(currentUser.id, match.id);
-        console.log('💬 Generated chat ID:', chatId);
-        
-        if (!chatId) {
-            console.error('❌ Failed to generate chat ID');
-            return;
-        }
-        
-        // Ensure both users are in the chat
-        try {
-            await firebaseMessaging.createChat(chatId, [currentUser.id, match.id]);
-            console.log('✅ Chat created/verified for ID:', chatId);
-            
-            // Force sync messages to ensure consistency
-            const existingMessages = await firebaseMessaging.getChatHistory(chatId);
-            console.log(`📨 Found ${existingMessages.length} existing messages in chat`);
-            
-            // Mark messages as read for current user
-            if (existingMessages.length > 0) {
-        notificationService.markChatAsRead(chatId);
-                console.log('✅ Marked chat as read');
+            // Add follow-up questions
+            if (analysis.followUpQuestions.length > 0) {
+                const followUpMessage = {
+                    id: Date.now() + 2,
+                    text: analysis.followUpQuestions.join('\n\n'),
+                    sender: 'assistant',
+                    timestamp: new Date()
+                };
+                
+                setMessages(prev => [...prev, followUpMessage]);
+                setConversationStep('waiting_for_followup');
+            } else {
+                // No more questions needed, generate final analysis
+                await generateFinalResults();
             }
-            
+
         } catch (error) {
-            console.error('❌ Error setting up chat:', error);
-        }
-        
-        setActiveMatch(match);
-    };
-
-    const handleResetToHome = () => {
-        // Complete reset to initial home screen
-        setShowMatchResults(false);
-        setShowMatchLoading(false);
-        setActiveMatch(null);
-        setMatchResults({ matches: [], score: 0 });
-        // Reset chatbot to initial AI state
-        setMessages([]);
-        setInput('');
-        setCurrentQuestionId('background');
-        setAnswers([]);
-        setConversationHistory([]);
-        setFollowUpQuestions([]);
-        setCurrentFollowUpIndex(0);
-        setUserProfile({});
-        setUserImage(null);
-        setUserMajor('');
-        setUserLocation('');
-        setUserAge('');
-        setUserInstagram('');
-        setShowSettings(false);
-        // Call the parent function to return to welcome screen
-        if (onResetToHome) {
-            onResetToHome();
-        }
-    };
-
-    const handleOpenSettings = () => {
-        setShowSettings(true);
-    };
-
-    const handleCloseSettings = () => {
-        console.log('handleCloseSettings called');
-        console.log('Current showSettings state:', showSettings);
-        setShowSettings(false);
-        console.log('setShowSettings(false) called');
-    };
-
-    const handleSaveSettings = async (updatedProfile) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            await saveProfile(updatedProfile);
-            
-            // Update localStorage with the new name
-            if (updatedProfile.name) {
-                localStorage.setItem('userName', updatedProfile.name);
-            }
-            
-            // Update the currentUser object with the new name
-            if (currentUser && updatedProfile.name) {
-                const updatedUser = { ...currentUser, name: updatedProfile.name };
-                // You might want to update the parent component's currentUser here
-                // For now, we'll update the local state
-                if (onUpdateUser) {
-                    onUpdateUser(updatedUser);
-                }
-            }
-            
-            // Refresh matches with updated profile
-            const allProfiles = await loadAllProfiles();
-            const matches = await getMatches(updatedProfile, allProfiles);
-            setMatchResults({ matches });
-            setShowSettings(false);
-            setSuccessMessage('Profile updated successfully!');
-            setTimeout(() => setSuccessMessage(null), 3000);
-        } catch (error) {
-            console.error('Error saving profile:', error);
-            setError('Failed to save profile. Please try again.');
-            setTimeout(() => setError(null), 5000);
+            console.error('Error analyzing user response:', error);
+            const errorMessage = {
+                id: Date.now() + 1,
+                text: "I apologize, but I'm having trouble analyzing your response. Please try again or contact support.",
+                sender: 'assistant',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
-            setIsLoading(false);
+            setIsAnalyzing(false);
         }
     };
 
-    const detectUserLocation = async () => {
-        if (!navigator.geolocation) {
-            return null;
-        }
-
+    // Generate final results and user profile
+    const generateFinalResults = async () => {
+        setIsAnalyzing(true);
+        
         try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 60000
-                });
-            });
-
-            const { latitude, longitude } = position.coords;
+            // Generate final AI analysis
+            const finalAnalysis = await generateFinalAnalysis(messages, userProfile);
             
-            // Use reverse geocoding to get city and state
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=en`
-            );
-            
-            if (!response.ok) {
-                return null;
-            }
-            
-            const data = await response.json();
-            
-            if (data.address) {
-                const city = data.address.city || data.address.town || data.address.village || data.address.county || '';
-                const state = data.address.state || '';
-                
-                if (city && state) {
-                    return `${city}, ${state}`;
-                }
-            }
-            
-            return null;
-        } catch (error) {
-            console.error('Error detecting location:', error);
-            return null;
-        }
-    };
-
-    // Debug logging
-    console.log('Chatbot render state:', {
-        activeMatch,
-        showMatchLoading,
-        showSettings,
-        showMatchResults,
-        messages: messages.length,
-        currentQuestionId,
-        existingProfile: !!existingProfile,
-        currentUser: !!currentUser
-    });
-
-    // Real-time profile monitoring for automatic match updates
-    useEffect(() => {
-        if (currentUser && currentUser.id) {
-            console.log('🔍 Starting real-time profile monitoring...');
-            
-            // Monitor for new profiles and automatically refresh matches
-            const monitor = monitorNewProfiles((newProfiles, allProfiles) => {
-                console.log(`🆕 New profiles detected: ${newProfiles.map(p => p.name).join(', ')}`);
-                
-                // If we have an existing profile, refresh matches with new profiles
-                if (existingProfile && existingProfile.id) {
-                    console.log('🔄 Refreshing matches due to new profiles...');
-                    refreshMatchesWithNewProfiles(allProfiles);
-                }
-            });
-            
-            setProfileMonitor(monitor);
-            
-            return () => {
-                if (monitor) {
-                    console.log('🛑 Stopping profile monitoring...');
-                    stopListeningToProfiles(monitor);
-                }
+            // Create user profile with AI-generated background
+            const profile = {
+                id: currentUser?.id || `user-${Date.now()}`,
+                name: currentUser?.name || 'User',
+                background: finalAnalysis.background,
+                compatibilityScore: finalAnalysis.compatibilityScore,
+                keyFactors: finalAnalysis.keyFactors,
+                recommendations: finalAnalysis.recommendations,
+                conversationHistory: messages,
+                createdAt: new Date().toISOString()
             };
-        }
-    }, [currentUser, existingProfile]);
-
-    // Function to refresh matches when new profiles are detected
-    const refreshMatchesWithNewProfiles = async (allProfiles) => {
-        if (!existingProfile || !existingProfile.id) return;
-        
-        try {
-            console.log('🔄 Refreshing matches with new profiles...');
-            const newMatches = await getMatches(existingProfile, allProfiles);
             
-            // Update match results if we have new matches
-            if (newMatches && newMatches.length > 0) {
-                setMatchResults({ matches: newMatches, score: existingProfile.score || 0 });
-                console.log(`✅ Matches refreshed: ${newMatches.length} matches found`);
-                
-                // Show notification about new matches
-                const currentMatchCount = matchResults.matches.length;
-                if (newMatches.length > currentMatchCount) {
-                    const newMatchCount = newMatches.length - currentMatchCount;
-                    notificationService.showMessageNotification(
-                        'New Matches Available!',
-                        `${newMatchCount} new potential roommate${newMatchCount > 1 ? 's' : ''} found!`
-                    );
-                }
-            }
+            setUserProfile(profile);
+            
+            // Save profile to Firebase
+            await saveProfile(profile);
+            
+            // Add completion message
+            const completionMessage = {
+                id: Date.now(),
+                text: `Perfect! I've analyzed your responses and created your roommate compatibility profile.\n\n🎯 Your Compatibility Score: ${finalAnalysis.compatibilityScore}/100\n\n📋 Key Factors:\n${finalAnalysis.keyFactors.map(factor => `• ${factor}`).join('\n')}\n\n💡 Recommendations:\n${finalAnalysis.recommendations}\n\nYour profile is now ready for roommate matching!`,
+                sender: 'assistant',
+                timestamp: new Date()
+            };
+            
+            setMessages(prev => [...prev, completionMessage]);
+            setConversationStep('complete');
+            setIsComplete(true);
+            
         } catch (error) {
-            console.error('Error refreshing matches with new profiles:', error);
+            console.error('Error generating final results:', error);
+            const errorMessage = {
+                id: Date.now(),
+                text: "I apologize, but I'm having trouble generating your final analysis. Please try again or contact support.",
+                sender: 'assistant',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsAnalyzing(false);
         }
     };
 
-    // Function to get consistent chat ID between two users
-    const getChatId = (user1Id, user2Id) => {
-        // Ensure we have valid IDs
-        const id1 = user1Id || currentUser.id;
-        const id2 = user2Id;
+    // Handle follow-up responses
+    const handleFollowUpResponse = async (userInput) => {
+        if (!userInput.trim()) return;
+
+        // Add user message
+        const userMessage = {
+            id: Date.now(),
+            text: userInput,
+            sender: 'user',
+            timestamp: new Date()
+        };
         
-        if (!id1 || !id2) {
-            console.error('❌ Invalid user IDs for chat:', { id1, id2, currentUser: currentUser.id });
-            return null;
-        }
+        setMessages(prev => [...prev, userMessage]);
         
-        // Sort IDs to ensure consistent chat ID regardless of who initiates
-        const sortedIds = [id1, id2].sort();
-        const chatId = sortedIds.join('_');
-        
-        console.log(`💬 Generated chat ID: ${id1} + ${id2} = ${chatId}`);
-        return chatId;
+        // Generate final results after follow-up
+        await generateFinalResults();
     };
 
-    if (activeMatch) {
-        return <ChatScreen 
-            currentUser={currentUser} 
-            matchedUser={activeMatch} 
-            onBack={() => setActiveMatch(null)} 
-        />;
-    }
-    
-    if (showMatchLoading) return <MatchLoadingScreen />;
-    if (showSettings) return <SettingsScreen currentUser={currentUser} userProfile={existingProfile} onBack={handleCloseSettings} onSave={handleSaveSettings} />;
-    if (showMatchResults) {
-        console.log(`📊 MatchResultsGrid Debug: matches=${matchResults.matches.length}, score=${matchResults.score}`);
-        console.log(`📊 Match names:`, matchResults.matches.map(m => m.name));
-        return <MatchResultsGrid matches={matchResults.matches} onStartChat={handleStartChat} currentUser={currentUser} onResetToHome={handleResetToHome} onOpenSettings={handleOpenSettings} />;
-    }
+    // Scroll to bottom of messages
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    // Start conversation when component mounts
+    useEffect(() => {
+        if (conversationStep === 'initial') {
+            startConversation();
+        }
+    }, []);
 
     return (
-        <div className="chatbot-container-isolated">
+        <div className="chatbot-container">
             <div className="chatbot-header">
-                <div className="professional-logo-container">
-                    <div className="professional-logo-icon">
-                        <svg viewBox="0 0 48 48" className="professional-logo-svg">
+                <div className="animated-logo-container">
+                    <div className="logo-icon">
+                        <svg viewBox="0 0 40 40" className="logo-svg">
                             <defs>
-                                <linearGradient id="professionalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95"/>
-                                    <stop offset="100%" stopColor="#e0f2f1" stopOpacity="0.9"/>
+                                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9"/>
+                                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.7"/>
                                 </linearGradient>
-                                <filter id="professionalGlow">
-                                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                                    <feMerge> 
-                                        <feMergeNode in="coloredBlur"/>
-                                        <feMergeNode in="SourceGraphic"/>
-                                    </feMerge>
-                                </filter>
                             </defs>
-                            {/* New VR Headset Design */}
-                            {/* Triangular roof */}
-                            <path className="professional-roof" d="M10 24 L24 10 L38 24" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
-                            {/* Rectangular body */}
-                            <rect className="professional-body" x="14" y="24" width="20" height="18" rx="3" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
-                            {/* Central inverted U opening */}
-                            <path className="professional-opening" d="M18 32 Q24 35 30 32" stroke="url(#professionalGradient)" strokeWidth="2" fill="none" filter="url(#professionalGlow)"/>
-                            {/* Two circular elements on sides */}
-                            <circle className="professional-circle-1" cx="18" cy="28" r="2" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
-                            <circle className="professional-circle-2" cx="30" cy="28" r="2" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                            {/* VR Headset Design */}
+                            <path d="M8 15 L20 8 L32 15" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-roof"/>
+                            <rect x="10" y="15" width="20" height="18" rx="3" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-body"/>
+                            <path d="M16 25 Q20 30 24 25" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-opening"/>
+                            <circle cx="14" cy="20" r="2" fill="url(#logoGradient)" className="logo-circle-1"/>
+                            <circle cx="26" cy="20" r="2" fill="url(#logoGradient)" className="logo-circle-2"/>
                         </svg>
-            </div>
-                    <div className="professional-logo-text">
-                        <span className="professional-text-roomie">Roomie</span>
-                        <span className="professional-text-connect">Connect</span>
                     </div>
+                    <h2 className="chatbot-header-title">
+                        <span className="logo-text-roomie">Roomie</span>
+                        <span className="logo-text-connect">Connect</span>
+                        <span className="logo-text-ai">AI</span>
+                    </h2>
                 </div>
-                <p className="chatbot-header-subtitle animated-subtitle">Your personal roommate finder</p>
+                <p className="chatbot-header-subtitle animated-subtitle">AI-Powered Roommate Compatibility Specialist</p>
             </div>
+
             <div className="chatbot-messages">
-                {messages.length === 0 ? (
-                    <div className="message bot">
-                        <p>Loading...</p>
-                    </div>
-                ) : (
-                    messages.map((msg, index) => (
-                        <div key={index} className={`message ${msg.sender}`}>
-                            {msg.image && <img src={msg.image} alt="User upload" className="message-image" />}
-                        {msg.text && <p>{msg.text}</p>}
+                {messages.map((message) => (
+                    <div key={message.id} className={`message ${message.sender}`}>
+                        <div className="message-content">
+                            {message.text}
                         </div>
-                    ))
+                        <div className="message-timestamp">
+                            {message.timestamp.toLocaleTimeString()}
+                        </div>
+                    </div>
+                ))}
+                
+                {isAnalyzing && (
+                    <div className="message assistant">
+                        <div className="message-content">
+                            <div className="typing-indicator">
+                                <span>🤔 Analyzing your response...</span>
+                            </div>
+                        </div>
+                    </div>
                 )}
-                <div ref={messagesEndRef} style={{ height: '1px' }} />
+                
+                <div ref={messagesEndRef} />
             </div>
-            <div className={`chatbot-input-area ${isProcessingAI ? 'ai-processing' : ''}`}>
-                <input
-                    type="text"
-                    className="chatbot-input"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !isProcessingAI) {
-                            e.preventDefault();
-                            handleSend();
-                        }
-                    }}
-                    placeholder={isProcessingAI ? "AI is processing..." : "Type your answer..."}
-                    disabled={isProcessingAI}
-                />
-                <button 
-                    className="chatbot-send-button" 
-                    onClick={handleSend}
-                    disabled={isProcessingAI}
-                >
-                    {isProcessingAI ? (
-                        <div className="ai-processing-indicator"></div>
-                    ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    )}
-                </button>
+
+            <div className="chatbot-input">
+                {conversationStep === 'waiting_for_response' && (
+                    <div className="input-container">
+                        <textarea
+                            placeholder="Share your background and preferences..."
+                            value={currentQuestion || ''}
+                            onChange={(e) => setCurrentQuestion(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleUserResponse(currentQuestion);
+                                    setCurrentQuestion('');
+                                }
+                            }}
+                            rows={4}
+                        />
+                        <button 
+                            onClick={() => {
+                                handleUserResponse(currentQuestion);
+                                setCurrentQuestion('');
+                            }}
+                            disabled={!currentQuestion?.trim() || isAnalyzing}
+                        >
+                            Send
+                        </button>
+                    </div>
+                )}
+
+                {conversationStep === 'waiting_for_followup' && (
+                    <div className="input-container">
+                        <textarea
+                            placeholder="Answer the follow-up questions..."
+                            value={currentQuestion || ''}
+                            onChange={(e) => setCurrentQuestion(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleFollowUpResponse(currentQuestion);
+                                    setCurrentQuestion('');
+                                }
+                            }}
+                            rows={4}
+                        />
+                        <button 
+                            onClick={() => {
+                                handleFollowUpResponse(currentQuestion);
+                                setCurrentQuestion('');
+                            }}
+                            disabled={!currentQuestion?.trim() || isAnalyzing}
+                        >
+                            Send
+                        </button>
+                    </div>
+                )}
+
+                {conversationStep === 'complete' && (
+                    <div className="completion-actions">
+                        <button onClick={() => onResetToHome()} className="primary-button">
+                            View Matches
+                        </button>
+                        <button onClick={() => window.location.reload()} className="secondary-button">
+                            Start Over
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
