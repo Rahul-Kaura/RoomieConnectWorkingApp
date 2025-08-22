@@ -2010,4 +2010,5 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     );
 };
 
+export { MatchResultsGrid };
 export default Chatbot;

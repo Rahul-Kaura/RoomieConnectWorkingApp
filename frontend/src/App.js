@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Chatbot from './Chatbot';
+import Chatbot, { MatchResultsGrid } from './Chatbot';
 import Login from './Login';
 import './App.css';
 import AnimatedCredits from './AnimatedCredits';
@@ -7,6 +7,7 @@ import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { loadProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
 import { autoSyncTestProfiles } from './services/syncTestProfiles';
+import MatchResultsGrid from './MatchResultsGrid'; // Added import for MatchResultsGrid
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();
@@ -16,6 +17,7 @@ function App() {
   const [globalProfileMonitor, setGlobalProfileMonitor] = useState(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileLoadingStartTime, setProfileLoadingStartTime] = useState(null);
+  const [matches, setMatches] = useState([]); // Added state for matches
 
   // Set initial theme class on component mount
   useEffect(() => {
@@ -320,6 +322,21 @@ function App() {
     setView('welcome');
   };
 
+  const handleStartChat = (match) => {
+    console.log('Starting chat with match:', match);
+    // In a real app, you would navigate to a chat room or open a chat window
+    // For now, we'll just set the view to chatbot with the match data
+    setView('chatbot');
+    // You might want to pass the match data to the Chatbot component
+    // setChatbotProps({ match: match });
+  };
+
+  const handleOpenSettings = () => {
+    console.log('Opening settings...');
+    // In a real app, you would navigate to a settings page
+    setView('settings'); // Assuming a 'settings' view exists
+  };
+
   const renderContent = () => {
     if (isLoading) return (
       <div style={{
@@ -527,7 +544,13 @@ function App() {
           />
         );
       case 'matches':
-        return <Chatbot currentUser={currentUser} existingProfile={userProfile} onResetToHome={resetToHome} onUpdateUser={handleUpdateUser} />;
+        return <MatchResultsGrid 
+          matches={matches} 
+          onStartChat={handleStartChat} 
+          currentUser={currentUser} 
+          onResetToHome={resetToHome} 
+          onOpenSettings={handleOpenSettings}
+        />;
       case 'welcome':
       default:
         return (
