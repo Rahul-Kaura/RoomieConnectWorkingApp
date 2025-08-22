@@ -5,9 +5,10 @@
     flex-direction: column;
     justify-content: center;
     padding: 40px;
-    background-color: #fff;
+    background-color: #1f2937;
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    border: 1px solid #374151;
 }
 
 .login-header {
@@ -16,7 +17,7 @@
 }
 
 .login-header h2 {
-    color: #20b2aa;
+    color: #6366f1;
     font-size: 2.5rem;
     font-weight: 700;
 }
@@ -28,21 +29,22 @@
 }
 
 .login-form input {
-    border: 1px solid #e0e0e0;
+    border: 1px solid #4b5563;
     border-radius: 8px;
     padding: 15px;
     font-size: 1rem;
-    background-color: #f9f9f9;
+    background-color: #374151;
+    color: #ffffff;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .login-form input:focus {
-    border-color: #20b2aa;
+    border-color: #6366f1;
 }
 
 .login-button {
-    background-color: #26a69a;
+    background-color: #6366f1;
     color: white;
     border: none;
     border-radius: 8px;
@@ -54,7 +56,7 @@
 }
 
 .login-button:hover {
-    background-color: #2bbbad;
+    background-color: #4f46e5;
 }
 
 .login-toggle {
@@ -65,7 +67,73 @@
 .login-toggle button {
     background: none;
     border: none;
-    color: #20b2aa;
+    color: #6366f1;
     cursor: pointer;
     font-size: 0.9rem;
+}
+
+/* Light theme overrides */
+body.light-theme .login-container {
+  background-color: #fff;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: none;
+}
+
+body.light-theme .login-header h2 {
+  color: #20b2aa;
+}
+
+body.light-theme .login-form input {
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+body.light-theme .login-form input:focus {
+  border-color: #20b2aa;
+}
+
+body.light-theme .login-button {
+  background-color: #26a69a;
+}
+
+body.light-theme .login-button:hover {
+  background-color: #2bbbad;
+}
+
+body.light-theme .login-toggle button {
+  color: #20b2aa;
+}
+
+/* Dark theme (default) */
+body.dark-theme .login-container {
+  background-color: #1f2937;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid #374151;
+}
+
+body.dark-theme .login-header h2 {
+  color: #6366f1;
+}
+
+body.dark-theme .login-form input {
+  border: 1px solid #4b5563;
+  background-color: #374151;
+  color: #ffffff;
+}
+
+body.dark-theme .login-form input:focus {
+  border-color: #6366f1;
+}
+
+body.dark-theme .login-button {
+  background-color: #6366f1;
+}
+
+body.dark-theme .login-button:hover {
+  background-color: #4f46e5;
+}
+
+body.dark-theme .login-toggle button {
+  color: #6366f1;
 } 

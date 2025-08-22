@@ -17,6 +17,18 @@ function App() {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileLoadingStartTime, setProfileLoadingStartTime] = useState(null);
 
+  // Set initial theme class on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+    } else {
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+    }
+  }, []);
+
   // Remove auto-transition - let homeLoading stay until user clicks
 
   // Debug when userProfile changes
@@ -358,14 +370,16 @@ function App() {
               
               <div className="home-loading-logo">
                 <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="25,70 70,25 115,70" stroke="#20b2aa" strokeWidth="6" fill="none" />
-                  <rect x="35" y="70" width="70" height="45" rx="10" stroke="#20b2aa" strokeWidth="6" fill="none" />
-                  <path d="M70 110
-                    C 70 105, 52 98, 52 85
-                    A 10 10 0 0 1 70 85
-                    A 10 10 0 0 1 88 85
-                    C 88 98, 70 105, 70 110
-                    Z" stroke="#20b2aa" strokeWidth="4" fill="none" />
+                  {/* New VR Headset Design */}
+                  {/* Triangular roof */}
+                  <polyline points="25,70 70,25 115,70" stroke="#6366f1" strokeWidth="6" fill="none" />
+                  {/* Rectangular body */}
+                  <rect x="35" y="70" width="70" height="45" rx="10" stroke="#6366f1" strokeWidth="6" fill="none" />
+                  {/* Central inverted U opening */}
+                  <path d="M50 95 Q70 100 90 95" stroke="#6366f1" strokeWidth="4" fill="none" />
+                  {/* Two circular elements on sides */}
+                  <circle cx="45" cy="80" r="5" fill="#6366f1" />
+                  <circle cx="95" cy="80" r="5" fill="#6366f1" />
                 </svg>
               </div>
               
@@ -395,8 +409,8 @@ function App() {
             justifyContent: 'center',
             alignItems: 'center',
             height: '100vh',
-            background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
-            color: '#20b2aa',
+            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+            color: '#6366f1',
             position: 'relative'
           }}>
             {/* Awwwards-inspired UI transition animation */}
@@ -409,7 +423,7 @@ function App() {
                       width: '80px',
                       height: '80px',
                       borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -433,7 +447,7 @@ function App() {
                       width: '80px',
                       height: '80px',
                       borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -457,7 +471,7 @@ function App() {
                       width: '80px',
                       height: '80px',
                       borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -520,14 +534,16 @@ function App() {
           <div className="welcome-screen screen-transition" onClick={handleWelcomeContinue} style={{ cursor: 'pointer' }}>
             <div className="logo-container animated-logo">
                 <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="20,55 55,20 90,55" stroke="#20b2aa" strokeWidth="5" fill="none" />
-                  <rect x="28" y="55" width="54" height="35" rx="8" stroke="#20b2aa" strokeWidth="5" fill="none" />
-                  <path d="M55 85
-                    C 55 80, 40 75, 40 65
-                    A 8 8 0 0 1 55 65
-                    A 8 8 0 0 1 70 65
-                    C 70 75, 55 80, 55 85
-                    Z" stroke="#20b2aa" strokeWidth="3" fill="none" />
+                  {/* New VR Headset Design */}
+                  {/* Triangular roof */}
+                  <polyline points="20,55 55,20 90,55" stroke="#6366f1" strokeWidth="5" fill="none" />
+                  {/* Rectangular body */}
+                  <rect x="28" y="55" width="54" height="35" rx="8" stroke="#6366f1" strokeWidth="5" fill="none" />
+                  {/* Central inverted U opening */}
+                  <path d="M40 75 Q55 80 70 75" stroke="#6366f1" strokeWidth="3" fill="none" />
+                  {/* Two circular elements on sides */}
+                  <circle cx="35" cy="65" r="4" fill="#6366f1" />
+                  <circle cx="75" cy="65" r="4" fill="#6366f1" />
                 </svg>
             </div>
             <h1 className="home-title">ROOMIE<br/>CONNECT</h1>

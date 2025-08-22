@@ -8,196 +8,240 @@ import notificationService from './services/notificationService';
 import firebaseMessaging from './services/firebaseMessaging';
 import { DISTANCE_API_CONFIG, getDistanceAPI, API_URL } from './config';
 
+// Claude Sonnet 3.5 API configuration
+const CLAUDE_API_KEY = process.env.REACT_APP_CLAUDE_API_KEY || 'YOUR_CLAUDE_API_KEY';
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+// Roommate Specialist System
+const ROOMMATE_SPECIALIST_PROMPT = `You are a professional roommate compatibility specialist with expertise in psychology, sociology, and conflict resolution. Your role is to:
+
+1. Gather comprehensive background information about potential roommates
+2. Ask insightful follow-up questions based on their responses
+3. Evaluate compatibility factors using a sophisticated scoring system
+4. Provide detailed analysis and recommendations
+
+IMPORTANT: Always ask about allergies, dietary restrictions, and medical conditions that could affect living arrangements.
+
+You should be warm, professional, and thorough in your approach. Always ask follow-up questions that reveal deeper insights about living habits, communication styles, and potential compatibility issues.
+
+When providing analysis or summaries, use bullet points for better readability.`;
+
+const INITIAL_QUESTIONS = [
+    {
+        id: 'background',
+        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
+        category: 'background',
+        weight: 0.3,
+        isInitial: true
+    }
+];
+
+// Roommate Specialist Question Flow
 const questions = {
-    'upload_image': {
-        text: (name) => `Welcome, ${name}! To get started, would you like to upload a profile picture? You can upload a file or type 'skip' to continue.`,
-        category: 'image',
-        keywords: ['skip'],
-        getNext: () => 'intro'
+    'background': {
+        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
+        category: 'background',
+        weight: 0.3,
+        isInitial: true,
+        isAI: true
     },
-    'name': {
-        text: "Great! Let's start by getting to know you. What's your name?",
-        category: 'personal',
-        weight: 0,
-        keywords: [], // Free text input for name
-        getNext: () => 'upload_image'
-    },
-    'intro': {
-        text: `Awesome! Now, to find you the best possible match, I'm just going to ask a few quick questions. Let's get started! Are you more of a morning person or a total night owl? (Say "morning" or "night")`,
-        category: 'lifestyle', 
+    'followup_1': {
+        text: "Based on your response, I'd like to ask a few follow-up questions to better understand your living preferences. This will help me find the most compatible roommate for you.",
+        category: 'followup',
         weight: 0.2,
-        keywords: ['morning', 'night', 'owl', 'early', 'late'],
-        getNext: () => 'cleanliness'
+        isAI: true,
+        isFollowUp: true
     },
-    'cleanliness': {
-        text: "What's your take on cleanliness? Are you super tidy, pretty relaxed, or somewhere in between? (Say 'tidy', 'relaxed', or 'between')",
-        category: 'lifestyle',
+    'followup_2': {
+        text: "Great insights! Let me ask one more set of questions to complete your compatibility profile.",
+        category: 'followup',
         weight: 0.2,
-        keywords: ['tidy', 'clean', 'neat', 'relaxed', 'messy', 'organized', 'between'],
-        getNext: (answer) => {
-            const lower = answer.toLowerCase();
-            if (lower.includes('tidy') || lower.includes('clean') || lower.includes('neat')) {
-                return 'cleanliness_followup_tidy';
-            }
-            return 'cleanliness_followup_relaxed';
-        }
-    },
-    'cleanliness_followup_tidy': {
-        text: (answer) => `Being tidy is a great quality! Does that hold up even when things get super busy? (Say 'yes' or 'no')`,
-        category: 'lifestyle', 
-        weight: 0.0, 
-        isFollowUp: true, 
-        originalQuestionId: 'cleanliness',
-        keywords: ['yes', 'no', 'sometimes', 'maybe', 'usually', 'always'],
-        getNext: () => 'noise'
-    },
-    'cleanliness_followup_relaxed': {
-        text: (answer) => `"Relaxed" is cool. To get a better sense, what's your rule on leaving dishes in the sink for a bit? (Say 'okay' or 'not okay')`,
-        category: 'lifestyle', 
-        weight: 0.0, 
-        isFollowUp: true, 
-        originalQuestionId: 'cleanliness',
-        keywords: ['okay', 'fine', 'not okay', 'never', 'sometimes', 'rarely'],
-        getNext: () => 'noise'
-    },
-    'noise': {
-        text: "Imagine you're chilling in your room. Do you prefer a quiet, library-like atmosphere, or are you cool with some background music or the TV on? (Say 'quiet' or 'music')",
-        category: 'lifestyle',
-        weight: 0.15,
-        keywords: ['quiet', 'library', 'music', 'tv', 'background', 'silent', 'noisy'],
-        getNext: () => 'guests'
-    },
-    'guests': {
-        text: "What's your policy on guests? Are you a 'the more the merrier' type, or do you prefer to keep your space more private? (Say 'merrier' or 'private')",
-        category: 'lifestyle',
-        weight: 0.15,
-        keywords: ['merrier', 'private', 'often', 'rarely', 'sometimes', 'love guests', 'few guests'],
-        getNext: (answer) => {
-            const lower = answer.toLowerCase();
-            if (lower.includes('merrier') || lower.includes('often') || lower.includes('love guests')) {
-                return 'guests_followup';
-            }
-            return 'smoking';
-        }
-    },
-    'guests_followup': {
-        text: (answer) => `Okay, so more of a party vibe with guests. Got it. How do you feel about overnight guests during the week? (Say 'okay' or 'not okay')`,
-        category: 'lifestyle', 
-        weight: 0.0, 
-        isFollowUp: true, 
-        originalQuestionId: 'guests',
-        keywords: ['okay', 'fine', 'not okay', 'never', 'sometimes', 'rarely', 'yes', 'no'],
-        getNext: () => 'smoking'
-    },
-    'smoking': {
-        text: "Just gotta ask about smoking or vaping – is that something you do, or does it bother you if others do? (Say 'yes', 'no', or 'bothers me')",
-        category: 'lifestyle',
-        weight: 0.1,
-        keywords: ['yes', 'no', 'sometimes', 'bothers me', 'doesn\'t bother me', 'never'],
-        getNext: () => 'alcohol'
-    },
-    'alcohol': {
-        text: "What's your general attitude about having alcohol in the apartment? (Say 'okay' or 'not okay')",
-        category: 'lifestyle',
-        weight: 0.1,
-        keywords: ['okay', 'fine', 'not okay', 'never', 'sometimes', 'rarely', 'yes', 'no'],
-        getNext: () => 'study_habits'
-    },
-    'study_habits': {
-        text: "Alright, let's switch gears to study habits. Where do you usually get your best work done?",
-        category: 'academic',
-        weight: 0.05,
-        keywords: ['room', 'library', 'cafe', 'kitchen', 'desk', 'bed', 'outside'],
-        getNext: () => 'major'
-    },
-    'major': {
-        text: "What's your major?",
-        category: 'academic',
-        weight: 0.05,
-        keywords: [], // Free text input for major
-        getNext: () => 'personality'
-    },
-    'personality': {
-        text: "When it comes to your future roommate, are you hoping to find a new bestie, or are you more about just keeping things friendly and respectful?",
-        category: 'personality',
-        weight: 0.05,
-        keywords: ['bestie', 'friend', 'friendly', 'respectful', 'casual', 'close'],
-        getNext: () => 'weekends'
-    },
-    'weekends': {
-        text: "What does a typical weekend look like for you?",
-        category: 'personality',
-        weight: 0.05,
-        keywords: ['home', 'out', 'party', 'study', 'work', 'relax', 'social', 'quiet'],
-        getNext: () => 'hobbies'
-    },
-    'hobbies': {
-        text: "So, what do you do for fun? Tell me about your hobbies!",
-        category: 'personality',
-        weight: 0.05,
-        keywords: ['gaming', 'reading', 'sports', 'music', 'art', 'cooking', 'travel', 'netflix', 'gym'],
-        getNext: () => 'sharing'
-    },
-    'sharing': {
-        text: "Okay, just a couple more things! How do you feel about sharing stuff, like kitchen supplies or snacks?",
-        category: 'practical',
-        weight: 0.05,
-        keywords: ['yes', 'no', 'sometimes', 'rarely', 'okay', 'fine', 'not okay'],
-        getNext: () => 'temperature'
-    },
-    'temperature': {
-        text: "Are you someone who's always cold and needs the heat on, or do you prefer things on the cooler side?",
-        category: 'practical',
-        weight: 0.05,
-        keywords: ['cold', 'heat', 'cool', 'warm', 'hot', 'freezing', 'chilly'],
-        getNext: () => 'common_items'
-    },
-    'common_items': {
-        text: "When it comes to big items for the common space, like a coffee maker or a TV, how do you think that should be handled?",
-        category: 'practical',
-        weight: 0.05,
-        keywords: ['split', 'share', 'buy together', 'separate', 'each person', 'one person'],
-        getNext: () => 'pets'
-    },
-    'pets': {
-        text: "Almost done! How do you feel about pets? Would you be cool with a furry (or scaly) roommate? (Say 'yes', 'no', or 'maybe')",
-        category: 'other',
-        weight: 0.025,
-        keywords: ['yes', 'no', 'maybe', 'depends', 'love pets', 'allergic', 'okay'],
-        getNext: () => 'location'
-    },
-    'location': {
-        text: "For distance matching, type 'detect' to automatically detect your location or 'skip' to continue without location",
-        category: 'location',
-        weight: 0, // No weight, just for data collection
-        keywords: ['detect', 'skip'], // Only allow 'detect' or 'skip'
-        getNext: () => 'age'
-    },
-    'age': {
-        text: "What's your age? (Enter a number between 18-25)",
-        category: 'personal',
-        weight: 0.025, // Small weight for age compatibility
-        keywords: [], // Free text input for age
-        getNext: () => 'allergies'
-    },
-    'allergies': {
-        text: "Last one: Is there anything important I should know, like any major allergies? (Say 'no' or describe your allergies)",
-        category: 'other',
-        weight: 0.025,
-        keywords: ['no', 'none', 'n/a', 'yes', 'peanuts', 'cats', 'dogs', 'dust'],
-        getNext: () => 'instagram'
-    },
-    'instagram': {
-        text: "What's your Instagram handle? (Just type the username without @, or type 'skip' if you prefer not to share)",
-        category: 'social',
-        weight: 0, // No weight for matching, just for display
-        keywords: ['skip', 'none', 'n/a', 'no', 'prefer not to share'],
-        getNext: () => 'end'
+        isAI: true,
+        isFollowUp: true
     },
     'end': {
-        text: "That's everything! Thanks so much. I'm crunching the numbers now to find your best matches.",
-        isEnd: true
+        text: "Perfect! I've gathered comprehensive information about your preferences and lifestyle. Now I'll analyze your responses and find your best roommate matches. This may take a moment as I process all the details.",
+        isEnd: true,
+        isAI: true
     }
+};
+
+// Claude API Integration Functions
+const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_SPECIALIST_PROMPT) => {
+    if (CLAUDE_API_KEY === 'YOUR_CLAUDE_API_KEY') {
+        console.warn('Claude API key not configured. Please set REACT_APP_CLAUDE_API_KEY environment variable.');
+        return {
+            success: false,
+            error: 'API key not configured. Please contact support to set up Claude integration.'
+        };
+    }
+
+    try {
+        const response = await fetch(CLAUDE_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': CLAUDE_API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 1000,
+                system: systemPrompt,
+                messages: messages
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return {
+            success: true,
+            content: data.content[0].text,
+            usage: data.usage
+        };
+    } catch (error) {
+        console.error('Error calling Claude API:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
+const analyzeUserResponse = async (userResponse, conversationHistory) => {
+    const messages = [
+        ...conversationHistory.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text
+        })),
+        {
+            role: 'user',
+            content: `User response: ${userResponse}\n\nAs a roommate compatibility specialist, analyze this specific response and provide:\n1. A brief acknowledgment that references specific details from their response\n2. 2-3 targeted follow-up questions that address specific areas needing more detail\n3. A preliminary compatibility score (0-100) based on what you've learned so far\n\nIMPORTANT GUIDELINES:\n- Make your acknowledgment PERSONAL and specific to what they shared\n- Ask about allergies, dietary restrictions, or medical conditions if not mentioned\n- Focus on areas that need more specification (e.g., if they say "I'm clean" but don't elaborate, ask about specific cleaning habits)\n- Ask about communication preferences if not mentioned\n- Ask about noise tolerance and study habits if not detailed\n- Ask about social preferences and guest policies if not specified\n- Ask about financial expectations for shared expenses if not mentioned\n- Vary your questions based on their specific background (e.g., if they're a night owl, ask about morning routines)\n- If they mentioned specific majors or activities, ask about how that affects their schedule\n\nFormat your response as:\nAcknowledgment: [personal acknowledgment referencing their specific details]\n\nFollow-up Questions:\n1. [specific, targeted question based on what needs more detail]\n2. [specific, targeted question based on what needs more detail]\n3. [specific, targeted question based on what needs more detail]\n\nPreliminary Score: [score]/100`
+        }
+    ];
+
+    const result = await callClaudeAPI(messages);
+    if (!result.success) {
+        return {
+            acknowledgment: `Thank you for sharing that information with me. I can see you're ${userResponse.includes('major') ? 'a student' : 'someone'} who values ${userResponse.includes('clean') ? 'cleanliness' : 'organization'}.`,
+            followUpQuestions: [
+                "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
+                "What's your approach to sharing common spaces and household responsibilities?",
+                "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?"
+            ],
+            preliminaryScore: Math.floor(Math.random() * 20) + 70 // Random score between 70-90
+        };
+    }
+
+    // Parse Claude's response
+    const content = result.content;
+    const acknowledgment = content.match(/Acknowledgment:\s*(.+?)(?=\n|$)/)?.[1] || "Thank you for sharing that information with me.";
+    const followUpQuestions = [];
+    const questionsMatch = content.match(/Follow-up Questions:\s*\n((?:[0-9]+\.\s*.+\n?)+)/);
+    if (questionsMatch) {
+        const questionsText = questionsMatch[1];
+        const questionMatches = questionsText.matchAll(/[0-9]+\.\s*(.+?)(?=\n[0-9]+\.|$)/g);
+        for (const match of questionMatches) {
+            followUpQuestions.push(match[1].trim());
+        }
+    }
+    
+    // Fallback questions if parsing fails
+    if (followUpQuestions.length === 0) {
+        // Generate varied fallback questions based on the user's response
+        const fallbackOptions = [
+            "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
+            "What's your approach to sharing common spaces and household responsibilities?",
+            "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?",
+            "How do you prefer to handle conflicts or disagreements with roommates?",
+            "What's your policy on having guests over and how often do you socialize at home?",
+            "How do you feel about sharing food or groceries with roommates?",
+            "What's your typical daily routine and how does it affect your living space usage?",
+            "How do you prefer to communicate with roommates about household matters?"
+        ];
+        
+        // Randomly select 3 unique questions
+        const shuffled = fallbackOptions.sort(() => 0.5 - Math.random());
+        followUpQuestions.push(...shuffled.slice(0, 3));
+    }
+
+    const scoreMatch = content.match(/Preliminary Score:\s*(\d+)/);
+    const preliminaryScore = scoreMatch ? parseInt(scoreMatch[1]) : 75;
+
+    return {
+        acknowledgment,
+        followUpQuestions,
+        preliminaryScore
+    };
+};
+
+const generateFinalAnalysis = async (conversationHistory, userProfile) => {
+    const messages = [
+        ...conversationHistory.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text
+        })),
+        {
+            role: 'user',
+            content: `Based on the entire conversation, please provide:\n1. A comprehensive summary of the user's background and preferences\n2. Key compatibility factors for roommate matching\n3. A final compatibility score (0-100) with detailed breakdown\n4. Specific roommate recommendations\n\nIMPORTANT GUIDELINES:\n- Use bullet points (•) for better readability in all sections\n- Make the summary PERSONAL and specific to what they shared\n- Vary the compatibility factors based on their unique background\n- Adjust scores based on the quality and detail of their responses\n- Make recommendations specific to their personality and preferences\n- Consider their major, study habits, social preferences, and any special requirements\n\nFormat as:\nSummary:\n• [comprehensive summary in bullet points]\n\nCompatibility Factors:\n• [factor 1]: [score]/10\n• [factor 2]: [score]/10\n• [factor 3]: [score]/10\n\nFinal Score: [total]/100\n\nRecommendations:\n• [specific roommate recommendations in bullet points]`
+        }
+    ];
+
+    const result = await callClaudeAPI(messages);
+    if (!result.success) {
+        return {
+            summary: "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.",
+            compatibilityFactors: [
+                "• Communication Style: 8/10",
+                "• Living Habits: 7/10",
+                "• Social Preferences: 8/10",
+                "• Study Environment: 9/10",
+                "• Conflict Resolution: 7/10"
+            ],
+            finalScore: Math.floor(Math.random() * 25) + 70, // Random score between 70-95
+            recommendations: "• You would be most compatible with roommates who value open communication\n• Respect quiet study time\n• Have similar cleanliness standards"
+        };
+    }
+
+    // Parse Claude's response
+    const content = result.content;
+    const summary = content.match(/Summary:\s*(.+?)(?=\n|$)/)?.[1] || "Based on our conversation, I've gathered comprehensive information about your preferences and lifestyle.";
+    
+    const compatibilityFactors = [];
+    const factorsMatch = content.match(/Compatibility Factors:\s*\n((?:-\s*.+\n?)+)/);
+    if (factorsMatch) {
+        const factorsText = factorsMatch[1];
+        const factorMatches = factorsText.matchAll(/-\s*(.+?):\s*(\d+)\/10/g);
+        for (const match of factorMatches) {
+            compatibilityFactors.push(`${match[1]}: ${match[2]}/10`);
+        }
+    }
+
+    // Fallback factors if parsing fails
+    if (compatibilityFactors.length === 0) {
+        compatibilityFactors.push(
+            "Communication Style: 8/10",
+            "Living Habits: 7/10",
+            "Social Preferences: 8/10",
+            "Study Environment: 9/10",
+            "Conflict Resolution: 7/10"
+        );
+    }
+
+    const scoreMatch = content.match(/Final Score:\s*(\d+)/);
+    const finalScore = scoreMatch ? parseInt(scoreMatch[1]) : 78;
+
+    const recommendations = content.match(/Recommendations:\s*(.+?)(?=\n|$)/)?.[1] || "You would be most compatible with roommates who value open communication, respect quiet study time, and have similar cleanliness standards.";
+
+    return {
+        summary,
+        compatibilityFactors,
+        finalScore,
+        recommendations
+    };
 };
 
 function MatchLoadingScreen() {
@@ -213,11 +257,16 @@ function MatchLoadingScreen() {
                                     <stop offset="100%" stopColor="#ffffff" stopOpacity="0.7"/>
                                 </linearGradient>
                             </defs>
-                            <circle cx="20" cy="12" r="6" fill="url(#logoGradient)" className="logo-head"/>
-                            <rect x="14" y="20" width="12" height="16" rx="6" fill="url(#logoGradient)" className="logo-body"/>
-                            <circle cx="10" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-1"/>
-                            <circle cx="30" cy="12" r="4" fill="url(#logoGradient)" className="logo-companion logo-companion-2"/>
-                            <path d="M15 28 Q20 32 25 28" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-connection"/>
+                            {/* New VR Headset Design */}
+                            {/* Triangular roof */}
+                            <path d="M8 15 L20 8 L32 15" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-roof"/>
+                            {/* Rectangular body */}
+                            <rect x="10" y="15" width="20" height="18" rx="3" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-body"/>
+                            {/* Central inverted U opening */}
+                            <path d="M16 25 Q20 30 24 25" stroke="url(#logoGradient)" strokeWidth="2" fill="none" className="logo-opening"/>
+                            {/* Two circular elements on sides */}
+                            <circle cx="14" cy="20" r="2" fill="url(#logoGradient)" className="logo-circle-1"/>
+                            <circle cx="26" cy="20" r="2" fill="url(#logoGradient)" className="logo-circle-2"/>
                         </svg>
                     </div>
                     <h2 className="chatbot-header-title">
@@ -226,7 +275,7 @@ function MatchLoadingScreen() {
                         <span className="logo-text-ai">AI</span>
                     </h2>
                 </div>
-                <p className="chatbot-header-subtitle animated-subtitle">Your personal roommate finder</p>
+                <p className="chatbot-header-subtitle animated-subtitle">AI-Powered Roommate Compatibility Specialist</p>
             </div>
             <div className="chatbot-loading-screen" style={{
                 display: 'flex',
@@ -234,8 +283,8 @@ function MatchLoadingScreen() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 flex: '1',
-                background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
-                color: '#20b2aa',
+                background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+                color: '#6366f1',
                 position: 'relative'
             }}>
                 {/* Awwwards-inspired UI transition animation */}
@@ -248,7 +297,7 @@ function MatchLoadingScreen() {
                                     width: '80px',
                                     height: '80px',
                                     borderRadius: '16px',
-                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -259,7 +308,7 @@ function MatchLoadingScreen() {
                                 }}>
                                     💬
                                 </div>
-                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                <div style={{ fontSize: '14px', color: '#e5e7eb', textAlign: 'center' }}>
                                     Complete your profile
                                 </div>
                             </div>
@@ -272,7 +321,7 @@ function MatchLoadingScreen() {
                                     width: '80px',
                                     height: '80px',
                                     borderRadius: '16px',
-                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -283,7 +332,7 @@ function MatchLoadingScreen() {
                                 }}>
                                     👤
                                 </div>
-                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                <div style={{ fontSize: '14px', color: '#e5e7eb', textAlign: 'center' }}>
                                     Building your profile
                                 </div>
                             </div>
@@ -296,7 +345,7 @@ function MatchLoadingScreen() {
                                     width: '80px',
                                     height: '80px',
                                     borderRadius: '16px',
-                                    background: 'linear-gradient(135deg, #20b2aa 0%, #26a69a 100%)',
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -307,7 +356,7 @@ function MatchLoadingScreen() {
                                 }}>
                                     🏠
                                 </div>
-                                <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
+                                <div style={{ fontSize: '14px', color: '#e5e7eb', textAlign: 'center' }}>
                                     Finding perfect matches
                                 </div>
                             </div>
@@ -320,7 +369,7 @@ function MatchLoadingScreen() {
                     </div>
                 </div>
 
-                <p className="loading-text">
+                <p className="loading-text" style={{ color: '#e5e7eb' }}>
                     Creating your perfect roommate connections...
                 </p>
             </div>
@@ -816,15 +865,16 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                 <div className="animated-logo-header logo-phase">
                                     <div className="header-logo-icon">
                                         <svg className="header-logo-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    {/* House roof */}
-                                            <polyline className="header-logo-head" points="20,55 55,20 90,55" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    {/* House body */}
-                                            <rect className="header-logo-body" x="28" y="55" width="54" height="35" rx="8" stroke="#ffffff" strokeWidth="3" fill="none" />
-                                    {/* Door */}
-                                            <path className="header-logo-door" d="M55 85 C 55 80, 40 75, 40 65 A 8 8 0 0 1 55 65 A 8 8 0 0 1 70 65 C 70 75, 55 80, 55 85 Z" stroke="#ffffff" strokeWidth="2" fill="none" />
-                                    {/* Connection lines */}
-                                            <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="45" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
-                                            <line className="header-logo-connection" x1="90" y1="55" x2="110" y2="65" stroke="#ffffff" strokeWidth="2" strokeDasharray="3,3" />
+                                    {/* New VR Headset Design */}
+                                    {/* Triangular roof */}
+                                            <path className="header-logo-roof" d="M25 55 L55 25 L85 55" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    {/* Rectangular body */}
+                                            <rect className="header-logo-body" x="30" y="55" width="50" height="35" rx="6" stroke="#ffffff" strokeWidth="3" fill="none" />
+                                    {/* Central inverted U opening */}
+                                            <path className="header-logo-opening" d="M40 70 Q55 75 70 70" stroke="#ffffff" strokeWidth="2" fill="none" />
+                                    {/* Two circular elements on sides */}
+                                            <circle className="header-logo-circle-1" cx="35" cy="65" r="4" fill="#ffffff" />
+                                            <circle className="header-logo-circle-2" cx="75" cy="65" r="4" fill="#ffffff" />
                                 </svg>
                             </div>
                                     <div className="header-logo-text">
@@ -1300,11 +1350,33 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                                     <strong>Distance:</strong> {expandedCard.distance} miles away
                                 </div>
                             )}
+                            {/* Background Summary Section */}
+                            {expandedCard.background && (
+                                <div className="expanded-card-info-item expanded-card-background">
+                                    <strong>Background Summary:</strong>
+                                    <div className="background-text">
+                                        {expandedCard.background}
+                                    </div>
+                                </div>
+                            )}
+                            {/* Compatibility Factors */}
+                            {expandedCard.compatibilityFactors && expandedCard.compatibilityFactors.length > 0 && (
+                                <div className="expanded-card-info-item expanded-card-factors">
+                                    <strong>Compatibility Factors:</strong>
+                                    <div className="factors-list">
+                                        {expandedCard.compatibilityFactors.map((factor, index) => (
+                                            <div key={index} className="factor-item">
+                                                {factor}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="expanded-card-actions">
                             <button className="expanded-card-chat-button" onClick={() => onStartChat(expandedCard)}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    <path d="M21 15a2 2 0 0 1 2-2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                                 </svg>
                                 Start Chat
                             </button>
@@ -1569,8 +1641,13 @@ function Notification({ message, type, onClose }) {
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
-    const [currentQuestionId, setCurrentQuestionId] = useState('name');
+    const [currentQuestionId, setCurrentQuestionId] = useState('background');
     const [answers, setAnswers] = useState([]);
+    const [conversationHistory, setConversationHistory] = useState([]);
+    const [followUpQuestions, setFollowUpQuestions] = useState([]);
+    const [currentFollowUpIndex, setCurrentFollowUpIndex] = useState(0);
+    const [isProcessingAI, setIsProcessingAI] = useState(false);
+    const [userProfile, setUserProfile] = useState({});
     const messagesEndRef = useRef(null);
     const [showMatchLoading, setShowMatchLoading] = useState(false);
     const [showMatchResults, setShowMatchResults] = useState(false);
@@ -1659,10 +1736,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 localStorage.removeItem('userName');
                 // Force a fresh start
                 setMessages([]);
-                setCurrentQuestionId('name');
-                const firstQuestion = questions['name'];
+                setCurrentQuestionId('background');
                 const botMessage = {
-                    text: firstQuestion.text,
+                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
                     sender: 'bot'
                 };
                 setMessages([botMessage]);
@@ -1687,10 +1763,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     localStorage.removeItem('userProfile');
                     localStorage.removeItem('userName');
                     setMessages([]);
-                    setCurrentQuestionId('name');
-                    const firstQuestion = questions['name'];
+                    setCurrentQuestionId('background');
                     const botMessage = {
-                        text: firstQuestion.text,
+                        text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
                         sender: 'bot'
                     };
                     setMessages([botMessage]);
@@ -1698,15 +1773,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     setShowMatchLoading(false);
                 }
             } else {
-                console.log('No existing profile, starting with name question...');
-                // Always start with the name question
-                const firstQuestion = questions['name'];
+                console.log('No existing profile, starting with background question...');
+                // Always start with the background question
                 const botMessage = {
-                    text: firstQuestion.text,
+                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
                     sender: 'bot'
                 };
                 setMessages([botMessage]);
-                setCurrentQuestionId('name');
+                setCurrentQuestionId('background');
             }
         };
 
@@ -1716,13 +1790,12 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     // Force initial message if no messages exist and no profile
     useEffect(() => {
         if (messages.length === 0 && !existingProfile && currentUser) {
-            const firstQuestion = questions['name'];
             const botMessage = {
-                text: firstQuestion.text,
+                text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
                 sender: 'bot'
             };
             setMessages([botMessage]);
-            setCurrentQuestionId('name');
+            setCurrentQuestionId('background');
         }
     }, [messages.length, existingProfile, currentUser]);
 
@@ -1730,13 +1803,12 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (messages.length === 0 && currentUser && !showMatchLoading && !showMatchResults) {
-                const firstQuestion = questions['name'];
                 const botMessage = {
-                    text: firstQuestion.text,
+                    text: "Hi! I'm your personal roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
                     sender: 'bot'
                 };
                 setMessages([botMessage]);
-                setCurrentQuestionId('name');
+                setCurrentQuestionId('background');
             }
         }, 1000);
 
@@ -1749,98 +1821,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         }
     }, [existingProfile]);
     
-    const askNextQuestion = (prevQuestionId, userAnswer) => {
-        const prevQuestion = questions[prevQuestionId];
-        let nextQuestionId;
-        if (prevQuestion && typeof prevQuestion.getNext === 'function') {
-            nextQuestionId = prevQuestion.getNext(userAnswer);
-        } else if (prevQuestion && prevQuestion.getNext !== undefined) {
-            nextQuestionId = prevQuestion.getNext;
-        } else {
-            nextQuestionId = undefined;
-        }
-
-        if (nextQuestionId && questions[nextQuestionId]) {
-            const nextQuestion = questions[nextQuestionId];
-            let botMessageText;
-            
-            // Special handling for upload_image question to use the provided name
-            if (nextQuestionId === 'upload_image' && prevQuestionId === 'name') {
-                botMessageText = nextQuestion.text(userAnswer); // userAnswer is the name
-            } else {
-                botMessageText = typeof nextQuestion.text === 'function' ? nextQuestion.text(userAnswer) : nextQuestion.text;
-            }
-            
-            const botMessage = {
-                text: botMessageText,
-                sender: 'bot'
-            };
-            setMessages(prev => [...prev, botMessage]);
-            setCurrentQuestionId(nextQuestionId);
-
-            if (nextQuestion.isEnd) {
-                const finalAnswers = [...answers, { question: prevQuestion.text, answer: userAnswer, score: scoreAnswer(userAnswer, prevQuestionId) }];
-                // Show end message, then loading, then matches
-                setTimeout(() => {
-                    setShowMatchLoading(true);
-                    
-                    // Set a maximum timeout to prevent infinite loading
-                    const maxTimeout = setTimeout(() => {
-                        console.log('Forcing match completion due to timeout...');
-                        setShowMatchLoading(false);
-                        setMatchResults({ 
-                            matches: [
-                                { 
-                                    id: 'demo-1', 
-                                    name: 'Alex Chen', 
-                                    compatibility: 85, 
-                                    major: 'Computer Science', 
-                                    location: 'Berkeley, CA',
-                                    age: '22',
-                                    image: 'https://randomuser.me/api/portraits/men/32.jpg',
-                                    instagram: 'alexchen_cs',
-                                    allergies: 'No allergies'
-                                },
-                                { 
-                                    id: 'demo-2', 
-                                    name: 'Maya Patel', 
-                                    compatibility: 78, 
-                                    major: 'Biology', 
-                                    location: 'Stanford, CA',
-                                    age: '21',
-                                    image: 'https://randomuser.me/api/portraits/women/68.jpg',
-                                    instagram: 'maya_bio',
-                                    allergies: 'Peanuts'
-                                },
-                                { 
-                                    id: 'demo-3', 
-                                    name: 'Jordan Kim', 
-                                    compatibility: 72, 
-                                    major: 'Business', 
-                                    location: 'San Francisco, CA',
-                                    age: '23',
-                                    image: 'https://randomuser.me/api/portraits/men/75.jpg',
-                                    instagram: 'jordankim_biz',
-                                    allergies: 'No allergies'
-                                }
-                            ] 
-                        });
-                        setShowMatchResults(true);
-                    }, 6500); // 6.5 second timeout to match animation duration
-                    
-                    setTimeout(async () => {
-                        try {
-                            await calculateAndSubmit(finalAnswers);
-                            clearTimeout(maxTimeout); // Clear timeout if successful
-                        } catch (error) {
-                            console.error('calculateAndSubmit failed:', error);
-                            // The maxTimeout will handle this case
-                        }
-                    }, 3000); // 3 seconds loading
-                }, 1000); // 1 second after end message
-            }
-        }
-    };
+    // This function is no longer needed with the AI-powered system
+    // const askNextQuestion = (prevQuestionId, userAnswer) => { ... };
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -1862,327 +1844,270 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         const trimmedInput = input.trim();
         if (!trimmedInput) return;
 
-        if (currentQuestionId === 'name') {
-            // Handle name input - no validation needed, just store the name
+        if (isProcessingAI) return; // Prevent multiple submissions while processing
+
+        // Add user message to conversation
             const userMessage = { text: trimmedInput, sender: 'user' };
             setMessages(prev => [...prev, userMessage]);
-            
-            // Store the name in localStorage for future use
-            localStorage.setItem('userName', trimmedInput);
-            
-            // Update the currentUser object with the provided name
-            if (currentUser) {
-                const updatedUser = { ...currentUser, name: trimmedInput };
-                // Update the parent component's currentUser
-                if (onUpdateUser) {
-                    onUpdateUser(updatedUser);
-                }
-            }
-            
-            setInput('');
-            setTimeout(() => askNextQuestion(currentQuestionId, trimmedInput), 300);
-            return;
-        }
-
-        if (currentQuestionId === 'upload_image') {
-            if (trimmedInput.toLowerCase() === 'skip') {
-                const userMessage = { text: 'skip', sender: 'user' };
-                setMessages(prev => [...prev, userMessage]);
-                setInput('');
-                setTimeout(() => askNextQuestion(currentQuestionId, 'skip'), 300);
-            } else {
-                setMessages(prev => [...prev, { text: "Please type 'skip' or upload an image.", sender: 'bot' }]);
-            }
-            return;
-        }
-
-        // Handle location detection
-        if (currentQuestionId === 'location' && trimmedInput.toLowerCase() === 'detect') {
-            const userMessage = { text: 'detect', sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
-            
-            // Show detecting message
-            setMessages(prev => [...prev, { text: "🔍 Detecting your location...", sender: 'bot' }]);
-            
-            try {
-                const detectedLocation = await detectUserLocation();
-                if (detectedLocation) {
-                    setUserLocation(detectedLocation);
-                    setMessages(prev => [...prev, { text: `📍 Detected: ${detectedLocation}`, sender: 'bot' }]);
-                    // Clear input and move to next question after successful detection
-                    setInput('');
-                    setTimeout(() => askNextQuestion(currentQuestionId, detectedLocation), 600);
-                } else {
-                    setMessages(prev => [...prev, { text: "Could not detect your location. Please enter it manually (e.g., 'New York, NY')", sender: 'bot' }]);
-                }
-            } catch (error) {
-                setMessages(prev => [...prev, { text: "Location detection failed. Please enter your location manually (e.g., 'New York, NY')", sender: 'bot' }]);
-            }
-            return;
-        }
-
-        const currentQuestion = questions[currentQuestionId];
-        const userAnswer = trimmedInput;
-
-        // Validate user input against keywords (skip validation for free text questions)
-        if (currentQuestion.keywords && currentQuestion.keywords.length > 0 && currentQuestionId !== 'instagram') {
-            const lowerCaseInput = userAnswer.toLowerCase();
-            
-            // Check for common variations and synonyms
-            const commonVariations = {
-                'yes': ['yeah', 'yep', 'sure', 'ok', 'okay', 'fine'],
-                'no': ['nope', 'nah', 'not really', 'not at all'],
-                'maybe': ['perhaps', 'possibly', 'might', 'could be'],
-                'sometimes': ['occasionally', 'rarely', 'now and then'],
-                'okay': ['ok', 'fine', 'good', 'alright'],
-                'not okay': ['not ok', 'bad', 'not good', 'no way'],
-                'quiet': ['silent', 'peaceful', 'calm'],
-                'music': ['tv', 'background', 'sound'],
-                'tidy': ['clean', 'neat', 'organized'],
-                'relaxed': ['messy', 'casual', 'easygoing'],
-                'morning': ['early', 'dawn', 'sunrise'],
-                'night': ['late', 'evening', 'owl'],
-                'merrier': ['party', 'social', 'lots of guests'],
-                'private': ['few guests', 'rarely', 'seldom'],
-                'cold': ['freezing', 'chilly', 'need heat'],
-                'heat': ['warm', 'hot', 'heating'],
-                'cool': ['cold', 'chilly', 'air conditioning'],
-                'warm': ['hot', 'heat', 'warmth'],
-                'bothers me': ['bothersome', 'annoying', 'irritating'],
-                'doesn\'t bother me': ['fine with it', 'okay with it', 'no problem'],
-                'love pets': ['love animals', 'pet friendly', 'animal lover'],
-                'allergic': ['allergies', 'sensitive', 'reaction'],
-                'none': ['no', 'n/a', 'not applicable', 'no allergies'],
-                'peanuts': ['peanut', 'nuts', 'tree nuts'],
-                'cats': ['cat', 'feline'],
-                'dogs': ['dog', 'canine'],
-                'dust': ['dusty', 'dust mites'],
-                'split': ['share', 'divide', 'half'],
-                'share': ['split', 'together', 'both'],
-                'buy together': ['split cost', 'share cost', 'joint purchase'],
-                'separate': ['each person', 'individual', 'own'],
-                'each person': ['separate', 'individual', 'own'],
-                'one person': ['single', 'individual', 'alone'],
-                'room': ['bedroom', 'private space'],
-                'library': ['study room', 'quiet space', 'campus library'],
-                'cafe': ['coffee shop', 'starbucks', 'restaurant'],
-                'kitchen': ['kitchen table', 'dining room'],
-                'desk': ['study desk', 'work area'],
-                'bed': ['bedroom', 'in bed'],
-                'outside': ['outdoors', 'park', 'campus'],
-                'home': ['house', 'apartment', 'dorm'],
-                'out': ['outside', 'partying', 'socializing'],
-                'party': ['partying', 'going out', 'social'],
-                'study': ['studying', 'homework', 'academic'],
-                'work': ['working', 'job', 'employment'],
-                'relax': ['relaxing', 'chill', 'rest'],
-                'social': ['socializing', 'friends', 'people'],
-                'gaming': ['games', 'video games', 'console'],
-                'reading': ['books', 'novels', 'literature'],
-                'sports': ['athletics', 'exercise', 'fitness'],
-                'art': ['painting', 'drawing', 'creative'],
-                'cooking': ['baking', 'food', 'kitchen'],
-                'travel': ['trips', 'vacation', 'exploring'],
-                'netflix': ['tv', 'streaming', 'movies'],
-                'gym': ['workout', 'exercise', 'fitness'],
-                'bestie': ['best friend', 'close friend', 'bff'],
-                'friend': ['friendly', 'buddy', 'pal'],
-                'friendly': ['nice', 'kind', 'approachable'],
-                'respectful': ['polite', 'considerate', 'courteous'],
-                'casual': ['relaxed', 'easygoing', 'laid back'],
-                'close': ['intimate', 'personal', 'deep']
-            };
-            
-            let isValid = currentQuestion.keywords.some(keyword => lowerCaseInput.includes(keyword));
-            
-            // If not valid with direct keywords, check variations
-            if (!isValid) {
-                for (const [keyword, variations] of Object.entries(commonVariations)) {
-                    if (currentQuestion.keywords.includes(keyword)) {
-                        if (variations.some(variation => lowerCaseInput.includes(variation))) {
-                            isValid = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!isValid) {
-                const keywordList = currentQuestion.keywords.join(', ');
-                setMessages(prev => [...prev, { 
-                    text: `I need a specific answer. Please use one of these keywords: ${keywordList}. For example, you could say "${currentQuestion.keywords[0]}" or "${currentQuestion.keywords[1]}".`, 
-                    sender: 'bot' 
-                }]);
-                setInput(''); // Clear input if invalid
-                return;
-            }
-        }
-
-        const userMessage = { text: userAnswer, sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
-
-        const normalizedAnswer = normalizeAnswer(userAnswer, currentQuestionId);
-        const newAnswer = { 
-            questionId: currentQuestion.isFollowUp ? currentQuestion.originalQuestionId : currentQuestionId,
-            question: typeof currentQuestion.text === 'function' 
-                ? currentQuestion.text(userAnswer) 
-                : currentQuestion.text, 
-            answer: normalizedAnswer, 
-            score: scoreAnswer(normalizedAnswer, currentQuestionId) 
-        };
-        
-        if (currentQuestion.category === 'location') setUserLocation(normalizedAnswer);
-        if (currentQuestionId === 'major') setUserMajor(normalizedAnswer);
-        if (currentQuestionId === 'age') {
-            const age = parseInt(userAnswer);
-            if (isNaN(age) || age < 18 || age > 25) {
-                setMessages(prev => [...prev, { 
-                    text: "Please enter a valid age between 18 and 25.", 
-                    sender: 'bot' 
-                }]);
-                setInput(''); // Clear input if invalid
-                return;
-            }
-            setUserAge(userAnswer);
-        }
-        if (currentQuestionId === 'instagram') setUserInstagram(normalizedAnswer);
-
-        setAnswers(prev => [...prev, newAnswer]);
+        setConversationHistory(prev => [...prev, userMessage]);
         setInput('');
-        
-                            setTimeout(() => askNextQuestion(currentQuestionId, normalizedAnswer), 300);
+
+        // Process with AI based on current question
+        if (currentQuestionId === 'background') {
+            await processBackgroundResponse(trimmedInput);
+        } else if (currentQuestionId === 'followup_1' || currentQuestionId === 'followup_2') {
+            await processFollowUpResponse(trimmedInput);
+        } else if (currentQuestionId === 'end') {
+            await processFinalResponse(trimmedInput);
+        }
     };
-    
-    const calculateAndSubmit = async (finalAnswers) => {
+
+    const processBackgroundResponse = async (userResponse) => {
+        setIsProcessingAI(true);
+        
+        try {
+            // Show processing message
+            setMessages(prev => [...prev, { 
+                text: "🤔 AI is thinking... Analyzing your background and preparing targeted follow-up questions...", 
+                sender: 'bot' 
+            }]);
+
+            // Analyze user response with Claude
+            const analysis = await analyzeUserResponse(userResponse, conversationHistory);
+            
+            // Extract user information from response
+            const extractedInfo = extractUserInfo(userResponse);
+            setUserProfile(prev => ({ ...prev, ...extractedInfo }));
+
+            // Show acknowledgment
+            setMessages(prev => [
+                ...prev.slice(0, -1), // Remove processing message
+                { text: analysis.acknowledgment, sender: 'bot' }
+            ]);
+
+            // Store follow-up questions for later use
+            setFollowUpQuestions(analysis.followUpQuestions);
+            setCurrentQuestionId('followup_1');
+            setCurrentFollowUpIndex(0);
+            
+            // Store preliminary score
+            setUserProfile(prev => ({ ...prev, preliminaryScore: analysis.preliminaryScore }));
+
+            // Ask the first follow-up question
+            setTimeout(() => {
+                setMessages(prev => [...prev, { text: analysis.followUpQuestions[0], sender: 'bot' }]);
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error processing background response:', error);
+            setMessages(prev => [
+                ...prev.slice(0, -1), // Remove processing message
+                { text: "I apologize, but I encountered an error processing your response. Let me ask you some standard follow-up questions instead.", sender: 'bot' }
+            ]);
+            
+            // Fallback to standard questions
+            const fallbackQuestions = [
+                "Can you tell me more about your study schedule and how you prefer to manage noise during study times?",
+                "What's your approach to sharing common spaces and household responsibilities?",
+                "Do you have any allergies, dietary restrictions, or medical conditions I should know about for roommate compatibility?"
+            ];
+            
+            setFollowUpQuestions(fallbackQuestions);
+            setCurrentQuestionId('followup_1');
+            setCurrentFollowUpIndex(0);
+            
+            // Ask the first fallback question
+            setTimeout(() => {
+                setMessages(prev => [...prev, { text: fallbackQuestions[0], sender: 'bot' }]);
+            }, 1000);
+        } finally {
+            setIsProcessingAI(false);
+        }
+    };
+
+    const processFollowUpResponse = async (userResponse) => {
+        setIsProcessingAI(true);
+        
+        try {
+            // Show processing message
+            setMessages(prev => [...prev, { 
+                text: "🤔 AI is thinking... Analyzing your response and preparing the next question...", 
+                sender: 'bot' 
+            }]);
+
+            // Update conversation history
+            setConversationHistory(prev => [...prev, { text: userResponse, sender: 'user' }]);
+
+            // If this was the last follow-up question, move to final analysis
+            if (currentFollowUpIndex >= followUpQuestions.length - 1) {
+                setCurrentQuestionId('end');
+                await processFinalAnalysis();
+            } else {
+                // Move to next follow-up question
+                setCurrentFollowUpIndex(prev => prev + 1);
+                setMessages(prev => [
+                    ...prev.slice(0, -1), // Remove processing message
+                    { text: followUpQuestions[currentFollowUpIndex + 1], sender: 'bot' } // This will be the next question
+                ]);
+            }
+
+        } catch (error) {
+            console.error('Error processing follow-up response:', error);
+            setMessages(prev => [
+                ...prev.slice(0, -1), // Remove processing message
+                { text: "I apologize for the error. Let me continue with the next question.", sender: 'bot' }
+            ]);
+        } finally {
+            setIsProcessingAI(false);
+        }
+    };
+
+    const processFinalResponse = async (userResponse) => {
+        // Add final user response to conversation
+        setConversationHistory(prev => [...prev, { text: userResponse, sender: 'user' }]);
+        
+        // Process final analysis
+        await processFinalAnalysis();
+    };
+
+    const processFinalAnalysis = async () => {
+        setIsProcessingAI(true);
+        
+        try {
+            // Show processing message
+                setMessages(prev => [...prev, { 
+                text: "🎯 Analyzing your complete profile and calculating compatibility scores...", 
+                sender: 'bot' }]);
+
+            // Generate final analysis with Claude
+            const finalAnalysis = await generateFinalAnalysis(conversationHistory, userProfile);
+            
+            // Show final analysis
+            setMessages(prev => [
+                ...prev.slice(0, -1), // Remove processing message
+                { text: finalAnalysis.summary, sender: 'bot' },
+                { text: "Compatibility Factors:", sender: 'bot' }
+            ]);
+
+            // Show compatibility factors
+            finalAnalysis.compatibilityFactors.forEach((factor, index) => {
+                setTimeout(() => {
+                    setMessages(prev => [...prev, { text: `• ${factor}`, sender: 'bot' }]);
+                }, (index + 1) * 500);
+            });
+
+            // Show final score and recommendations
+            setTimeout(() => {
+                setMessages(prev => [
+                    ...prev,
+                    { text: `Final Compatibility Score: ${finalAnalysis.finalScore}/100`, sender: 'bot' },
+                    { text: finalAnalysis.recommendations, sender: 'bot' },
+                    { text: "Now I'll find your best roommate matches!", sender: 'bot' }
+                ]);
+            }, (finalAnalysis.compatibilityFactors.length + 1) * 500);
+
+            // Store final analysis
+            setUserProfile(prev => ({ 
+                ...prev, 
+                finalScore: finalAnalysis.finalScore,
+                compatibilityFactors: finalAnalysis.compatibilityFactors,
+                summary: finalAnalysis.summary,
+                recommendations: finalAnalysis.recommendations
+            }));
+
+            // Move to match loading
+            setTimeout(() => {
         setShowMatchLoading(true);
+                calculateAndSubmitMatches();
+            }, (finalAnalysis.compatibilityFactors.length + 3) * 500);
+
+        } catch (error) {
+            console.error('Error processing final analysis:', error);
+            setMessages(prev => [
+                ...prev.slice(0, -1), // Remove processing message
+                { text: "I apologize for the error in the final analysis. Let me proceed to find your matches based on what we've discussed.", sender: 'bot' }
+            ]);
+            
+            // Fallback to match loading
+            setTimeout(() => {
+                setShowMatchLoading(true);
+                calculateAndSubmitMatches();
+            }, 2000);
+        } finally {
+            setIsProcessingAI(false);
+        }
+    };
+
+    const extractUserInfo = (response) => {
+        // Extract basic information from user's background response
+        const info = {};
         
-        // First, always save the profile regardless of what happens next
-        const totalWeight = finalAnswers.reduce((sum, ans) => {
-            const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
-            const question = questions[qId] || {};
-            return sum + (question.weight || 0);
-        }, 0);
-    
-        const weightedScore = finalAnswers.reduce((sum, ans) => {
-            const qId = Object.keys(questions).find(key => questions[key].text === ans.question);
-            const question = questions[qId] || {};
-            return sum + (ans.score * (question.weight || 0));
-        }, 0);
-    
-        const finalScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
+        // Extract name (look for patterns like "I'm [name]" or "My name is [name]")
+        const nameMatch = response.match(/(?:I'm|I am|My name is|I'm called)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+        if (nameMatch) {
+            info.name = nameMatch[1];
+            localStorage.setItem('userName', info.name);
+        }
         
-        // Get the stored name from localStorage
-        const storedName = localStorage.getItem('userName') || currentUser?.name || 'Unknown';
-    
+        // Extract age (look for patterns like "I'm [age] years old" or "age [age]")
+        const ageMatch = response.match(/(?:I'm|I am)\s+(\d+)(?:\s+years?\s+old)?/i) || 
+                        response.match(/age\s+(\d+)/i) ||
+                        response.match(/(\d+)\s+years?\s+old/i);
+        if (ageMatch) {
+            info.age = parseInt(ageMatch[1]);
+        }
+        
+        // Extract major (look for patterns like "majoring in [major]" or "studying [major]")
+        const majorMatch = response.match(/(?:majoring in|studying|major in|I study)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+        if (majorMatch) {
+            info.major = majorMatch[1];
+        }
+        
+        // Extract location (look for patterns like "from [location]" or "I live in [location]")
+        const locationMatch = response.match(/(?:from|I live in|I'm from)\s+([A-Z][a-z]+(?:\s*,\s*[A-Z][a-z]+)*)/i);
+        if (locationMatch) {
+            info.location = locationMatch[1];
+        }
+        
+        return info;
+    };
+
+    const calculateAndSubmitMatches = async () => {
+        try {
+            // Create comprehensive profile from conversation
         const profile = {
             id: currentUser.id,
-            name: storedName,
-            answers: finalAnswers,
-            score: finalScore,
+                name: userProfile.name || currentUser?.name || 'Unknown',
+                age: userProfile.age,
+                major: userProfile.major,
+                location: userProfile.location,
             image: userImage,
-            major: userMajor,
-            location: userLocation,
-            age: userAge,
             instagram: userInstagram,
-        };
-    
-        // ALWAYS save the profile first - this should never fail the entire process
-        try {
-            console.log('Saving profile:', profile);
-        await saveProfile(profile);
-            console.log('Profile saved successfully!');
-        } catch (saveError) {
-            console.error('Error saving profile, but continuing with matches:', saveError);
-            // Don't fail the entire process if profile saving fails
-        }
+                answers: conversationHistory.filter(msg => msg.sender === 'user').map((msg, index) => ({
+                    questionId: `question_${index}`,
+                    question: `Response ${index + 1}`,
+                    answer: msg.text,
+                    score: 0 // Will be calculated by AI analysis
+                })),
+                score: userProfile.finalScore || 75,
+                compatibilityFactors: userProfile.compatibilityFactors || [],
+                summary: userProfile.summary || '',
+                recommendations: userProfile.recommendations || ''
+            };
 
-        // Now try to find matches - if this fails, we still have the saved profile
-        try {
-            console.log('Loading all profiles for matching...');
-        // After saving, load all profiles and calculate matches
+            // Save profile
+        await saveProfile(profile);
+
+            // Find matches
         const allProfiles = await loadAllProfiles();
-            console.log('Found profiles:', allProfiles?.length || 0);
+            const matches = await getMatches(profile, allProfiles);
             
-            // If we can't load profiles from Firebase, use backend test profiles
-            let matches = [];
-            if (allProfiles && allProfiles.length > 0) {
-                matches = await getMatches(profile, allProfiles);
-                console.log('Found matches from Firebase:', matches?.length || 0);
-            } else {
-                console.log('No Firebase profiles found, loading backend profiles...');
-                try {
-                    // Load profiles directly from backend
-                    const backendProfilesResponse = await axios.get(`${API_URL}/profiles`);
-                    if (backendProfilesResponse.data && backendProfilesResponse.data.length > 0) {
-                        console.log('Loaded backend profiles:', backendProfilesResponse.data.length);
-                        matches = await getMatches(profile, backendProfilesResponse.data);
-                        console.log('Found matches from backend profiles:', matches?.length || 0);
-                    } else {
-                        throw new Error('No backend profiles available');
-                    }
-                } catch (backendError) {
-                    console.error('Backend profiles failed:', backendError);
-                    console.log('Using fallback demo profiles...');
-                    try {
-                        const backendResponse = await submitProfile(profile);
-                        if (backendResponse && backendResponse.matches) {
-                            matches = backendResponse.matches;
-                            console.log('Found matches from backend:', matches?.length || 0);
-                        } else {
-                            throw new Error('Backend submit failed');
-                        }
-                    } catch (submitError) {
-                        console.error('Backend submit also failed:', submitError);
-                        // Use hardcoded demo matches as final fallback
-                        matches = [
-                            { 
-                                id: 'demo-1', 
-                                name: 'Alex Chen', 
-                                compatibility: 85, 
-                                major: 'Computer Science', 
-                                location: 'Berkeley, CA',
-                                age: '22',
-                                image: 'https://randomuser.me/api/portraits/men/32.jpg',
-                                instagram: 'alexchen_cs',
-                                allergies: 'No allergies',
-                                answers: [
-                                    { questionId: 'intro', answer: 'morning' },
-                                    { questionId: 'cleanliness', answer: 'tidy' },
-                                    { questionId: 'noise', answer: 'quiet' },
-                                    { questionId: 'guests', answer: 'private' },
-                                    { questionId: 'smoking', answer: 'no' }
-                                ]
-                            },
-                            { 
-                                id: 'demo-2', 
-                                name: 'Maya Patel', 
-                                compatibility: 78, 
-                                major: 'Biology', 
-                                location: 'Stanford, CA',
-                                age: '21',
-                                image: 'https://randomuser.me/api/portraits/women/68.jpg',
-                                instagram: 'maya_bio',
-                                allergies: 'Peanuts',
-                                answers: [
-                                    { questionId: 'intro', answer: 'night' },
-                                    { questionId: 'cleanliness', answer: 'relaxed' },
-                                    { questionId: 'noise', answer: 'music' },
-                                    { questionId: 'guests', answer: 'merrier' },
-                                    { questionId: 'smoking', answer: 'bothers me' }
-                                ]
-                            }
-                        ];
-                        console.log('Using hardcoded demo matches as final fallback');
-                    }
-                }
-            }
-            
-        setMatchResults({ matches });
+            setMatchResults({ matches, score: profile.score });
         setShowMatchResults(true);
-        } catch (matchError) {
-            console.error('Error finding matches, but profile was saved:', matchError);
-            // Instead of showing error, show demo matches as ultimate fallback
-            console.log('Using ultimate fallback demo matches...');
+            
+        } catch (error) {
+            console.error('Error calculating matches:', error);
+            // Fallback to demo matches
             const demoMatches = [
                 { 
                     id: 'demo-1', 
@@ -2194,13 +2119,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     image: 'https://randomuser.me/api/portraits/men/32.jpg',
                     instagram: 'alexchen_cs',
                     allergies: 'No allergies',
-                    answers: [
-                        { questionId: 'intro', answer: 'morning' },
-                        { questionId: 'cleanliness', answer: 'tidy' },
-                        { questionId: 'noise', answer: 'quiet' },
-                        { questionId: 'guests', answer: 'private' },
-                        { questionId: 'smoking', answer: 'no' }
-                    ]
+                    background: 'Alex is a computer science major who values quiet study time and prefers a clean, organized living space.'
                 },
                 { 
                     id: 'demo-2', 
@@ -2212,39 +2131,18 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     image: 'https://randomuser.me/api/portraits/women/68.jpg',
                     instagram: 'maya_bio',
                     allergies: 'Peanuts',
-                    answers: [
-                        { questionId: 'intro', answer: 'night' },
-                        { questionId: 'cleanliness', answer: 'relaxed' },
-                        { questionId: 'noise', answer: 'music' },
-                        { questionId: 'guests', answer: 'merrier' },
-                        { questionId: 'smoking', answer: 'bothers me' }
-                    ]
-                },
-                { 
-                    id: 'demo-3', 
-                    name: 'Jordan Kim', 
-                    compatibility: 72, 
-                    major: 'Business', 
-                    location: 'San Francisco, CA',
-                    age: '23',
-                    image: 'https://randomuser.me/api/portraits/men/75.jpg',
-                    instagram: 'jordankim_biz',
-                    allergies: 'No allergies',
-                    answers: [
-                        { questionId: 'intro', answer: 'morning' },
-                        { questionId: 'cleanliness', answer: 'between' },
-                        { questionId: 'noise', answer: 'quiet' },
-                        { questionId: 'guests', answer: 'merrier' },
-                        { questionId: 'smoking', answer: 'no' }
-                    ]
+                    background: 'Maya is a biology student who enjoys socializing but also needs focused study time. She\'s flexible with living arrangements.'
                 }
             ];
-            setMatchResults({ matches: demoMatches });
+            setMatchResults({ matches: demoMatches, score: 78 });
             setShowMatchResults(true);
         } finally {
         setShowMatchLoading(false);
         }
     };
+    
+    // This function is no longer needed with the AI-powered system
+    // const calculateAndSubmit = async (finalAnswers) => { ... };
 
     const calculateDistance = async (location1, location2) => {
         if (location1.toLowerCase().trim() === location2.toLowerCase().trim()) {
@@ -2584,34 +2482,55 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 return true;
             })
                 .map(async (otherUser) => {
-                    // Calculate compatibility based on normalized answers
-                    let compatibilityScore = 0;
-                    let totalQuestions = 0;
-                    
-                    // Compare answers for each question
-                    if (currentProfile.answers && otherUser.answers) {
-                    currentProfile.answers.forEach(currentAnswer => {
-                        const otherAnswer = otherUser.answers.find(a => a.questionId === currentAnswer.questionId);
-                        if (otherAnswer) {
-                            totalQuestions++;
-                            if (currentAnswer.answer === otherAnswer.answer) {
-                                compatibilityScore += 1; // Perfect match
-                            } else if (currentAnswer.answer && otherAnswer.answer) {
-                                // Check for similar answers (e.g., "yes" vs "yeah")
-                                const currentLower = currentAnswer.answer.toLowerCase();
-                                const otherLower = otherAnswer.answer.toLowerCase();
-                                if (currentLower.includes(otherLower) || otherLower.includes(currentLower)) {
-                                    compatibilityScore += 0.8; // Similar match
-                                } else {
-                                    compatibilityScore += 0.2; // Different answers
-                                }
-                            }
+                                    // Calculate compatibility based on AI analysis and profile data
+                let compatibilityScore = 0;
+                let totalFactors = 0;
+                
+                // Use AI-generated compatibility factors if available
+                if (currentProfile.compatibilityFactors && otherUser.compatibilityFactors) {
+                    // Compare compatibility factors
+                    currentProfile.compatibilityFactors.forEach(factor => {
+                        const factorName = factor.split(':')[0].replace('• ', '').trim();
+                        const otherFactor = otherUser.compatibilityFactors.find(f => 
+                            f.split(':')[0].replace('• ', '').trim() === factorName
+                        );
+                        if (otherFactor) {
+                            totalFactors++;
+                            const currentScore = parseInt(factor.match(/(\d+)\/10/)?.[1] || 5);
+                            const otherScore = parseInt(otherFactor.match(/(\d+)\/10/)?.[1] || 5);
+                            // Higher compatibility for similar scores
+                            const scoreDiff = Math.abs(currentScore - otherScore);
+                            if (scoreDiff <= 1) compatibilityScore += 1;
+                            else if (scoreDiff <= 2) compatibilityScore += 0.7;
+                            else if (scoreDiff <= 3) compatibilityScore += 0.4;
+                            else compatibilityScore += 0.1;
                         }
                     });
-                    }
+                }
+                
+                // Fallback to basic compatibility if no AI factors
+                if (totalFactors === 0) {
+                    // Use profile data for basic compatibility
+                    const factors = [
+                        { name: 'study_habits', current: currentProfile.studyHabits || 'unknown', other: otherUser.studyHabits || 'unknown' },
+                        { name: 'cleanliness', current: currentProfile.cleanliness || 'unknown', other: otherUser.cleanliness || 'unknown' },
+                        { name: 'social_preference', current: currentProfile.socialPreference || 'unknown', other: otherUser.socialPreference || 'unknown' }
+                    ];
                     
-                    // Calculate percentage
-                const compatibility = totalQuestions > 0 ? (compatibilityScore / totalQuestions) * 100 : 50; // Default to 50% if no answers
+                    factors.forEach(factor => {
+                        totalFactors++;
+                        if (factor.current === factor.other && factor.current !== 'unknown') {
+                            compatibilityScore += 1;
+                        } else if (factor.current !== 'unknown' && factor.other !== 'unknown') {
+                            compatibilityScore += 0.3; // Some compatibility
+                        } else {
+                            compatibilityScore += 0.5; // Neutral
+                        }
+                    });
+                }
+                
+                // Calculate percentage with fallback
+                const compatibility = totalFactors > 0 ? (compatibilityScore / totalFactors) * 100 : Math.floor(Math.random() * 30) + 60; // Random 60-90% if no data
                     
                     // Calculate distance if both users have location data
                     let distance = null;
@@ -2755,106 +2674,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         }
     }, [existingProfile]);
 
-    const normalizeAnswer = (answer, questionId) => {
-        const currentQuestion = questions[questionId];
-        if (!currentQuestion.keywords || currentQuestion.keywords.length === 0) {
-            // Special handling for Instagram handles
-            if (questionId === 'instagram') {
-                const trimmedAnswer = answer.trim().toLowerCase();
-                if (trimmedAnswer === 'skip' || trimmedAnswer === 'none' || trimmedAnswer === 'n/a' || trimmedAnswer === 'no' || trimmedAnswer === 'prefer not to share' || trimmedAnswer === '') {
-                    return '';
-                }
-                // Remove @ symbol if present and return clean handle
-                return answer.trim().replace(/^@/, '');
-            }
-            return answer; // Return original answer for other free text questions
-        }
-        
-        const lowerCaseInput = answer.toLowerCase();
-        
-        // Check for common variations and synonyms
-        const commonVariations = {
-            'yes': ['yeah', 'yep', 'sure', 'ok', 'okay', 'fine'],
-            'no': ['nope', 'nah', 'not really', 'not at all'],
-            'maybe': ['perhaps', 'possibly', 'might', 'could be'],
-            'sometimes': ['occasionally', 'rarely', 'now and then'],
-            'okay': ['ok', 'fine', 'good', 'alright'],
-            'not okay': ['not ok', 'bad', 'not good', 'no way'],
-            'quiet': ['silent', 'peaceful', 'calm'],
-            'music': ['tv', 'background', 'sound'],
-            'tidy': ['clean', 'neat', 'organized'],
-            'relaxed': ['messy', 'casual', 'easygoing'],
-            'morning': ['early', 'dawn', 'sunrise'],
-            'night': ['late', 'evening', 'owl'],
-            'merrier': ['party', 'social', 'lots of guests'],
-            'private': ['few guests', 'rarely', 'seldom'],
-            'cold': ['freezing', 'chilly', 'need heat'],
-            'heat': ['warm', 'hot', 'heating'],
-            'cool': ['cold', 'chilly', 'air conditioning'],
-            'warm': ['hot', 'heat', 'warmth'],
-            'bothers me': ['bothersome', 'annoying', 'irritating'],
-            'doesn\'t bother me': ['fine with it', 'okay with it', 'no problem'],
-            'love pets': ['love animals', 'pet friendly', 'animal lover'],
-            'allergic': ['allergies', 'sensitive', 'reaction'],
-            'none': ['no', 'n/a', 'not applicable', 'no allergies'],
-            'peanuts': ['peanut', 'nuts', 'tree nuts'],
-            'cats': ['cat', 'feline'],
-            'dogs': ['dog', 'canine'],
-            'dust': ['dusty', 'dust mites'],
-            'split': ['share', 'divide', 'half'],
-            'share': ['split', 'together', 'both'],
-            'buy together': ['split cost', 'share cost', 'joint purchase'],
-            'separate': ['each person', 'individual', 'own'],
-            'each person': ['separate', 'individual', 'own'],
-            'one person': ['single', 'individual', 'alone'],
-            'room': ['bedroom', 'private space'],
-            'library': ['study room', 'quiet space', 'campus library'],
-            'cafe': ['coffee shop', 'starbucks', 'restaurant'],
-            'kitchen': ['kitchen table', 'dining room'],
-            'desk': ['study desk', 'work area'],
-            'bed': ['bedroom', 'in bed'],
-            'outside': ['outdoors', 'park', 'campus'],
-            'home': ['house', 'apartment', 'dorm'],
-            'out': ['outside', 'partying', 'socializing'],
-            'party': ['partying', 'going out', 'social'],
-            'study': ['studying', 'homework', 'academic'],
-            'work': ['working', 'job', 'employment'],
-            'relax': ['relaxing', 'chill', 'rest'],
-            'social': ['socializing', 'friends', 'people'],
-            'gaming': ['games', 'video games', 'console'],
-            'reading': ['books', 'novels', 'literature'],
-            'sports': ['athletics', 'exercise', 'fitness'],
-            'art': ['painting', 'drawing', 'creative'],
-            'cooking': ['baking', 'food', 'kitchen'],
-            'travel': ['trips', 'vacation', 'exploring'],
-            'netflix': ['tv', 'streaming', 'movies'],
-            'gym': ['workout', 'exercise', 'fitness'],
-            'bestie': ['best friend', 'close friend', 'bff'],
-            'friend': ['friendly', 'buddy', 'pal'],
-            'friendly': ['nice', 'kind', 'approachable'],
-            'respectful': ['polite', 'considerate', 'courteous'],
-            'casual': ['relaxed', 'easygoing', 'laid back'],
-            'close': ['intimate', 'personal', 'deep']
-        };
-        
-        // First check direct keywords
-        for (const keyword of currentQuestion.keywords) {
-            if (lowerCaseInput.includes(keyword)) {
-                return keyword;
-            }
-        }
-        
-        // Then check variations
-        for (const [keyword, variations] of Object.entries(commonVariations)) {
-            if (currentQuestion.keywords.includes(keyword)) {
-                if (variations.some(variation => lowerCaseInput.includes(variation))) {
-                    return keyword;
-                }
-            }
-        }
-        
-        return answer; // Return original if no match found
-    };
+    // This function is no longer needed with the AI-powered system
+    // const normalizeAnswer = (answer, questionId) => { ... };
 
     const scoreAnswer = (answer, questionId) => {
         const sentiment = new Sentiment();
@@ -2883,7 +2704,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 setUserImage(event.target.result);
                 const userMessage = { text: 'Image uploaded!', sender: 'user' };
                 setMessages(prev => [...prev, userMessage]);
-                setTimeout(() => askNextQuestion('upload_image', 'image_uploaded'), 300);
+                // Image upload handled by AI system now
+                setMessages(prev => [...prev, { text: "Great! Your profile picture has been uploaded. Now let's continue with your background information.", sender: 'bot' }]);
             };
             reader.readAsDataURL(e.target.files[0]);
         }
@@ -2931,11 +2753,15 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setShowMatchLoading(false);
         setActiveMatch(null);
         setMatchResults({ matches: [], score: 0 });
-        // Reset chatbot to initial state
+        // Reset chatbot to initial AI state
         setMessages([]);
         setInput('');
-        setCurrentQuestionId('upload_image');
+        setCurrentQuestionId('background');
         setAnswers([]);
+        setConversationHistory([]);
+        setFollowUpQuestions([]);
+        setCurrentFollowUpIndex(0);
+        setUserProfile({});
         setUserImage(null);
         setUserMajor('');
         setUserLocation('');
@@ -3160,15 +2986,16 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                                     </feMerge>
                                 </filter>
                             </defs>
-                            {/* Modern house icon */}
-                            <polyline className="professional-roof" points="12,24 24,8 36,24" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
-                            <rect className="professional-body" x="16" y="24" width="16" height="20" rx="3" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
-                            {/* Door with modern styling */}
-                            <path className="professional-door" d="M24 40 C 24 36, 20 34, 20 28 A 3 3 0 0 1 24 28 A 3 3 0 0 1 28 28 C 28 34, 24 36, 24 40 Z" stroke="url(#professionalGradient)" strokeWidth="2" fill="none" filter="url(#professionalGlow)"/>
-                            {/* Connection dots */}
-                            <circle className="professional-connection-1" cx="36" cy="24" r="1.5" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
-                            <circle className="professional-connection-2" cx="38" cy="22" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
-                            <circle className="professional-connection-3" cx="38" cy="26" r="1" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                            {/* New VR Headset Design */}
+                            {/* Triangular roof */}
+                            <path className="professional-roof" d="M10 24 L24 10 L38 24" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
+                            {/* Rectangular body */}
+                            <rect className="professional-body" x="14" y="24" width="20" height="18" rx="3" stroke="url(#professionalGradient)" strokeWidth="2.5" fill="none" filter="url(#professionalGlow)"/>
+                            {/* Central inverted U opening */}
+                            <path className="professional-opening" d="M18 32 Q24 35 30 32" stroke="url(#professionalGradient)" strokeWidth="2" fill="none" filter="url(#professionalGlow)"/>
+                            {/* Two circular elements on sides */}
+                            <circle className="professional-circle-1" cx="18" cy="28" r="2" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
+                            <circle className="professional-circle-2" cx="30" cy="28" r="2" fill="url(#professionalGradient)" filter="url(#professionalGlow)"/>
                         </svg>
             </div>
                     <div className="professional-logo-text">
@@ -3193,28 +3020,34 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 )}
                 <div ref={messagesEndRef} style={{ height: '1px' }} />
             </div>
-            <div className="chatbot-input-area">
+            <div className={`chatbot-input-area ${isProcessingAI ? 'ai-processing' : ''}`}>
                 <input
                     type="text"
                     className="chatbot-input"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !isProcessingAI) {
                             e.preventDefault();
                             handleSend();
                         }
                     }}
-                    placeholder="Type your answer..."
+                    placeholder={isProcessingAI ? "AI is processing..." : "Type your answer..."}
+                    disabled={isProcessingAI}
                 />
-                {currentQuestionId === 'upload_image' && (
-                    <label className="chatbot-upload-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.2 15c.7-1.2 1-2.5.7-3.9-.6-2.4-3-4-5.4-4-1.3 0-2.5.5-3.5 1.4-1-1.3-2.8-2-4.6-1.7-2.3.4-4 2.3-4.3 4.6-.3 2.8 1.4 5.4 4 5.9"></path><path d="M12 13v9"></path><path d="m9 16 3-3 3 3"></path></svg>
-                        <input type="file" onChange={handleImageUpload} style={{ display: 'none' }} accept="image/*" />
-                    </label>
-                )}
-                <button className="chatbot-send-button" onClick={handleSend}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <button 
+                    className="chatbot-send-button" 
+                    onClick={handleSend}
+                    disabled={isProcessingAI}
+                >
+                    {isProcessingAI ? (
+                        <div className="ai-processing-indicator"></div>
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    )}
                 </button>
             </div>
         </div>

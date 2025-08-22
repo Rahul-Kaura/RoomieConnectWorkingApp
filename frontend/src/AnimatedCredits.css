@@ -10,7 +10,7 @@
 }
 
 .powered-by-ai {
-  color: #aaa;
+  color: #6b7280;
   font-size: 18px;
   margin-bottom: 60px;
   letter-spacing: 0.5px;
@@ -25,7 +25,7 @@
 }
 
 .ai-text {
-  color: #20b2aa;
+  color: #6366f1;
   font-weight: 600;
   animation: aiGlow 3s linear infinite;
 }
@@ -40,7 +40,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background-color: #20b2aa;
+  background-color: #6366f1;
   margin: 0 1px;
   animation: dotPulse 1.5s ease-in-out infinite;
 }
@@ -70,16 +70,16 @@
 }
 
 @keyframes aiGlow {
-  0% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
-  8% { color: #20b2aa; text-shadow: 0 0 10px rgba(32, 178, 170, 0.6); }
-  20% { color: #20b2aa; text-shadow: 0 0 15px rgba(32, 178, 170, 0.8); }
-  32% { color: #20b2aa; text-shadow: 0 0 10px rgba(32, 178, 170, 0.6); }
-  40% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
-  100% { color: #20b2aa; text-shadow: 0 0 5px rgba(32, 178, 170, 0.3); }
+  0% { color: #6366f1; text-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+  8% { color: #6366f1; text-shadow: 0 0 10px rgba(99, 102, 241, 0.6); }
+  20% { color: #6366f1; text-shadow: 0 0 15px rgba(99, 102, 241, 0.8); }
+  32% { color: #6366f1; text-shadow: 0 0 10px rgba(99, 102, 241, 0.6); }
+  40% { color: #6366f1; text-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+  100% { color: #6366f1; text-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
 }
 
 .home-credits {
-  color: #aaa;
+  color: #6b7280;
   font-size: 16px;
   letter-spacing: 0.5px;
   background: transparent;
@@ -96,12 +96,12 @@
 }
 
 @keyframes rahulPulse {
-  0% { color: #aaa; transform: scale(1); }
-  8% { color: #20b2aa; transform: scale(1.08); }
-  20% { color: #20b2aa; transform: scale(1.12); }
-  32% { color: #20b2aa; transform: scale(1.08); }
-  40% { color: #aaa; transform: scale(1); }
-  100% { color: #aaa; transform: scale(1); }
+  0% { color: #6b7280; transform: scale(1); }
+  8% { color: #6366f1; transform: scale(1.08); }
+  20% { color: #6366f1; transform: scale(1.12); }
+  32% { color: #6366f1; transform: scale(1.08); }
+  40% { color: #6b7280; transform: scale(1); }
+  100% { color: #6b7280; transform: scale(1); }
 }
 
 .credit-name-fade {
@@ -122,7 +122,7 @@
 }
 
 .home-title {
-  color: #20b2aa;
+  color: #6366f1;
   font-size: 48px;
   margin: 0;
   font-weight: 700;
@@ -138,4 +138,200 @@
   30%  { transform: translateY(-10px) scale(1.05); }
   40%  { transform: translateY(0) scale(1); }
   100% { transform: translateY(0) scale(1); }
+} 
+
+/* Theme Toggle Switch */
+.theme-toggle-container {
+  margin-bottom: 30px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.theme-toggle-switch {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.theme-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 20px;
+  padding: 0 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-text {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  transition: color 0.3s ease;
+  flex: 1;
+  text-align: center;
+}
+
+.theme-toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Dark mode state (when checked) */
+.theme-toggle-input:checked + .theme-toggle-label {
+  background: #374151;
+}
+
+.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-slider {
+  transform: translateX(80px);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-text:first-child {
+  color: #9ca3af;
+}
+
+.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-text:last-child {
+  color: #6366f1;
+}
+
+/* Light mode state (default - when unchecked) */
+.theme-toggle-label .theme-toggle-text:first-child {
+  color: #f59e0b;
+}
+
+.theme-toggle-label .theme-toggle-text:last-child {
+  color: #9ca3af;
+}
+
+/* Hover effects */
+.theme-toggle-label:hover {
+  transform: scale(1.02);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-label:hover .theme-toggle-slider {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus states for accessibility */
+.theme-toggle-input:focus + .theme-toggle-label {
+  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
+}
+
+/* Light theme overrides */
+body.light-theme .App {
+  background-color: #f0f2f5;
+  color: #333;
+}
+
+body.light-theme .welcome-screen {
+  color: #2d3748;
+}
+
+body.light-theme .home-title {
+  color: #20b2aa;
+}
+
+body.light-theme .welcome-back-message {
+  color: #20b2aa;
+  text-shadow: 0 1px 3px rgba(32, 178, 170, 0.2);
+}
+
+body.light-theme .home-subtitle {
+  color: #888;
+}
+
+body.light-theme .home-credits {
+  color: #aaa;
+}
+
+body.light-theme .powered-by-ai {
+  color: #aaa;
+}
+
+body.light-theme .ai-text {
+  color: #20b2aa;
+}
+
+body.light-theme .ai-dot {
+  background-color: #20b2aa;
+}
+
+body.light-theme .credit-name-rahul {
+  color: #aaa;
+}
+
+body.light-theme .credit-name-pulse {
+  color: #aaa;
+}
+
+body.light-theme .theme-toggle-button {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  user-select: none;
+  outline: none;
+}
+
+body.light-theme .theme-toggle-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+body.light-theme .theme-toggle-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+body.light-theme .theme-toggle-button:focus {
+  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
+} 
+
+body.light-theme .theme-toggle-label {
+  background: #f3f4f6;
+}
+
+body.light-theme .theme-toggle-slider {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+body.light-theme .theme-toggle-text:first-child {
+  color: #f59e0b;
+}
+
+body.light-theme .theme-toggle-text:last-child {
+  color: #9ca3af;
 } 

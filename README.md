@@ -6,12 +6,13 @@ RoomieConnect is a sophisticated AI-powered platform that helps college students
 
 ## ✨ Key Features
 
-### 🤖 **AI Chatbot Questionnaire**
-- Interactive conversational interface for profile creation
-- Smart follow-up questions based on user responses
-- Automatic location detection with fallback options
-- Profile image upload with preview
-- Persistent data storage across sessions
+### 🤖 **AI-Powered Roommate Specialist**
+- **Claude Sonnet 3.5 Integration** - Advanced AI analysis of user responses
+- **Intelligent Background Gathering** - Comprehensive initial question with AI-powered analysis
+- **Dynamic Follow-up Questions** - 2-3 personalized questions based on AI analysis of responses
+- **Smart Compatibility Scoring** - AI-generated compatibility factors and final scores (0-100)
+- **Detailed Profile Analysis** - Comprehensive summaries and roommate recommendations
+- **Fallback Mode** - Graceful degradation when AI is unavailable
 
 ### 🎯 **Intelligent Matching Algorithm**
 - Compatibility scoring based on lifestyle preferences
@@ -34,7 +35,8 @@ RoomieConnect is a sophisticated AI-powered platform that helps college students
 ### ⭐ **Advanced User Management**
 - Pin favorite matches for priority display
 - Smart sorting: pinned → unread → recent → distance
-- Expandable profile cards (desktop only)
+- **Expandable Profile Cards** - View detailed background summaries and compatibility factors
+- **AI-Generated Insights** - See comprehensive analysis of each potential roommate
 - Carousel navigation with page indicators
 
 ## 🛠 Technology Stack
@@ -87,8 +89,13 @@ REACT_APP_FIREBASE_AUTH_DOMAIN=your-firebase-auth-domain
 REACT_APP_FIREBASE_DATABASE_URL=your-firebase-database-url
 REACT_APP_FIREBASE_PROJECT_ID=your-firebase-project-id
 
+# Claude AI Integration (Optional but recommended)
+REACT_APP_CLAUDE_API_KEY=your-claude-api-key
+
 npm start
 ```
+
+**Note:** For the AI-powered roommate specialist features, you'll need a Claude API key. See [CLAUDE_SETUP.md](frontend/CLAUDE_SETUP.md) for detailed setup instructions.
 
 ### 3. Backend Setup
 ```bash

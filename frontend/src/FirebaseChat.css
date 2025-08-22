@@ -2,16 +2,17 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #ffffff;
+  background: #1f2937;
   border-radius: 16px;
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.08),
-    0 8px 16px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(0, 0, 0, 0.02);
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  color: #1f2937;
+  color: #ffffff;
   backdrop-filter: blur(20px);
+  border: 1px solid #374151;
 }
 
 .firebase-chat-header {
@@ -19,10 +20,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 24px 20px 24px;
-  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
   border-bottom: none;
-  box-shadow: 0 2px 12px rgba(32, 178, 170, 0.15);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.15);
   position: relative;
   overflow: hidden;
 }
@@ -292,12 +293,12 @@
 }
 
 .message.sent .message-content {
-  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
   border-bottom-right-radius: 8px;
   box-shadow: 
-    0 2px 12px rgba(32, 178, 170, 0.2),
-    0 1px 4px rgba(32, 178, 170, 0.1);
+    0 2px 12px rgba(99, 102, 241, 0.2),
+    0 1px 4px rgba(99, 102, 241, 0.1);
 }
 
 .message.received .message-content {
@@ -361,11 +362,11 @@
 }
 
 .firebase-chat-input input:focus {
-  border-color: #20b2aa;
+  border-color: #6366f1;
   background: white;
   box-shadow: 
-    0 0 0 4px rgba(32, 178, 170, 0.08),
-    0 2px 8px rgba(32, 178, 170, 0.1);
+    0 0 0 4px rgba(99, 102, 241, 0.08),
+    0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
 .firebase-chat-input input:disabled {
@@ -381,7 +382,7 @@
 }
 
 .send-button {
-  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
   border: none;
   border-radius: 50%;
@@ -536,7 +537,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #20b2aa;
+  background: #6366f1;
   animation: typingBounce 1.4s ease-in-out infinite both;
 }
 
@@ -614,4 +615,80 @@
     width: 44px;
     height: 44px;
   }
+} 
+
+/* Light theme overrides */
+body.light-theme .firebase-chat-container {
+  background: #ffffff;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  color: #1f2937;
+  border: none;
+}
+
+body.light-theme .firebase-chat-header {
+  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+  box-shadow: 0 2px 12px rgba(32, 178, 170, 0.15);
+}
+
+body.light-theme .message.sent .message-content {
+  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+  box-shadow: 
+    0 2px 12px rgba(32, 178, 170, 0.2),
+    0 1px 4px rgba(32, 178, 170, 0.1);
+}
+
+body.light-theme .firebase-chat-input input:focus {
+  border-color: #20b2aa;
+  box-shadow: 
+    0 0 0 4px rgba(32, 178, 170, 0.08),
+    0 2px 8px rgba(32, 178, 170, 0.1);
+}
+
+body.light-theme .send-button {
+  background: linear-gradient(135deg, #20b2aa 0%, #26a69a 100%);
+}
+
+body.light-theme .typing-indicator .typing-dot {
+  background: #20b2aa;
+}
+
+/* Dark theme (default) */
+body.dark-theme .firebase-chat-container {
+  background: #1f2937;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(99, 102, 241, 0.1);
+  color: #ffffff;
+  border: 1px solid #374151;
+}
+
+body.dark-theme .firebase-chat-header {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.15);
+}
+
+body.dark-theme .message.sent .message-content {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 
+    0 2px 12px rgba(99, 102, 241, 0.2),
+    0 1px 4px rgba(99, 102, 241, 0.1);
+}
+
+body.dark-theme .firebase-chat-input input:focus {
+  border-color: #6366f1;
+  box-shadow: 
+    0 0 0 4px rgba(99, 102, 241, 0.08),
+    0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+body.dark-theme .send-button {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+body.dark-theme .typing-indicator .typing-dot {
+  background: #6366f1;
 } 
