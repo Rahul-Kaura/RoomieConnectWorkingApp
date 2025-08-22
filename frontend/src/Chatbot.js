@@ -739,8 +739,7 @@ function MatchResultsGrid({ matches, onStartChat, currentUser, onResetToHome, on
                 try {
                     console.log('🚀 Performing immediate profile sync for visibility...');
                     const { forceSyncAllProfiles } = await import('./services/firebaseProfile');
-                    await forceSyncAllProfiles();
-                    await firebaseMessaging.forceSyncAllChats();
+                    await forceSyncAllChats();
                     
                     // Reload profiles after immediate sync
                     const syncedProfiles = await loadAllProfiles();
@@ -2645,8 +2644,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                         allProfiles.push(existingProfile);
                     }
                     
-                    console.log(`🎯 Total profiles available: ${allProfiles.length}`);
-                    console.log('Profile IDs:', allProfiles.map(p => ({ id: p.id, userId: p.userId, name: p.name })));
+                    console.log(`📊 Total profiles available: ${allProfiles.length}`);
+                    setAllProfiles(allProfiles);
                     
                     // Get matches using the consolidated profile list
                 const matches = await getMatches(existingProfile, allProfiles);

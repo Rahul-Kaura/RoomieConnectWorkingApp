@@ -163,17 +163,17 @@ function App() {
     }
   }, [currentUser]);
 
-  // Test messaging setup and sync test profiles when app loads
+  // Test messaging setup and start fresh when app loads
   useEffect(() => {
-    // Run messaging test and sync test profiles after a short delay to ensure Firebase is initialized
+    // Run messaging test and start fresh after a short delay to ensure Firebase is initialized
     const timer = setTimeout(async () => {
       testMessagingSetup();
       
-      // Auto-sync test profiles to Firebase
+      // Start completely fresh - no test profiles
       try {
         await autoSyncTestProfiles();
       } catch (error) {
-        console.error('Error during test profile sync:', error);
+        console.error('Error during fresh start:', error);
       }
     }, 3000);
     
