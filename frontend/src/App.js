@@ -7,7 +7,6 @@ import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { loadProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
 import { autoSyncTestProfiles } from './services/syncTestProfiles';
-import MatchResultsGrid from './MatchResultsGrid'; // Added import for MatchResultsGrid
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();

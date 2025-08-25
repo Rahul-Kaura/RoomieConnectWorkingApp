@@ -62,17 +62,17 @@ A sophisticated, modern roommate matching application built with React.js, featu
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Rahul-Kaura/RoomieConnectWorkingApp.git
-   cd RoomieConnectWorkingApp
-   ```
+```bash
+git clone https://github.com/Rahul-Kaura/RoomieConnectWorkingApp.git
+cd RoomieConnectWorkingApp
+```
 
 2. **Install dependencies**
-   ```bash
+```bash
    # Frontend
-   cd frontend
-   npm install
-   
+cd frontend
+npm install
+
    # Backend
    cd ../backend
    npm install
@@ -85,13 +85,13 @@ A sophisticated, modern roommate matching application built with React.js, featu
    ```
 
 4. **Start the application**
-   ```bash
+```bash
    # Frontend (in frontend directory)
    npm start
-   
+
    # Backend (in backend directory)
-   npm start
-   ```
+npm start
+```
 
 ## 🛠️ **Tech Stack**
 

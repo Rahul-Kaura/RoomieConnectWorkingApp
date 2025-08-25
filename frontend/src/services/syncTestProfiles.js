@@ -23,13 +23,13 @@ export const clearAllProfilesAndStartFresh = async () => {
         for (const profile of allProfiles) {
             // Remove ALL profiles to start completely fresh
             // We'll only keep kinas when they log in again
-            try {
-                const profileRef = ref(database, `profiles/${profile.id}`);
-                await remove(profileRef);
+                try {
+                    const profileRef = ref(database, `profiles/${profile.id}`);
+                    await remove(profileRef);
                 console.log(`🗑️ Removed profile: ${profile.name} (${profile.id})`);
-                clearedCount++;
-            } catch (error) {
-                console.error(`Failed to remove profile ${profile.name}:`, error);
+                    clearedCount++;
+                } catch (error) {
+                    console.error(`Failed to remove profile ${profile.name}:`, error);
             }
         }
         
@@ -103,7 +103,7 @@ export const clearAllProfilesIncludingKinas = async () => {
         console.error('❌ Error clearing all profiles:', error);
         return { success: false, error: error.message };
     }
-}; 
+};
 
 /**
  * Manual function to clear all profiles immediately - can be called from browser console
@@ -139,7 +139,7 @@ export const clearAllProfilesNow = async () => {
         console.error('❌ Error during manual clear:', error);
         return { success: false, error: error.message };
     }
-};
+}; 
 
 // Make it available globally for browser console access
 if (typeof window !== 'undefined') {
