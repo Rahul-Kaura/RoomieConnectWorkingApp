@@ -1,6 +1,71 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Chatbot.css';
 
+// Claude Sonnet 3.5 API configuration
+const CLAUDE_API_KEY = process.env.REACT_APP_CLAUDE_API_KEY;
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+// AI Roommate Expert System Prompt
+const ROOMMATE_EXPERT_PROMPT = `You are an expert roommate compatibility analyst with deep expertise in psychology, sociology, and conflict resolution. Your role is to:
+
+1. ANALYZE user responses to understand their personality, lifestyle, and preferences
+2. ASK 1-2 targeted follow-up questions based on what's unclear or needs more detail
+3. EVALUATE compatibility factors and provide detailed scoring
+4. CREATE comprehensive user backgrounds for roommate matching
+5. PROVIDE specific recommendations based on AI analysis
+
+CRITICAL GUIDELINES:
+- Ask about ALLERGIES, DIETARY RESTRICTIONS, and MEDICAL CONDITIONS if not mentioned
+- Focus on areas that need clarification (e.g., if they say "I'm clean" but don't elaborate)
+- Ask about COMMUNICATION preferences, NOISE tolerance, STUDY habits
+- Ask about SOCIAL preferences, GUEST policies, FINANCIAL expectations
+- Ask about SCHEDULE conflicts, MAJOR/ACTIVITY impacts on living
+- Vary questions based on their specific background and responses
+- Be warm, professional, and thorough in your approach
+
+IMPORTANT: Always ask follow-up questions that reveal deeper insights about living habits, communication styles, and potential compatibility issues.`;
+
+// AI Analysis Functions
+const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) => {
+    if (!CLAUDE_API_KEY) {
+        console.warn('Claude API key not configured. Please set REACT_APP_CLAUDE_API_KEY environment variable.');
+        return {
+            success: false,
+            error: 'API key not configured. Please set REACT_APP_CLAUDE_API_KEY environment variable.'
+        };
+    }
+
+    try {
+        const response = await fetch(CLAUDE_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': CLAUDE_API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 1500,
+                system: systemPrompt,
+                messages: messages
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return {
+            success: true,
+            content: data.content[0].text
+        };
+    } catch (error) {
+        console.error('Error calling Claude API:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
     const [messages, setMessages] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState('');
