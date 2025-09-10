@@ -86,7 +86,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     const startConversation = () => {
         const initialMessage = {
             id: Date.now(),
-            text: "Hi! I'm your AI roommate compatibility specialist! 🏠\n\nTo find your perfect match, I need to understand your background and preferences. Please share:\n\n• Your name, age, and major\n• Where you're from\n• Your personality and lifestyle\n• Study habits and schedule\n• Social preferences (introvert/extrovert)\n• Cleanliness standards\n• Any allergies, dietary restrictions, or medical conditions\n• What you're looking for in a roommate\n\nTake your time and be detailed - this helps me find the best match!",
+            text: "Hi! I'm your AI roommate specialist! 🏠\n\nTell me about yourself - your name, age, major, and what you're looking for in a roommate. I'll ask a few follow-up questions to find your perfect match!",
             sender: 'assistant',
             timestamp: new Date()
         };
