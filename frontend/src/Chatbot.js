@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Chatbot.css';
+import { API_URL } from './config';
+import { saveProfile } from './services/firebaseProfile';
 
 // Claude Sonnet 3.5 API configuration
 const CLAUDE_API_KEY = process.env.REACT_APP_CLAUDE_API_KEY;
@@ -66,11 +68,14 @@ const callClaudeAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
     }
 };
 
-const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
+const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser, onProfileComplete, onNavigateToMatches }) => {
     const [messages, setMessages] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [conversationStep, setConversationStep] = useState('initial');
+    const [collectedAnswers, setCollectedAnswers] = useState([]);
+    const [userInfo, setUserInfo] = useState({ name: '', major: '', location: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -95,6 +100,32 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setConversationStep('waiting_for_response');
     };
 
+    // Extract information from user input
+    const extractUserInfo = (text) => {
+        const lowerText = text.toLowerCase();
+        const info = { ...userInfo };
+        
+        // Extract name (look for "I'm", "my name is", "I am", etc.)
+        const nameMatch = text.match(/(?:my name is|i'm|i am|call me|name's)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+        if (nameMatch && !info.name) {
+            info.name = nameMatch[1];
+        }
+        
+        // Extract major
+        const majorMatch = text.match(/(?:major|studying|study|degree in)\s+(?:is\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+        if (majorMatch && !info.major) {
+            info.major = majorMatch[1];
+        }
+        
+        // Extract location
+        const locationMatch = text.match(/(?:live in|from|located in|location is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+        if (locationMatch && !info.location) {
+            info.location = locationMatch[1];
+        }
+        
+        return info;
+    };
+
     const handleUserResponse = async (userInput) => {
         if (!userInput.trim()) return;
 
@@ -106,6 +137,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         };
         
         setMessages(prev => [...prev, userMessage]);
+        
+        // Extract and store user info
+        const extractedInfo = extractUserInfo(userInput);
+        setUserInfo(extractedInfo);
+        
+        // Store the answer
+        setCollectedAnswers(prev => [...prev, {
+            questionId: 'initial_intro',
+            answer: userInput
+        }]);
+        
         setIsAnalyzing(true);
         setConversationStep('analyzing');
 
@@ -144,6 +186,13 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         };
         
         setMessages(prev => [...prev, userMessage]);
+        
+        // Store the follow-up answer
+        setCollectedAnswers(prev => [...prev, {
+            questionId: 'followup_questions',
+            answer: userInput
+        }]);
+        
         setIsAnalyzing(true);
 
         // Simulate final analysis
@@ -170,9 +219,83 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setCurrentQuestion('');
     };
 
-    const handleCompleteConversation = () => {
-        if (onResetToHome) {
-            onResetToHome();
+    const handleCompleteConversation = async () => {
+        if (!currentUser) {
+            console.error('No current user available');
+            return;
+        }
+
+        setIsSubmitting(true);
+        
+        try {
+            // Prepare profile data - use extracted info or fallback to currentUser
+            const userName = userInfo.name || currentUser.name || currentUser.email?.split('@')[0] || 'User';
+            const profileData = {
+                id: currentUser.id,
+                userId: currentUser.id,
+                name: userName,
+                answers: collectedAnswers.length > 0 ? collectedAnswers : [
+                    { questionId: 'intro', answer: messages.find(m => m.sender === 'user')?.text || '' }
+                ],
+                score: 85, // Default score, can be calculated later
+                major: userInfo.major || '',
+                location: userInfo.location || '',
+                image: '',
+                timestamp: new Date().toISOString()
+            };
+
+            // Submit to backend
+            const answersToSubmit = collectedAnswers.length > 0 ? collectedAnswers : [
+                { questionId: 'intro', answer: messages.find(m => m.sender === 'user')?.text || '' }
+            ];
+            
+            const response = await fetch(`${API_URL}/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: currentUser.id,
+                    name: userName,
+                    answers: answersToSubmit,
+                    score: 85,
+                    major: userInfo.major || '',
+                    location: userInfo.location || '',
+                    image: ''
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit profile to backend');
+            }
+
+            const backendProfile = await response.json();
+            console.log('Profile submitted to backend:', backendProfile);
+
+            // Save to Firebase
+            const firebaseProfile = {
+                ...profileData,
+                profileId: backendProfile.profileId
+            };
+            await saveProfile(firebaseProfile);
+            console.log('Profile saved to Firebase:', firebaseProfile);
+
+            // Update parent component
+            if (onProfileComplete) {
+                onProfileComplete(firebaseProfile);
+            }
+
+            // Navigate to matches
+            if (onNavigateToMatches) {
+                onNavigateToMatches();
+            } else if (onResetToHome) {
+                // Fallback to reset if no navigate function provided
+                onResetToHome();
+            }
+        } catch (error) {
+            console.error('Error submitting profile:', error);
+            alert('Failed to save your profile. Please try again.');
+            setIsSubmitting(false);
         }
     };
 
@@ -278,8 +401,12 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
                 {conversationStep === 'complete' && (
                     <div className="completion-actions">
-                        <button onClick={handleCompleteConversation} className="primary-button">
-                            View Matches
+                        <button 
+                            onClick={handleCompleteConversation} 
+                            className="primary-button"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Saving Profile...' : 'View Matches'}
                         </button>
                         <button onClick={() => window.location.reload()} className="secondary-button">
                             Start Over

@@ -336,6 +336,17 @@ function App() {
     setView('settings'); // Assuming a 'settings' view exists
   };
 
+  const handleProfileComplete = (profile) => {
+    console.log('Profile completed:', profile);
+    setUserProfile(profile);
+    localStorage.setItem('userProfile', JSON.stringify(profile));
+  };
+
+  const handleNavigateToMatches = () => {
+    console.log('Navigating to matches...');
+    setView('matches');
+  };
+
   const renderContent = () => {
     if (isLoading) return (
       <div style={{
@@ -540,6 +551,8 @@ function App() {
             existingProfile={userProfile} 
             onResetToHome={resetToHome}
             onUpdateUser={handleUpdateUser}
+            onProfileComplete={handleProfileComplete}
+            onNavigateToMatches={handleNavigateToMatches}
           />
         );
       case 'matches':
