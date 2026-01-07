@@ -7,6 +7,9 @@ import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { loadProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
 import { autoSyncTestProfiles } from './services/syncTestProfiles';
+import { generateMatches, createSampleProfiles } from './services/matchingService';
+// import TestGeminiDebug from './TestGeminiDebug';
+// import SimpleTest from './SimpleTest';
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();
@@ -128,6 +131,16 @@ function App() {
           setUserProfile(profile);
           localStorage.setItem('userProfile', JSON.stringify(profile));
             console.log('✅ Profile saved to localStorage');
+            
+            // Generate matches for this profile
+            try {
+              console.log('🔍 Generating matches for user profile...');
+              const userMatches = await generateMatches(profile);
+              console.log('✅ Generated matches:', userMatches.length);
+              setMatches(userMatches);
+            } catch (error) {
+              console.error('❌ Error generating matches:', error);
+            }
         } else {
             console.log('❌ No profile found in Firebase for user:', currentUser.id);
             // Check if we have any localStorage profile even if it doesn't match exactly
@@ -164,17 +177,19 @@ function App() {
     }
   }, [currentUser]);
 
-  // Test messaging setup and start fresh when app loads
+  // Test messaging setup and create sample profiles when app loads
   useEffect(() => {
-    // Run messaging test and start fresh after a short delay to ensure Firebase is initialized
+    // Run messaging test and create sample profiles after a short delay to ensure Firebase is initialized
     const timer = setTimeout(async () => {
       testMessagingSetup();
       
-      // Start completely fresh - no test profiles
+      // Create sample profiles for testing
       try {
-        await autoSyncTestProfiles();
+        console.log('🎯 Creating sample profiles for matching...');
+        await createSampleProfiles();
+        console.log('✅ Sample profiles created successfully!');
       } catch (error) {
-        console.error('Error during fresh start:', error);
+        console.error('Error creating sample profiles:', error);
       }
     }, 3000);
     
@@ -229,52 +244,14 @@ function App() {
     if (isAuthenticated) {
       if (userProfile) {
         console.log('✅ User has profile, going to matches view');
-        // Start loading screen with minimum 6.5 seconds
+        // Start custom loading screen for 5 seconds
         setView('loading');
         
-        // Calculate dynamic loading time based on profile loading performance
-        const startTime = Date.now();
-        const minLoadingTime = 6500; // 6.5 seconds minimum
-        
-        // Check if profile is still loading from Firebase/backend
-        const checkProfileLoading = () => {
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-          
-          if (remainingTime > 0) {
-            // Still need to wait for minimum time
-            setTimeout(() => {
-              // Check if profile is still loading when minimum time is met
-              if (isProfileLoading) {
-                // Profile still loading, extend by additional time
-                const extendedTime = 3000; // Add 3 more seconds for ongoing profile operations
-                console.log(`🔄 Profile still loading, extending by ${extendedTime}ms`);
-                setTimeout(() => {
-                  setView('matches');
-                }, extendedTime);
-              } else {
-                // Profile loading complete, go to matches
-                setView('matches');
-              }
-            }, remainingTime);
-          } else {
-            // Minimum time met, check if we should extend for profile sync
-            if (isProfileLoading) {
-              // Profile still loading, extend for additional time
-              const extendedTime = 3000; // Add 3 more seconds
-              console.log(`🔄 Extending loading by ${extendedTime}ms for ongoing profile operations`);
-              setTimeout(() => {
-                setView('matches');
-              }, extendedTime);
-            } else {
-              // No sync needed, go to matches immediately
-              setView('matches');
-            }
-          }
-        };
-        
-        // Start the dynamic loading timer
-        checkProfileLoading();
+        // Simple 5-second loading timer
+        setTimeout(() => {
+          console.log('⏰ Custom loading complete, transitioning to matches');
+          setView('matches');
+        }, 5000); // 5 seconds
         
       } else {
         console.log('❌ No user profile, going to chatbot');
@@ -313,8 +290,29 @@ function App() {
     // localStorage.removeItem('userProfile');
   };
 
-  const handleUpdateUser = (updatedUser) => {
-    setCurrentUser(updatedUser);
+  const handleUpdateUser = async (updatedProfile) => {
+    console.log('🔄 Profile updated from chatbot:', updatedProfile);
+    
+    // Update the user profile state
+    setUserProfile(updatedProfile);
+    
+    // Save to localStorage
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+    
+    // Generate matches for the updated profile
+    try {
+      console.log('🔍 Generating matches for updated profile...');
+      const userMatches = await generateMatches(updatedProfile);
+      console.log('✅ Generated matches for updated profile:', userMatches.length);
+      setMatches(userMatches);
+      
+      // Navigate to matches view
+      setView('matches');
+    } catch (error) {
+      console.error('❌ Error generating matches for updated profile:', error);
+      // Still navigate to matches even if generation fails
+      setView('matches');
+    }
   };
 
   const resetToHome = () => {
@@ -323,11 +321,8 @@ function App() {
 
   const handleStartChat = (match) => {
     console.log('Starting chat with match:', match);
-    // In a real app, you would navigate to a chat room or open a chat window
-    // For now, we'll just set the view to chatbot with the match data
-    setView('chatbot');
-    // You might want to pass the match data to the Chatbot component
-    // setChatbotProps({ match: match });
+    // For now, show an alert with match info instead of going to chatbot
+    alert(`Starting chat with ${match.name}!\n\nThis would open a chat window in a real app.\n\nMatch details:\n- Compatibility: ${match.compatibilityScore}%\n- Major: ${match.major}\n- Bio: ${match.bio || 'No bio available'}`);
   };
 
   const handleOpenSettings = () => {
@@ -349,42 +344,59 @@ function App() {
 
   const renderContent = () => {
     if (isLoading) return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)'
-      }}>
-        <div className="loading-spinner-cool"></div>
-        <p style={{ 
-          marginTop: '30px', 
-          fontSize: '18px', 
-          color: '#20b2aa', 
-          fontWeight: '500',
-          textAlign: 'center'
+      <div>
+        {/* <SimpleTest />
+        <TestGeminiDebug /> */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)'
         }}>
-          Welcome to RoomieConnect...
-        </p>
+          <div className="loading-spinner-cool"></div>
+          <p style={{ 
+            marginTop: '30px', 
+            fontSize: '18px', 
+            color: '#20b2aa', 
+            fontWeight: '500',
+            textAlign: 'center'
+          }}>
+            Welcome to RoomieConnect...
+          </p>
+        </div>
       </div>
     );
     
     switch (view) {
       case 'homeLoading':
         return (
-          <div className="home-loading-screen screen-transition" onClick={() => setView('welcome')} style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
-            color: '#20b2aa',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer'
-          }}>
+          <div>
+            {/* <SimpleTest />
+        <TestGeminiDebug /> */}
+            <div 
+              className="home-loading-screen screen-transition" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Home loading screen clicked!');
+                setView('welcome');
+              }} 
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
+                color: '#20b2aa',
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                zIndex: 1000
+              }}
+            >
             {/* Home loading animation */}
             <div className="home-loading-container">
               <div className="home-loading-particles">
@@ -430,116 +442,94 @@ function App() {
         );
       case 'loading':
         return (
-          <div className="loading-screen screen-transition" style={{
+          <div className="custom-loading-screen" style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
             height: '100vh',
-            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-            color: '#6366f1',
-            position: 'relative'
+            background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
+            color: '#20b2aa',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            {/* Awwwards-inspired UI transition animation */}
-            <div className="loading-spinner-cool">
-              <div className="loading-ui-screens">
-                {/* Screen 1: Chatbot Interface */}
-                <div className="loading-screen-card loading-screen-1">
-                  <div className="loading-screen-content">
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '20px',
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      color: 'white'
-                    }}>
-                      💬
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
-                      Complete your profile
-                    </div>
+            {/* Custom RoomieConnect Loading Animation */}
+            <div className="roomie-loading-container">
+              {/* Floating Match Cards Animation */}
+              <div className="floating-cards">
+                <div className="floating-card card-1">
+                  <div className="card-avatar">A</div>
+                  <div className="card-info">
+                    <div className="card-name">Alex</div>
+                    <div className="card-score">95%</div>
                   </div>
                 </div>
-
-                {/* Screen 2: Profile Setup */}
-                <div className="loading-screen-card loading-screen-2">
-                  <div className="loading-screen-content">
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '20px',
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      color: 'white'
-                    }}>
-                      👤
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
-                      Building your profile
-                    </div>
+                <div className="floating-card card-2">
+                  <div className="card-avatar">S</div>
+                  <div className="card-info">
+                    <div className="card-name">Sarah</div>
+                    <div className="card-score">88%</div>
                   </div>
                 </div>
-
-                {/* Screen 3: Matches Preview */}
-                <div className="loading-screen-card loading-screen-3">
-                  <div className="loading-screen-content">
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '20px',
-              fontSize: '24px', 
-                      fontWeight: '700',
-                      color: 'white'
-                    }}>
-                      🏠
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#666', textAlign: 'center' }}>
-                      Finding perfect matches
-                    </div>
+                <div className="floating-card card-3">
+                  <div className="card-avatar">M</div>
+                  <div className="card-info">
+                    <div className="card-name">Mike</div>
+                    <div className="card-score">92%</div>
+                  </div>
+                </div>
+                <div className="floating-card card-4">
+                  <div className="card-avatar">J</div>
+                  <div className="card-info">
+                    <div className="card-name">Jordan</div>
+                    <div className="card-score">87%</div>
                   </div>
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="loading-progress-bar">
-                <div className="loading-progress-fill"></div>
+              {/* Central Logo with Pulse Animation */}
+              <div className="loading-logo-container">
+                <div className="loading-logo">
+                  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* House Icon */}
+                    <path d="M60 20L20 50V90H40V70H80V90H100V50L60 20Z" fill="#6366f1" stroke="#4f46e5" strokeWidth="2"/>
+                    {/* Heart Icon */}
+                    <path d="M60 100C60 100 45 85 35 75C25 65 25 50 35 40C45 30 60 40 60 40C60 40 75 30 85 40C95 50 95 65 85 75C75 85 60 100 60 100Z" fill="#ef4444" stroke="#dc2626" strokeWidth="1"/>
+                  </svg>
+                </div>
+                
+                {/* Rotating Ring */}
+                <div className="loading-ring"></div>
+                <div className="loading-ring-2"></div>
+              </div>
+
+              {/* Loading Text with Typewriter Effect */}
+              <div className="loading-text-container">
+                <h1 className="loading-title">Finding Your Perfect Matches</h1>
+                <div className="loading-subtitle">
+                  <span className="loading-dots">Analyzing compatibility</span>
+                  <span className="loading-dots-animated">...</span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="custom-progress-container">
+                <div className="custom-progress-bar">
+                  <div className="custom-progress-fill"></div>
+                </div>
+                <div className="progress-text">Matching in progress...</div>
               </div>
             </div>
 
-            <p className="loading-text">
-              Connecting you to your perfect roommates...
-            </p>
-            
-            {/* Dynamic loading indicator */}
-            {isProfileLoading && (
-              <div style={{
-                marginTop: '20px',
-                padding: '10px 20px',
-                background: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: '20px',
-                fontSize: '14px',
-                color: 'rgba(255, 255, 255, 0.9)',
-                animation: 'pulse 2s ease-in-out infinite'
-              }}>
-                🔄 Syncing profile data...
-              </div>
-            )}
+            {/* Background Particles */}
+            <div className="loading-particles">
+              <div className="particle"></div>
+              <div className="particle"></div>
+              <div className="particle"></div>
+              <div className="particle"></div>
+              <div className="particle"></div>
+              <div className="particle"></div>
+            </div>
           </div>
         );
       case 'login':
@@ -566,7 +556,10 @@ function App() {
       case 'welcome':
       default:
         return (
-          <div className="welcome-screen screen-transition" onClick={handleWelcomeContinue} style={{ cursor: 'pointer' }}>
+          <div>
+            {/* <SimpleTest />
+        <TestGeminiDebug /> */}
+            <div className="welcome-screen screen-transition" onClick={handleWelcomeContinue} style={{ cursor: 'pointer' }}>
             <div className="logo-container animated-logo">
                 <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* New VR Headset Design */}
@@ -596,6 +589,7 @@ function App() {
                 Log Out
               </button>
             )}
+          </div>
           </div>
         );
     }
