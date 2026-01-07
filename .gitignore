@@ -108,6 +108,11 @@ temp/
 # firebase-config.js
 *.key
 *.pem
+.env.backend
+.env.frontend
+secrets.json
+config/secrets.js
+api-keys.json
 
 # Database files
 *.db
