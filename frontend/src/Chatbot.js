@@ -5,15 +5,10 @@ import './Chatbot.css';
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Debug API key
-console.log('=== Environment Debug ===');
-console.log('Gemini API Key loaded:', !!GEMINI_API_KEY);
-console.log('API Key value:', GEMINI_API_KEY ? 'Present' : 'Missing');
-console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-console.log('API Key first 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) : 'None');
-console.log('API Key last 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(GEMINI_API_KEY.length - 10) : 'None');
-console.log('REACT_APP_GEMINI_API_KEY:', process.env.REACT_APP_GEMINI_API_KEY);
-console.log('=== End Environment Debug ===');
+// Only log that API key is configured (not the actual key)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔑 Gemini API Key configured:', GEMINI_API_KEY ? 'Yes' : 'No');
+}
 
 // AI Roommate Expert System Prompt
 const ROOMMATE_EXPERT_PROMPT = `You are a friendly roommate compatibility expert. Your job is to:
@@ -33,15 +28,9 @@ Now ask 1-2 short follow-up questions:`;
 
 // AI Analysis Functions
 const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) => {
-    console.log('=== Gemini API Call Debug ===');
-    console.log('API Key present:', !!GEMINI_API_KEY);
-    console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-    console.log('API URL:', GEMINI_API_URL);
-    console.log('Messages:', messages);
-    
     if (!GEMINI_API_KEY) {
         const error = 'API key not configured. Please set REACT_APP_GEMINI_API_KEY environment variable.';
-        console.error(error);
+        console.error('❌', error);
         return { success: false, error };
     }
 
@@ -49,8 +38,6 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
         // Convert messages to Gemini format
         const userMessage = messages[messages.length - 1]?.content || '';
         const fullPrompt = `${systemPrompt}\n\nUser Response: ${userMessage}`;
-        
-        console.log('🔍 Full prompt being sent to Gemini:', fullPrompt);
         
         const requestBody = {
             contents: [{
@@ -66,8 +53,6 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
             }
         };
         
-        console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-        
         const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
@@ -76,29 +61,25 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
             body: JSON.stringify(requestBody)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API Error Response:', errorText);
-            throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
+            console.error('❌ Gemini API error:', response.status, response.statusText);
+            throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        console.log('API Success Response:', data);
+        
+        // Only log success if API key works (not the key itself)
+        if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Gemini API call successful');
+        }
         
         return {
             success: true,
             content: data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated'
         };
     } catch (error) {
-        console.error('❌ Error calling Gemini API:', error);
-        console.error('❌ Error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
+        console.error('❌ Error calling Gemini API:', error.message);
         return { success: false, error: error.message };
     }
 };
@@ -147,9 +128,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setConversationStep('analyzing');
 
         try {
-            console.log('🤖 Calling Gemini API with user input:', userInput);
-            console.log('🔑 API Key available:', !!GEMINI_API_KEY);
-            console.log('🔑 API Key value:', GEMINI_API_KEY);
+            if (process.env.NODE_ENV === 'development') {
+                console.log('🤖 Calling Gemini API with user input');
+            }
             
             // Call Gemini AI to analyze the user's response
             const messages = [

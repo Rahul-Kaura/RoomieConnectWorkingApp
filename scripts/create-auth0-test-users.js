@@ -1,9 +1,10 @@
 const axios = require('axios');
 
-// Auth0 Configuration - Load from environment variables
-const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || 'dev-s2103new01u1y2di.us.auth0.com';
-const CLIENT_ID = process.env.AUTH0_CLIENT_ID || 'XWSeKVDinNDBbkwV6gmbBXvtugEGcbOm';
-const CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET || 'j9Qk-HPvmobkhMwZdInRVM1TmogzqsC705rJyH2H_BeXI8sajL3Siqhf7Grr5ZuW';
+// Auth0 Configuration - Must be set via environment variables
+// Never hardcode secrets in source code!
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+const CLIENT_ID = process.env.AUTH0_CLIENT_ID;
+const CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
 
 // Test users to create
 const testUsers = [
@@ -128,17 +129,20 @@ async function createTestUser(user, token) {
 async function createAllTestUsers() {
     console.log('🚀 Creating Auth0 test users for RoomieConnect...\n');
     
-    // Validate configuration
-    if (AUTH0_DOMAIN === 'YOUR_AUTH0_DOMAIN' || 
-        CLIENT_ID === 'YOUR_MANAGEMENT_API_CLIENT_ID' || 
-        CLIENT_SECRET === 'YOUR_MANAGEMENT_API_CLIENT_SECRET') {
-        console.error('❌ Please update the Auth0 configuration at the top of this script!');
-        console.log('\n📋 You need to:');
-        console.log('1. Replace YOUR_AUTH0_DOMAIN with your Auth0 domain');
-        console.log('2. Replace YOUR_MANAGEMENT_API_CLIENT_ID with your Management API client ID');
-        console.log('3. Replace YOUR_MANAGEMENT_API_CLIENT_SECRET with your Management API client secret');
+    // Validate configuration - all must be set via environment variables
+    if (!AUTH0_DOMAIN || !CLIENT_ID || !CLIENT_SECRET) {
+        console.error('❌ Missing required Auth0 environment variables!');
+        console.log('\n📋 You need to set the following environment variables:');
+        console.log('   - AUTH0_DOMAIN');
+        console.log('   - AUTH0_CLIENT_ID');
+        console.log('   - AUTH0_CLIENT_SECRET');
+        console.log('\n💡 Example:');
+        console.log('   export AUTH0_DOMAIN="your-domain.auth0.com"');
+        console.log('   export AUTH0_CLIENT_ID="your-client-id"');
+        console.log('   export AUTH0_CLIENT_SECRET="your-client-secret"');
+        console.log('   node create-auth0-test-users.js');
         console.log('\n🔗 Instructions: https://auth0.com/docs/secure/tokens/access-tokens/management-api-access-tokens');
-        return;
+        process.exit(1);
     }
     
     try {

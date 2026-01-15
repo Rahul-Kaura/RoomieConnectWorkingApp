@@ -603,10 +603,23 @@ function App() {
 }
 
 export default function WrappedApp() {
+  const auth0Domain = process.env.REACT_APP_AUTH0_DOMAIN;
+  const auth0ClientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
+
+  if (!auth0Domain || !auth0ClientId) {
+    console.error('❌ Auth0 configuration missing. Please set REACT_APP_AUTH0_DOMAIN and REACT_APP_AUTH0_CLIENT_ID in your .env file');
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Configuration Error</h2>
+        <p>Auth0 credentials are not configured. Please check your .env file.</p>
+      </div>
+    );
+  }
+
   return (
     <Auth0Provider
-      domain="dev-s2103new01u1y2di.us.auth0.com"
-      clientId="drjmUYWyCnE4JOZZdcpmax2D5m2HmeAt"
+      domain={auth0Domain}
+      clientId={auth0ClientId}
       authorizationParams={{
         redirect_uri: window.location.origin
       }}
