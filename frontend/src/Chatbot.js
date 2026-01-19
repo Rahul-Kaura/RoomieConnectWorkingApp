@@ -5,16 +5,6 @@ import './Chatbot.css';
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Debug API key
-console.log('=== Environment Debug ===');
-console.log('Gemini API Key loaded:', !!GEMINI_API_KEY);
-console.log('API Key value:', GEMINI_API_KEY ? 'Present' : 'Missing');
-console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-console.log('API Key first 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 10) : 'None');
-console.log('API Key last 10 chars:', GEMINI_API_KEY ? GEMINI_API_KEY.substring(GEMINI_API_KEY.length - 10) : 'None');
-console.log('REACT_APP_GEMINI_API_KEY:', process.env.REACT_APP_GEMINI_API_KEY);
-console.log('=== End Environment Debug ===');
-
 // AI Roommate Expert System Prompt
 const ROOMMATE_EXPERT_PROMPT = `You are a friendly roommate compatibility expert. Your job is to:
 
@@ -33,15 +23,8 @@ Now ask 1-2 short follow-up questions:`;
 
 // AI Analysis Functions
 const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) => {
-    console.log('=== Gemini API Call Debug ===');
-    console.log('API Key present:', !!GEMINI_API_KEY);
-    console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-    console.log('API URL:', GEMINI_API_URL);
-    console.log('Messages:', messages);
-    
     if (!GEMINI_API_KEY) {
         const error = 'API key not configured. Please set REACT_APP_GEMINI_API_KEY environment variable.';
-        console.error(error);
         return { success: false, error };
     }
 
@@ -49,8 +32,6 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
         // Convert messages to Gemini format
         const userMessage = messages[messages.length - 1]?.content || '';
         const fullPrompt = `${systemPrompt}\n\nUser Response: ${userMessage}`;
-        
-        console.log('🔍 Full prompt being sent to Gemini:', fullPrompt);
         
         const requestBody = {
             contents: [{
@@ -66,8 +47,6 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
             }
         };
         
-        console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-        
         const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: {
@@ -76,31 +55,40 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
             body: JSON.stringify(requestBody)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API Error Response:', errorText);
             throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('API Success Response:', data);
         
         return {
             success: true,
             content: data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated'
         };
     } catch (error) {
-        console.error('❌ Error calling Gemini API:', error);
-        console.error('❌ Error details:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
         return { success: false, error: error.message };
     }
+};
+
+// Timeout wrapper for API calls
+const callGeminiWithTimeout = async (messages, systemPrompt, timeoutMs = 5000) => {
+    const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({ 
+                success: false, 
+                error: 'timeout',
+                message: 'AI response timed out after 5 seconds' 
+            });
+        }, timeoutMs);
+    });
+
+    const apiPromise = callGeminiAPI(messages, systemPrompt);
+
+    // Race between API call and timeout
+    const result = await Promise.race([apiPromise, timeoutPromise]);
+    
+    return result;
 };
 
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
@@ -114,6 +102,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         if (conversationStep === 'initial') {
             startConversation();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -147,11 +136,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setConversationStep('analyzing');
 
         try {
-            console.log('🤖 Calling Gemini API with user input:', userInput);
-            console.log('🔑 API Key available:', !!GEMINI_API_KEY);
-            console.log('🔑 API Key value:', GEMINI_API_KEY);
-            
-            // Call Gemini AI to analyze the user's response
+            // Call Gemini AI to analyze the user's response with 5-second timeout
             const messages = [
                 {
                     role: 'user',
@@ -159,21 +144,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             ];
 
-            console.log('📤 Sending messages to Gemini:', messages);
-            const aiResponse = await callGeminiAPI(messages);
-            console.log('📥 AI Response received:', aiResponse);
+            const aiResponse = await callGeminiWithTimeout(messages, ROOMMATE_EXPERT_PROMPT, 5000);
             
             if (aiResponse.success) {
-                console.log('✅ AI Response successful:', aiResponse.content);
                 
+                // Add both messages at once to avoid race conditions
                 const acknowledgmentMessage = {
                     id: Date.now() + 1,
                     text: "Thank you for sharing that information! I can see you're a thoughtful person who values good communication.",
                     sender: 'assistant',
                     timestamp: new Date()
                 };
-                
-                setMessages(prev => [...prev, acknowledgmentMessage]);
 
                 const followUpMessage = {
                     id: Date.now() + 2,
@@ -182,11 +163,23 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     timestamp: new Date()
                 };
                 
-                setMessages(prev => [...prev, followUpMessage]);
+                // Add both messages together
+                setMessages(prev => [...prev, acknowledgmentMessage, followUpMessage]);
                 setConversationStep('waiting_for_followup');
+                setIsAnalyzing(false);
             } else {
-                console.error('❌ AI API failed:', aiResponse.error);
-                // Use fallback questions instead of showing error
+                // Check if timeout occurred
+                if (aiResponse.error === 'timeout') {
+                    const timeoutMessage = {
+                        id: Date.now() + 1,
+                        text: "⏰ The AI is taking longer than expected to respond. I'll use a quick question instead to keep things moving!",
+                        sender: 'assistant',
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, timeoutMessage]);
+                }
+                
+                // Use fallback questions
                 const fallbackQuestions = [
                     "That's interesting! Can you tell me more about your study habits and how you prefer to spend your evenings?",
                     "Thanks for sharing! What about your cleanliness preferences - are you someone who likes things very organized or more relaxed?",
@@ -197,30 +190,38 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
                 
                 const fallbackMessage = {
-                    id: Date.now() + 1,
-                    text: "Thanks for sharing that! " + randomQuestion,
+                    id: Date.now() + 2,
+                    text: randomQuestion,
                     sender: 'assistant',
                     timestamp: new Date()
                 };
                 
                 setMessages(prev => [...prev, fallbackMessage]);
                 setConversationStep('waiting_for_followup');
+                setIsAnalyzing(false);
             }
         } catch (error) {
-            console.error('Error in AI analysis:', error);
-            // Show error message instead of fallback
-            const errorMessage = {
+            // Use fallback instead of showing error to user
+            const fallbackQuestions = [
+                "That's interesting! Can you tell me more about your study habits and how you prefer to spend your evenings?",
+                "Thanks for sharing! What about your cleanliness preferences - are you someone who likes things very organized or more relaxed?",
+                "Great to know! How would you describe your social style - do you prefer quiet nights in or are you more outgoing?",
+                "Interesting! What are your thoughts on having guests over and noise levels in your living space?"
+            ];
+            
+            const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
+            
+            const fallbackMessage = {
                 id: Date.now() + 1,
-                text: `Error: ${error.message}. Please check the console for details.`,
+                text: randomQuestion,
                 sender: 'assistant',
                 timestamp: new Date()
             };
             
-            setMessages(prev => [...prev, errorMessage]);
-            setConversationStep('waiting_for_response');
+            setMessages(prev => [...prev, fallbackMessage]);
+            setConversationStep('waiting_for_followup');
+            setIsAnalyzing(false);
         }
-        
-        setIsAnalyzing(false);
     };
 
     const handleFollowUpResponse = async (userInput) => {
@@ -235,6 +236,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         setMessages(prev => [...prev, userMessage]);
         setIsAnalyzing(true);
+        setConversationStep('analyzing');
 
         try {
             // Get all previous messages for context
@@ -244,18 +246,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 .map(msg => msg.text)
                 .join('\n\n');
 
-            // Call Gemini AI for final analysis
-            const messages = [
+            // Call Gemini AI for final analysis with 5-second timeout
+            const apiMessages = [
                 {
                     role: 'user',
                     content: `Based on this conversation, create a brief profile summary:\n\n"${conversationContext}"\n\nKeep it short and indicate the profile is complete.`
                 }
             ];
 
-            const aiResponse = await callGeminiAPI(messages);
+            const aiResponse = await callGeminiWithTimeout(apiMessages, ROOMMATE_EXPERT_PROMPT, 5000);
             
             if (aiResponse.success) {
-                console.log('✅ Final AI analysis successful:', aiResponse.content);
                 const completionMessage = {
                     id: Date.now() + 3,
                     text: aiResponse.content + "\n\nReady to see your matches?",
@@ -265,8 +266,19 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 
                 setMessages(prev => [...prev, completionMessage]);
                 setConversationStep('complete');
+                setIsAnalyzing(false);
             } else {
-                console.log('⚠️ AI analysis failed, using fallback completion message');
+                // Check if timeout occurred
+                if (aiResponse.error === 'timeout') {
+                    const timeoutMessage = {
+                        id: Date.now() + 2,
+                        text: "⏰ The AI is taking longer than expected. No worries, I'll create your profile with the information you've shared!",
+                        sender: 'assistant',
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, timeoutMessage]);
+                }
+                
                 // Fallback message
                 const completionMessage = {
                     id: Date.now() + 3,
@@ -277,9 +289,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 
                 setMessages(prev => [...prev, completionMessage]);
                 setConversationStep('complete');
+                setIsAnalyzing(false);
             }
         } catch (error) {
-            console.error('Error in final AI analysis:', error);
             // Fallback message
             const completionMessage = {
                 id: Date.now() + 3,
@@ -290,9 +302,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             
             setMessages(prev => [...prev, completionMessage]);
             setConversationStep('complete');
+            setIsAnalyzing(false);
         }
-        
-        setIsAnalyzing(false);
     };
 
     const handleSend = () => {
@@ -305,10 +316,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     };
 
     const handleCompleteConversation = async () => {
-        console.log('🎯 Chatbot completion - creating user profile...');
-        
         if (!currentUser) {
-            console.error('❌ No current user found');
             return;
         }
 
@@ -316,8 +324,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             // Extract user information from conversation
             const userMessages = messages.filter(msg => msg.sender === 'user');
             const conversationText = userMessages.map(msg => msg.text).join('\n\n');
-            
-            console.log('📝 Conversation text:', conversationText);
             
             // Create a basic profile from the conversation
             const userProfile = {
@@ -341,26 +347,20 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 lastUpdated: new Date().toISOString()
             };
 
-            console.log('👤 Created user profile:', userProfile);
-
             // Save profile to Firebase
             const { saveProfile } = await import('./services/firebaseProfile');
             await saveProfile(userProfile);
-            console.log('✅ Profile saved to Firebase');
 
             // Update the parent component with the profile
             if (onUpdateUser) {
-                console.log('📤 Calling onUpdateUser with profile:', userProfile);
                 onUpdateUser(userProfile);
             } else {
-                console.log('⚠️ onUpdateUser callback not provided');
                 // Fallback: navigate to home
                 if (onResetToHome) {
                     onResetToHome();
                 }
             }
         } catch (error) {
-            console.error('❌ Error creating profile:', error);
             // Still navigate to home even if profile creation fails
             if (onResetToHome) {
                 onResetToHome();
@@ -511,9 +511,6 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 
 // Enhanced MatchResultsGrid component with pagination
 const MatchResultsGrid = ({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings }) => {
-    console.log('🎯 MatchResultsGrid - matches:', matches);
-    console.log('🎯 MatchResultsGrid - matches length:', matches?.length);
-
     const [currentPage, setCurrentPage] = useState(0);
     const matchesPerPage = 4;
 

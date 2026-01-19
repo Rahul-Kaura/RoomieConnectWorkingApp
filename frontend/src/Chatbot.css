@@ -12,7 +12,8 @@
 .chatbot-container {
     display: flex;
     flex-direction: column;
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     height: 600px;
     background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
     color: white;
@@ -25,6 +26,37 @@
         0 0 0 1px rgba(99, 102, 241, 0.1);
     backdrop-filter: blur(20px);
     border: 1px solid #374151;
+}
+
+/* Desktop version - larger chatbot interface */
+@media (min-width: 1024px) {
+    .chatbot-container {
+        max-width: 700px;
+        height: 750px;
+    }
+    
+    .chatbot-header {
+        padding: 28px;
+    }
+    
+    .chatbot-messages {
+        padding: 28px;
+        gap: 20px;
+    }
+    
+    .message-content {
+        padding: 18px 24px;
+        font-size: 17px;
+    }
+    
+    .chatbot-input {
+        padding: 24px;
+    }
+    
+    .input-container textarea {
+        font-size: 16px;
+        padding: 14px 18px;
+    }
 }
 
 .chatbot-header {
@@ -866,6 +898,23 @@
     align-content: start;
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+}
+
+/* Desktop version - more columns for larger screens */
+@media (min-width: 1440px) {
+    .match-results-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        padding: 32px;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .match-results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 28px;
+    }
 }
 
 /* Match card styling */
@@ -1733,6 +1782,56 @@
 
 .expanded-card-chat-button:active {
     transform: translateY(0);
+}
+
+/* Desktop responsive design enhancements */
+@media (min-width: 1024px) {
+    .match-results-outer {
+        min-height: 600px;
+        max-height: calc(100vh - 60px);
+    }
+
+    .match-card {
+        padding: 28px;
+    }
+
+    .match-card-header {
+        margin-bottom: 20px;
+    }
+
+    .match-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+
+    .match-name {
+        font-size: 22px;
+    }
+
+    .match-major {
+        font-size: 16px;
+    }
+
+    .match-score .score-circle {
+        width: 80px;
+        height: 80px;
+        font-size: 24px;
+    }
+
+    .match-bio {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    .match-actions {
+        gap: 16px;
+    }
+
+    .chat-button, .view-profile-button {
+        padding: 14px 28px;
+        font-size: 16px;
+    }
 }
 
 /* Responsive design fixes */
@@ -4375,6 +4474,31 @@ textarea:focus {
     min-height: 600px;
     display: flex;
     flex-direction: column;
+}
+
+/* Desktop version - enhanced match results */
+@media (min-width: 1024px) {
+    .match-results-container {
+        padding: 40px;
+        min-height: 700px;
+    }
+
+    .match-results-header {
+        margin-bottom: 48px;
+    }
+
+    .match-results-title {
+        font-size: 42px;
+    }
+
+    .match-results-subtitle {
+        font-size: 18px;
+    }
+
+    .matches-count {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
 }
 
 .match-results-header {

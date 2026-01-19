@@ -8,6 +8,15 @@
 # testing
 /coverage
 
+# Demo and testing files
+LOCAL_DEMO*.md
+TESTING*.md
+quick-start.sh
+quick-start.bat
+src/testMessaging.js
+src/services/mockFirebaseMessaging.js
+src/services/syncTestProfiles.js
+
 # production
 /build
 

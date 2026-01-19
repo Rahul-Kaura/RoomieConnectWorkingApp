@@ -21,9 +21,23 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+/* Desktop version - better layout for larger screens */
+@media (min-width: 1024px) {
+  .App {
+    padding: 20px;
+  }
+}
+
 .welcome-screen {
   text-align: center;
   color: #ffffff;
+}
+
+/* Desktop version - enhanced welcome screen */
+@media (min-width: 1024px) {
+  .welcome-screen {
+    padding: 40px;
+  }
 }
 
 .logo-container {
@@ -32,6 +46,19 @@ body {
   justify-content: center;
   margin-top: 40px;
   margin-bottom: 24px;
+}
+
+/* Desktop version - larger logo */
+@media (min-width: 1024px) {
+  .logo-container {
+    margin-top: 60px;
+    margin-bottom: 36px;
+  }
+
+  .logo-container svg {
+    width: 140px;
+    height: 140px;
+  }
 }
 
 .home-title {
@@ -218,8 +245,13 @@ body.dark-theme .home-credits {
 
 .roomie-loading-container {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   text-align: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Floating Cards Animation */
@@ -230,14 +262,16 @@ body.dark-theme .home-credits {
   top: 0;
   left: 0;
   pointer-events: none;
+  z-index: 1;
 }
 
 .floating-card {
   position: absolute;
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -258,8 +292,8 @@ body.dark-theme .home-credits {
 }
 
 .floating-card.card-3 {
-  bottom: 25%;
-  left: 20%;
+  bottom: 15%;
+  left: 8%;
   animation-delay: 2s;
 }
 
@@ -291,7 +325,7 @@ body.dark-theme .home-credits {
 .card-name {
   font-size: 14px;
   font-weight: 600;
-  color: #1f2937;
+  color: #ffffff;
   margin-bottom: 2px;
 }
 
@@ -324,11 +358,12 @@ body.dark-theme .home-credits {
 .loading-logo-container {
   position: relative;
   margin: 40px 0;
+  z-index: 15;
 }
 
 .loading-logo {
   position: relative;
-  z-index: 3;
+  z-index: 20;
   animation: logoPulse 2s ease-in-out infinite;
 }
 
@@ -343,6 +378,7 @@ body.dark-theme .home-credits {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: spin 3s linear infinite;
+  z-index: 18;
 }
 
 .loading-ring-2 {
@@ -356,6 +392,7 @@ body.dark-theme .home-credits {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: spinReverse 4s linear infinite;
+  z-index: 17;
 }
 
 @keyframes logoPulse {
@@ -380,19 +417,21 @@ body.dark-theme .home-credits {
 /* Loading Text Animation */
 .loading-text-container {
   margin: 30px 0;
+  z-index: 15;
+  position: relative;
 }
 
 .loading-title {
   font-size: 28px;
   font-weight: 700;
-  color: #1f2937;
+  color: #ffffff;
   margin: 0 0 16px 0;
   animation: titleFade 3s ease-in-out infinite;
 }
 
 .loading-subtitle {
   font-size: 16px;
-  color: #6b7280;
+  color: #9ca3af;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -427,13 +466,17 @@ body.dark-theme .home-credits {
 /* Progress Bar Animation */
 .custom-progress-container {
   margin-top: 40px;
-  width: 300px;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 20px;
+  z-index: 15;
+  position: relative;
 }
 
 .custom-progress-bar {
   width: 100%;
   height: 6px;
-  background: #e5e7eb;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -457,7 +500,7 @@ body.dark-theme .home-credits {
 
 .progress-text {
   font-size: 14px;
-  color: #6b7280;
+  color: #9ca3af;
   text-align: center;
 }
 
@@ -469,7 +512,7 @@ body.dark-theme .home-credits {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 
 .particle {
@@ -506,8 +549,8 @@ body.dark-theme .home-credits {
 }
 
 .particle:nth-child(5) {
-  top: 60%;
-  left: 10%;
+  top: 50%;
+  left: 50%;
   animation-delay: 4s;
 }
 
@@ -525,6 +568,44 @@ body.dark-theme .home-credits {
   50% {
     transform: translateY(-30px) scale(1.2);
     opacity: 0.8;
+  }
+}
+
+/* Desktop Responsive - Enhanced for larger screens */
+@media (min-width: 1024px) {
+  .floating-card {
+    min-width: 150px;
+    padding: 16px 20px;
+  }
+  
+  .card-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .card-name {
+    font-size: 16px;
+  }
+  
+  .card-score {
+    font-size: 14px;
+  }
+  
+  .loading-title {
+    font-size: 32px;
+  }
+  
+  .custom-progress-container {
+    max-width: 600px;
+  }
+
+  .home-title {
+    font-size: 56px;
+  }
+
+  .home-subtitle {
+    font-size: 24px;
   }
 }
 
@@ -554,6 +635,53 @@ body.dark-theme .home-credits {
   }
   
   .custom-progress-container {
-    width: 250px;
+    max-width: 350px;
   }
+}
+
+/* Home Page Styles */
+.home-page {
+  position: relative;
+  min-height: 100vh;
+}
+
+.home-auth-button {
+  font-family: inherit;
+}
+
+/* Light theme home page */
+body.light-theme .home-page {
+  background: linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%);
+}
+
+body.light-theme .home-page h1 {
+  color: #20b2aa;
+}
+
+body.light-theme .home-page p {
+  color: #20b2aa;
+}
+
+/* Dark theme home page */
+body.dark-theme .home-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+body.dark-theme .home-page h1 {
+  color: #6366f1;
+}
+
+body.dark-theme .home-page p {
+  color: #9ca3af;
+}
+
+body.dark-theme .home-auth-button {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+body.dark-theme .home-auth-button:hover {
+  background: #6366f1;
+  color: white;
 }
