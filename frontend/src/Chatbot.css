@@ -4531,6 +4531,47 @@ textarea:focus {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.match-results-location-warning {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    color: #fbbf24;
+}
+
+.location-warning-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.location-warning-text {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #fcd34d;
+}
+
+.location-warning-text strong {
+    color: #fbbf24;
+}
+
+body.light-theme .match-results-location-warning {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #b45309;
+}
+
+body.light-theme .location-warning-text {
+    color: #92400e;
+}
+
+body.light-theme .location-warning-text strong {
+    color: #b45309;
+}
+
 .matches-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

@@ -1,7 +1,23 @@
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
+const {
+  saveProfileToFirebase,
+  getProfileFromFirebase,
+  getAllProfilesFromFirebase,
+  pushMessage,
+  getMessages,
+  setTyping,
+  getTyping,
+  setOnlineStatus,
+  setLastActivity,
+  getLastActivity,
+  createChat,
+  updateLastMessage,
+} = require('./firebase');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -106,7 +122,36 @@ app.post('/login', (req, res) => {
 
 
 
-// Profile & Matching
+// --- Profile API (backend owns Firebase storage; frontend fetches from backend) ---
+
+// Create or update a profile (full profile object). Persists to Firebase.
+app.post('/profile', async (req, res) => {
+    const profile = req.body;
+    if (!profile || !profile.id) {
+        return res.status(400).json({ error: 'Profile and profile.id are required' });
+    }
+    try {
+        const saved = await saveProfileToFirebase(profile);
+        if (saved) {
+            console.log('Profile saved to Firebase:', profile.name || profile.id);
+            return res.status(200).json(saved);
+        }
+    } catch (e) {
+        console.error('Firebase save error:', e);
+        // Fall through to in-memory so app still works without Firebase
+    }
+    // Fallback: in-memory when Firebase not configured or write failed
+    const existingIndex = profiles.findIndex(p => p.userId === profile.id);
+    const payload = { ...profile, userId: profile.userId || profile.id };
+    if (existingIndex >= 0) {
+        profiles[existingIndex] = { ...profiles[existingIndex], ...payload };
+        return res.status(200).json(profiles[existingIndex]);
+    }
+    profiles.push(payload);
+    return res.status(201).json(payload);
+});
+
+// Legacy submit (answers + score). Also persists to Firebase.
 app.post('/submit', async (req, res) => {
     const { id, name, answers, score, image, major, location } = req.body;
     if (!name || !answers || score === undefined) {
@@ -114,10 +159,11 @@ app.post('/submit', async (req, res) => {
     }
 
     const coordinates = location ? await getCoordinates(location) : null;
+    const userId = id;
 
-    const newProfile = {
-        profileId: nextId++,
-        userId: id, // This is now a string (Auth0 user.sub)
+    const profileForFirebase = {
+        id: userId,
+        userId,
         name,
         answers,
         score,
@@ -125,12 +171,41 @@ app.post('/submit', async (req, res) => {
         major: major || '',
         location: location || '',
         coordinates,
-        timestamp: new Date()
+        timestamp: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
     };
 
-    profiles.push(newProfile);
-    console.log('New profile submitted:', newProfile);
-    res.status(201).send(newProfile);
+    try {
+        const saved = await saveProfileToFirebase(profileForFirebase);
+        if (saved) {
+            console.log('Profile submitted to Firebase:', name);
+            return res.status(201).json(saved);
+        }
+    } catch (e) {
+        console.error('Firebase submit error:', e);
+    }
+
+    const existingIndex = profiles.findIndex(p => p.userId === userId);
+    const profilePayload = {
+        id: userId,
+        profileId: existingIndex >= 0 ? profiles[existingIndex].profileId : nextId++,
+        userId,
+        name,
+        answers,
+        score,
+        image: image || '',
+        major: major || '',
+        location: location || '',
+        coordinates,
+        timestamp: new Date(),
+    };
+
+    if (existingIndex >= 0) {
+        profiles[existingIndex] = profilePayload;
+        return res.status(200).send(profilePayload);
+    }
+    profiles.push(profilePayload);
+    return res.status(201).send(profilePayload);
 });
 
 app.get('/match/:id', (req, res) => {
@@ -201,16 +276,40 @@ app.get('/match/:id', (req, res) => {
     res.send({ matches: matches.slice(0, 3) });
 });
 
-app.get('/profile/user/:userId', (req, res) => {
-    const userId = req.params.userId; // Use string, not parseInt
-    const userProfile = profiles.find(p => p.userId === userId);
-    console.log('Profile lookup for userId:', userId, 'Found:', !!userProfile);
-    res.send({ hasProfile: !!userProfile, profile: userProfile });
+function normalizeProfile(profile) {
+    if (!profile) return profile;
+    if (!profile.id && profile.userId) return { ...profile, id: profile.userId };
+    return profile;
+}
+
+// Get one profile (from Firebase, fallback in-memory)
+app.get('/profile/user/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        let userProfile = await getProfileFromFirebase(userId);
+        if (!userProfile) {
+            userProfile = profiles.find(p => p.userId === userId);
+        }
+        res.send({ hasProfile: !!userProfile, profile: normalizeProfile(userProfile) });
+    } catch (e) {
+        console.error('Profile fetch error:', e);
+        const userProfile = profiles.find(p => p.userId === userId);
+        res.send({ hasProfile: !!userProfile, profile: normalizeProfile(userProfile) });
+    }
 });
 
-// Debug endpoint: List all profiles
-app.get('/profiles', (req, res) => {
-    res.json(profiles);
+// List all profiles (from Firebase, fallback in-memory)
+app.get('/profiles', async (req, res) => {
+    try {
+        let list = await getAllProfilesFromFirebase();
+        if (!list || list.length === 0) {
+            list = profiles;
+        }
+        res.json(list.map(normalizeProfile));
+    } catch (e) {
+        console.error('Profiles fetch error:', e);
+        res.json(profiles.map(normalizeProfile));
+    }
 });
 
 // Debug endpoint: Reset all profiles
@@ -218,6 +317,121 @@ app.post('/reset-profiles', (req, res) => {
     profiles.length = 0;
     nextId = 1;
     res.send({ success: true, message: 'All profiles reset.' });
+});
+
+// --- Chat API (Firebase in backend only; browser gets data via these routes) ---
+app.post('/chat/:chatId/messages', async (req, res) => {
+    const { chatId } = req.params;
+    const { text, senderId, senderName, type } = req.body;
+    if (!chatId || !text || !senderId) {
+        return res.status(400).json({ error: 'chatId, text, senderId required' });
+    }
+    try {
+        const messageId = await pushMessage(chatId, {
+            text,
+            senderId,
+            senderName: senderName || 'User',
+            type: type || 'text',
+        });
+        if (!messageId) return res.status(503).json({ error: 'Chat storage unavailable' });
+        const messages = await getMessages(chatId);
+        const last = messages[messages.length - 1];
+        await updateLastMessage(chatId, last || { text, senderId });
+        res.status(201).json({ success: true, messageId });
+    } catch (e) {
+        console.error('Chat send error:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.get('/chat/:chatId/messages', async (req, res) => {
+    const { chatId } = req.params;
+    try {
+        const messages = await getMessages(chatId);
+        res.json(messages);
+    } catch (e) {
+        console.error('Chat history error:', e);
+        res.status(500).json([]);
+    }
+});
+
+app.post('/chat/:chatId/typing', async (req, res) => {
+    const { chatId } = req.params;
+    const { userId, isTyping } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    try {
+        await setTyping(chatId, userId, !!isTyping);
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false });
+    }
+});
+
+app.get('/chat/:chatId/typing', async (req, res) => {
+    const { chatId } = req.params;
+    try {
+        const typing = await getTyping(chatId);
+        res.json(typing);
+    } catch (e) {
+        res.json({});
+    }
+});
+
+app.post('/chat', async (req, res) => {
+    const { chatId, participants } = req.body;
+    if (!chatId || !Array.isArray(participants)) {
+        return res.status(400).json({ error: 'chatId and participants required' });
+    }
+    try {
+        const ok = await createChat(chatId, participants);
+        res.json({ success: ok });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+app.post('/users/:userId/online', async (req, res) => {
+    const { userId } = req.params;
+    const { name } = req.body;
+    try {
+        await setOnlineStatus(userId, { online: true, name: name || null });
+        await setLastActivity(userId);
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false });
+    }
+});
+
+app.post('/users/:userId/offline', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        await setOnlineStatus(userId, { online: false });
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false });
+    }
+});
+
+app.post('/users/:userId/activity', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        await setLastActivity(userId);
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false });
+    }
+});
+
+app.get('/users/:userId/online', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const last = await getLastActivity(userId);
+        if (!last) return res.json({ online: false });
+        const thirtySecondsAgo = Date.now() - 30 * 1000;
+        res.json({ online: last > thirtySecondsAgo });
+    } catch (e) {
+        res.json({ online: false });
+    }
 });
 
 app.listen(port, () => {

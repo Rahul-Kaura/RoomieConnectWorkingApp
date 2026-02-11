@@ -326,28 +326,45 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             const conversationText = userMessages.map(msg => msg.text).join('\n\n');
             
             // Create a basic profile from the conversation
+            const major = extractInfo(conversationText, ['computer science', 'business', 'engineering', 'psychology', 'art', 'medicine']);
+            const age = extractAge(conversationText);
+            const cleanliness = extractInfo(conversationText, ['clean', 'very clean', 'messy', 'moderately clean']);
+            const sleepSchedule = extractInfo(conversationText, ['early bird', 'night owl', 'flexible']);
+            const socialPreference = extractInfo(conversationText, ['social', 'introverted', 'very social']);
+            const studyHabits = extractInfo(conversationText, ['quiet study', 'group study', 'flexible']);
+            const location = 'Unknown';
+            const answers = [
+                { questionId: 'major', answer: major || '' },
+                { questionId: 'age', answer: String(age || '') },
+                { questionId: 'cleanliness', answer: cleanliness || '' },
+                { questionId: 'sleepSchedule', answer: sleepSchedule || '' },
+                { questionId: 'socialPreference', answer: socialPreference || '' },
+                { questionId: 'studyHabits', answer: studyHabits || '' },
+                { questionId: 'location', answer: location || '' },
+                { questionId: 'bio', answer: conversationText || '' }
+            ];
             const userProfile = {
                 id: currentUser.id,
                 name: currentUser.name || 'User',
                 email: currentUser.email || '',
                 bio: conversationText,
-                // Extract basic info from conversation (you can enhance this)
-                major: extractInfo(conversationText, ['computer science', 'business', 'engineering', 'psychology', 'art', 'medicine']),
-                age: extractAge(conversationText),
-                cleanliness: extractInfo(conversationText, ['clean', 'very clean', 'messy', 'moderately clean']),
-                sleepSchedule: extractInfo(conversationText, ['early bird', 'night owl', 'flexible']),
-                socialPreference: extractInfo(conversationText, ['social', 'introverted', 'very social']),
-                studyHabits: extractInfo(conversationText, ['quiet study', 'group study', 'flexible']),
+                major,
+                age,
+                cleanliness,
+                sleepSchedule,
+                socialPreference,
+                studyHabits,
                 interests: extractInterests(conversationText),
                 year: 'Unknown',
-                location: 'Unknown',
+                location,
+                answers,
+                score: 50,
                 createdAt: new Date().toISOString(),
-                // Add some default values for better matching
                 isTestProfile: false,
                 lastUpdated: new Date().toISOString()
             };
 
-            // Save profile to Firebase
+            // Save profile via backend (backend stores to Firebase)
             const { saveProfile } = await import('./services/firebaseProfile');
             await saveProfile(userProfile);
 
@@ -510,9 +527,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 };
 
 // Enhanced MatchResultsGrid component with pagination
-const MatchResultsGrid = ({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings }) => {
+const MatchResultsGrid = ({ matches, userProfile, onStartChat, currentUser, onResetToHome, onOpenSettings }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const matchesPerPage = 4;
+
+    const hasLocation = userProfile && (
+        (userProfile.location && userProfile.location.trim() && userProfile.location !== 'Unknown') ||
+        (userProfile.coordinates && (userProfile.coordinates.lat != null || userProfile.coordinates.lng != null))
+    );
 
     if (!matches || matches.length === 0) {
         return (
@@ -566,6 +588,15 @@ const MatchResultsGrid = ({ matches, onStartChat, currentUser, onResetToHome, on
                         <span className="matches-label">roommates found</span>
                     </div>
                 </div>
+
+                {!hasLocation && (
+                    <div className="match-results-location-warning" role="alert">
+                        <span className="location-warning-icon">📍</span>
+                        <div className="location-warning-text">
+                            <strong>No location set.</strong> Add your location in your profile to see distance from roommates. You still see all matches below.
+                        </div>
+                    </div>
+                )}
                 
                 <div className="match-results-carousel">
                     <div className="match-results-grid">

@@ -11,7 +11,7 @@ const RoomieLogo = () => (
   </svg>
 );
 
-function HomePage({ isAuthenticated, getDisplayName, onLogin, onLogout, onContinue }) {
+function HomePage({ isAuthenticated, getDisplayName, onLogin, onLogout, onContinue, theme = 'dark', onThemeChange }) {
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
   const bookDemoRef = useRef(null);
@@ -27,8 +27,6 @@ function HomePage({ isAuthenticated, getDisplayName, onLogin, onLogout, onContin
       style={{
         minHeight: '100vh',
         width: '100%',
-        background: '#0a0a0a',
-        color: '#20b2aa',
         position: 'relative',
         overflowX: 'hidden',
         overflowY: 'auto',
@@ -101,25 +99,41 @@ function HomePage({ isAuthenticated, getDisplayName, onLogin, onLogout, onContin
       <section ref={aboutRef} className="home-page-section home-page-section-loading">
         <h2 className="home-section-title">About the Team</h2>
         <p className="home-section-text">
-          We're a team dedicated to helping students and young professionals find compatible roommates through smart matching and a smooth experience.
+
+
+          ADD TEAM DESCRIPTION HERE
+
+
         </p>
       </section>
       <section ref={contactRef} className="home-page-section home-page-section-loading">
         <h2 className="home-section-title">Contact</h2>
         <p className="home-section-text">
-          Get in touch: support@roomieconnect.com or reach out through our app.
+
+          
+          INSERT CONTACT INFO HERE we don't have one yet
+
+
         </p>
       </section>
       <section ref={bookDemoRef} className="home-page-section home-page-section-loading">
         <h2 className="home-section-title">Book a Demo</h2>
         <p className="home-section-text">
-          See RoomieConnect in action. Schedule a demo for your campus or organization.
+
+
+          DEMO NOT AVAILABLE YET 
+
+
         </p>
       </section>
       <section ref={howItWorksRef} className="home-page-section home-page-section-loading">
         <h2 className="home-section-title">How It Works</h2>
         <p className="home-section-text">
-          Answer a few questions about your preferences, and we'll match you with compatible roommates. Chat, compare, and find your perfect fit.
+
+
+          ADD HOW IT WORKS HERE 
+
+
         </p>
       </section>
 
@@ -136,7 +150,7 @@ function HomePage({ isAuthenticated, getDisplayName, onLogin, onLogout, onContin
         <div className="particle" />
       </div>
 
-      <AnimatedCredits />
+      <AnimatedCredits theme={theme} onThemeChange={onThemeChange} />
     </div>
   );
 }

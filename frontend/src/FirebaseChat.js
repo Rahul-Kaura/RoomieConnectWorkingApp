@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import firebaseMessaging from './services/firebaseMessaging';
 import notificationService from './services/notificationService';
-import { off, ref } from 'firebase/database';
-import { database } from './firebase';
 import './FirebaseChat.css';
 
 const FirebaseChat = ({ currentUser, matchedUser, onClose }) => {
@@ -107,9 +105,9 @@ const FirebaseChat = ({ currentUser, matchedUser, onClose }) => {
           firebaseMessaging.setUserOffline(currentUser.id);
           // Stop typing
           firebaseMessaging.setTypingStatus(chatId, currentUser.id, false);
-          // Clean up typing listener
-          if (typingListener) {
-            off(ref(database, `typing/${chatId}`), 'value', typingListener);
+          // Clean up typing listener (backend polling cleanup)
+          if (typeof typingListener === 'function') {
+            typingListener();
           }
           // Remove activity listeners
           document.removeEventListener('mousemove', trackActivity);

@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import Chatbot, { MatchResultsGrid } from './Chatbot';
 import Login from './Login';
+import HomePage from './HomePage';
 import './App.css';
-import AnimatedCredits from './AnimatedCredits';
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { loadProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
+import { useAuth0 } from '@auth0/auth0-react';
+import { loadProfile, saveProfile, monitorNewProfiles, stopListeningToProfiles } from './services/firebaseProfile';
 import { testMessagingSetup } from './testMessaging';
-import { autoSyncTestProfiles } from './services/syncTestProfiles';
+// import { autoSyncTestProfiles } from './services/syncTestProfiles'; // Unused for now
 import { generateMatches, createSampleProfiles } from './services/matchingService';
 // import TestGeminiDebug from './TestGeminiDebug';
 // import SimpleTest from './SimpleTest';
 
 function App() {
   const { isAuthenticated, user, isLoading, logout } = useAuth0();
-  const [view, setView] = useState('homeLoading'); // Start with home loading animation
+  const [view, setView] = useState('home');
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [globalProfileMonitor, setGlobalProfileMonitor] = useState(null);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
-  const [profileLoadingStartTime, setProfileLoadingStartTime] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [_globalProfileMonitor, setGlobalProfileMonitor] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [_isProfileLoading, setIsProfileLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [_profileLoadingStartTime, setProfileLoadingStartTime] = useState(null);
   const [matches, setMatches] = useState([]); // Added state for matches
 
-  // Set initial theme class on component mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-      document.body.classList.add('light-theme');
-      document.body.classList.remove('dark-theme');
-    } else {
-      document.body.classList.add('dark-theme');
-      document.body.classList.remove('light-theme');
+  // Single source of truth for theme: 'light' | 'dark'
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('theme') || 'dark';
+    } catch {
+      return 'dark';
     }
-  }, []);
+  });
 
-  // Remove auto-transition - let homeLoading stay until user clicks
+  // Sync theme to body class and localStorage whenever theme changes (runs on mount and when theme updates)
+  useEffect(() => {
+    const isLight = theme === 'light';
+    document.body.classList.toggle('light-theme', isLight);
+    document.body.classList.toggle('dark-theme', !isLight);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {
+      // ignore localStorage errors (e.g. private browsing)
+    }
+  }, [theme]);
+
+  const handleThemeChange = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
 
   // Set currentUser from Auth0 user
@@ -50,9 +64,9 @@ function App() {
       setUserProfile(null);
       localStorage.removeItem('userProfile');
       localStorage.removeItem('userName'); // Clear stale userName too
-      setView('welcome');
+      setView('home');
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, currentUser]);
 
   // Get the display name for welcome message
   const getDisplayName = () => {
@@ -157,6 +171,30 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  // When opening matches view, load profiles from backend (Firebase) and refresh matches
+  useEffect(() => {
+    if (view !== 'matches' || !currentUser?.id || !userProfile) return;
+    (async () => {
+      try {
+        const profile = await loadProfile(currentUser.id);
+        const profileToUse = profile || userProfile;
+        if (profile) {
+          setUserProfile(profile);
+          localStorage.setItem('userProfile', JSON.stringify(profile));
+        }
+        const userMatches = await generateMatches(profileToUse);
+        setMatches(userMatches);
+      } catch (e) {
+        try {
+          const userMatches = await generateMatches(userProfile);
+          setMatches(userMatches);
+        } catch (err) {
+          // keep existing matches on error
+        }
+      }
+    })();
+  }, [view, currentUser?.id]);
+
   // Global profile monitoring for all users
   useEffect(() => {
     if (isAuthenticated && currentUser && currentUser.id) {
@@ -236,6 +274,15 @@ function App() {
     // Save to localStorage
     localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
     
+    // Persist to Firebase so profile is stored
+    if (updatedProfile?.id) {
+      try {
+        await saveProfile(updatedProfile);
+      } catch (e) {
+        console.error('Failed to save profile to Firebase:', e);
+      }
+    }
+    
     // Generate matches for the updated profile
     try {
       const userMatches = await generateMatches(updatedProfile);
@@ -250,7 +297,7 @@ function App() {
   };
 
   const resetToHome = () => {
-    setView('welcome');
+    setView('home');
   };
 
   const handleStartChat = (match) => {
@@ -263,9 +310,17 @@ function App() {
     setView('settings'); // Assuming a 'settings' view exists
   };
 
-  const handleProfileComplete = (profile) => {
+  const handleProfileComplete = async (profile) => {
     setUserProfile(profile);
     localStorage.setItem('userProfile', JSON.stringify(profile));
+    // Persist to Firebase so created/completed profile is stored
+    if (profile?.id) {
+      try {
+        await saveProfile(profile);
+      } catch (e) {
+        console.error('Failed to save profile to Firebase:', e);
+      }
+    }
   };
 
   const handleNavigateToMatches = () => {
@@ -298,197 +353,17 @@ function App() {
     );
     
     switch (view) {
-      case 'homeLoading':
+      case 'home':
         return (
-          <div className="home-page screen-transition" style={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%)',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            {/* Login/Sign Up Button - Top Right */}
-            <div style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              zIndex: 1000
-            }}>
-              {isAuthenticated ? (
-                <button
-                  className="home-auth-button"
-                  onClick={handleLogout}
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#20b2aa',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: '2px solid #20b2aa',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(32, 178, 170, 0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#20b2aa';
-                    e.target.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.9)';
-                    e.target.style.color = '#20b2aa';
-                  }}
-                >
-                  Log Out
-                </button>
-              ) : (
-                <button
-                  className="home-auth-button"
-                  onClick={() => setView('login')}
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#20b2aa',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: '2px solid #20b2aa',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(32, 178, 170, 0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = '#20b2aa';
-                    e.target.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.9)';
-                    e.target.style.color = '#20b2aa';
-                  }}
-                >
-                  Login / Sign Up
-                </button>
-              )}
-            </div>
-
-            {/* Main Content */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flex: 1,
-              padding: '40px 20px',
-              textAlign: 'center'
-            }}>
-              {/* Logo */}
-              <div className="home-logo-container" style={{
-                marginBottom: '30px',
-                animation: 'bounceLogo 2.5s cubic-bezier(.68,-0.55,.27,1.55) infinite'
-              }}>
-                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="25,70 70,25 115,70" stroke="#6366f1" strokeWidth="6" fill="none" />
-                  <rect x="35" y="70" width="70" height="45" rx="10" stroke="#6366f1" strokeWidth="6" fill="none" />
-                  <path d="M50 95 Q70 100 90 95" stroke="#6366f1" strokeWidth="4" fill="none" />
-                  <circle cx="45" cy="80" r="5" fill="#6366f1" />
-                  <circle cx="95" cy="80" r="5" fill="#6366f1" />
-                </svg>
-              </div>
-              
-              {/* Title */}
-              <h1 style={{
-                color: '#6366f1',
-                fontSize: '48px',
-                fontWeight: '700',
-                margin: '0 0 20px 0',
-                letterSpacing: '1px',
-                lineHeight: '1.2'
-              }}>
-                ROOMIE<br/>CONNECT
-              </h1>
-              
-              {/* Subtitle */}
-              <p style={{
-                color: '#20b2aa',
-                fontSize: '20px',
-                margin: '0 0 40px 0',
-                fontWeight: '400',
-                maxWidth: '600px'
-              }}>
-                Find your perfect roommate match
-              </p>
-
-              {/* Get Started Button */}
-              {!isAuthenticated && (
-                <button
-                  onClick={() => setView('login')}
-                  style={{
-                    padding: '15px 40px',
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    color: 'white',
-                    background: 'linear-gradient(135deg, #6366f1 0%, #20b2aa 100%)',
-                    border: 'none',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
-                    marginTop: '20px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(99, 102, 241, 0.3)';
-                  }}
-                >
-                  Get Started
-                </button>
-              )}
-
-              {/* Welcome message for authenticated users */}
-              {isAuthenticated && user && (
-                <div style={{ marginTop: '30px' }}>
-                  <p style={{
-                    color: '#6366f1',
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    marginBottom: '20px'
-                  }}>
-                    Welcome back, {getDisplayName()}!
-                  </p>
-                  <button
-                    onClick={handleWelcomeContinue}
-                    style={{
-                      padding: '15px 40px',
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      color: 'white',
-                      background: 'linear-gradient(135deg, #6366f1 0%, #20b2aa 100%)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(99, 102, 241, 0.3)';
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <HomePage
+            isAuthenticated={isAuthenticated}
+            getDisplayName={getDisplayName}
+            onLogin={() => setView('login')}
+            onLogout={handleLogout}
+            onContinue={handleWelcomeContinue}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+          />
         );
       case 'loading':
         return (
@@ -602,47 +477,23 @@ function App() {
       case 'matches':
         return <MatchResultsGrid 
           matches={matches} 
+          userProfile={userProfile}
           onStartChat={handleStartChat} 
           currentUser={currentUser} 
           onResetToHome={resetToHome} 
           onOpenSettings={handleOpenSettings}
         />;
-      case 'welcome':
       default:
         return (
-          <div>
-            <div className="welcome-screen screen-transition" onClick={handleWelcomeContinue} style={{ cursor: 'pointer' }}>
-            <div className="logo-container animated-logo">
-                <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* New VR Headset Design */}
-                  {/* Triangular roof */}
-                  <polyline points="20,55 55,20 90,55" stroke="#6366f1" strokeWidth="5" fill="none" />
-                  {/* Rectangular body */}
-                  <rect x="28" y="55" width="54" height="35" rx="8" stroke="#6366f1" strokeWidth="5" fill="none" />
-                  {/* Central inverted U opening */}
-                  <path d="M40 75 Q55 80 70 75" stroke="#6366f1" strokeWidth="3" fill="none" />
-                  {/* Two circular elements on sides */}
-                  <circle cx="35" cy="65" r="4" fill="#6366f1" />
-                  <circle cx="75" cy="65" r="4" fill="#6366f1" />
-                </svg>
-            </div>
-            <h1 className="home-title">ROOMIE<br/>CONNECT</h1>
-            <p className="home-subtitle">Click anywhere to start</p>
-            {isAuthenticated && user && (
-              <p className="welcome-back-message">Welcome Back, {getDisplayName()}</p>
-            )}
-            <AnimatedCredits />
-            {isAuthenticated && (
-              <button
-                className="logout-corner-button"
-                onClick={e => { e.stopPropagation(); handleLogout(); }}
-                style={{ position: 'fixed', bottom: 20, right: 20, fontSize: 12, padding: '6px 12px', borderRadius: 16, background: '#eee', color: '#333', border: 'none', cursor: 'pointer', opacity: 0.7 }}
-              >
-                Log Out
-              </button>
-            )}
-          </div>
-          </div>
+          <HomePage
+            isAuthenticated={isAuthenticated}
+            getDisplayName={getDisplayName}
+            onLogin={() => setView('login')}
+            onLogout={handleLogout}
+            onContinue={handleWelcomeContinue}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+          />
         );
     }
   };

@@ -643,36 +643,53 @@ body.dark-theme .home-credits {
 .home-page {
   position: relative;
   min-height: 100vh;
-}
-
-.home-auth-button {
-  font-family: inherit;
-}
-
-/* Light theme home page */
-body.light-theme .home-page {
   background: linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%);
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-body.light-theme .home-page h1 {
-  color: #20b2aa;
-}
-
-body.light-theme .home-page p {
-  color: #20b2aa;
-}
-
-/* Dark theme home page */
 body.dark-theme .home-page {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-body.dark-theme .home-page h1 {
-  color: #6366f1;
+/* Top bar: nav centered above logo, auth right – same height */
+.home-page-top-bar {
+  position: relative;
+  min-height: 56px;
+  padding: 20px 20px 16px;
+  flex-shrink: 0;
+  z-index: 1000;
 }
 
-body.dark-theme .home-page p {
-  color: #9ca3af;
+.home-page-nav-top {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 20px;
+  margin-bottom: 0;
+  gap: 10px;
+}
+
+.home-page-auth {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.home-auth-button {
+  font-family: inherit;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #20b2aa;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #20b2aa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(32, 178, 170, 0.2);
 }
 
 body.dark-theme .home-auth-button {
@@ -681,7 +698,430 @@ body.dark-theme .home-auth-button {
   border-color: #6366f1;
 }
 
+.home-auth-button:hover {
+  background: #20b2aa;
+  color: white;
+}
+
 body.dark-theme .home-auth-button:hover {
   background: #6366f1;
   color: white;
 }
+
+.home-page-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 80px 20px 60px;
+  text-align: center;
+}
+
+.home-logo-container {
+  margin-bottom: 24px;
+  animation: bounceLogo 2.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+.home-page-title {
+  color: #6366f1;
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.home-page-subtitle {
+  color: #20b2aa;
+  font-size: 20px;
+  margin: 0 0 36px 0;
+  font-weight: 400;
+  max-width: 600px;
+}
+
+body.dark-theme .home-page-subtitle {
+  color: #9ca3af;
+}
+
+.home-page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.home-nav-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6366f1;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #6366f1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  font-family: inherit;
+}
+
+body.dark-theme .home-nav-button {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+.home-nav-button:hover {
+  background: #6366f1;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.home-page-continue {
+  margin-top: 24px;
+}
+
+.home-page-welcome {
+  color: #6366f1;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.home-cta-button {
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #6366f1 0%, #20b2aa 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  font-family: inherit;
+}
+
+.home-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.home-page-section {
+  padding: 48px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  scroll-margin-top: 24px;
+}
+
+.home-section-title {
+  color: #6366f1;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.home-section-text {
+  color: #20b2aa;
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+body.dark-theme .home-section-text {
+  color: #9ca3af;
+}
+
+@media (min-width: 768px) {
+  .home-page-nav {
+    gap: 16px;
+  }
+  .home-page-title {
+    font-size: 56px;
+  }
+  .home-page-subtitle {
+    font-size: 22px;
+  }
+}
+
+body.light-theme .home-page:not(.custom-loading-screen) {
+  background: linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%);
+}
+
+body.light-theme .home-page:not(.custom-loading-screen) h1 {
+  color: #20b2aa;
+}
+
+body.light-theme .home-page:not(.custom-loading-screen) p {
+  color: #20b2aa;
+}
+
+/* Home page – match loading screen style (dark bg, same elements & colors) */
+/* Dark theme home page (match loading style) */
+body.dark-theme .home-page.custom-loading-screen,
+.home-page.custom-loading-screen {
+  background: #0a0a0a;
+  color: #20b2aa;
+}
+
+/* Light theme home page */
+body.light-theme .home-page.custom-loading-screen {
+  background: #f0f4f8;
+  color: #1e3a5f;
+}
+
+.home-page.custom-loading-screen .home-page-auth .home-auth-button,
+.home-page.custom-loading-screen .home-auth-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #20b2aa;
+  border: 2px solid rgba(32, 178, 170, 0.6);
+  box-shadow: 0 2px 8px rgba(32, 178, 170, 0.2);
+}
+
+.home-page.custom-loading-screen .home-page-auth .home-auth-button:hover,
+.home-page.custom-loading-screen .home-auth-button:hover {
+  background: #20b2aa;
+  color: #0a0a0a;
+  border-color: #20b2aa;
+}
+
+.home-page.custom-loading-screen .home-nav-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #20b2aa;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
+
+.home-page.custom-loading-screen .home-nav-button:hover {
+  background: rgba(99, 102, 241, 0.25);
+  color: #ffffff;
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.home-page.custom-loading-screen .home-page-welcome {
+  color: #ffffff;
+}
+
+.home-page.custom-loading-screen .home-page-section-loading {
+  background: rgba(10, 10, 10, 0.95);
+  color: #9ca3af;
+}
+
+.home-page.custom-loading-screen .home-section-title {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.home-page.custom-loading-screen .home-section-text {
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+/* Light theme: home page (custom-loading-screen) elements */
+body.light-theme .home-page.custom-loading-screen .loading-title {
+  color: #1e3a5f;
+}
+
+body.light-theme .home-page.custom-loading-screen .loading-subtitle,
+body.light-theme .home-page.custom-loading-screen .loading-dots {
+  color: #475569;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-auth .home-auth-button,
+body.light-theme .home-page.custom-loading-screen .home-auth-button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0d9488;
+  border-color: #0d9488;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-auth .home-auth-button:hover,
+body.light-theme .home-page.custom-loading-screen .home-auth-button:hover {
+  background: #0d9488;
+  color: #fff;
+  border-color: #0d9488;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-nav-button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4f46e5;
+  border-color: #4f46e5;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-nav-button:hover {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-welcome {
+  color: #1e3a5f;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-section-loading {
+  background: rgba(255, 255, 255, 0.6);
+  color: #475569;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-section-title {
+  color: #1e3a5f;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-section-text {
+  color: #475569;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-powered-by-ai {
+  color: #64748b;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-ai-text {
+  color: #4f46e5;
+}
+
+body.light-theme .home-page.custom-loading-screen .home-page-ai-dot {
+  background-color: #4f46e5;
+}
+
+/* Home page full viewport and no overlapping */
+html,
+body {
+  height: 100%;
+}
+
+/* Let home page fill viewport when it's the main content */
+.App:has(.home-page-fullscreen) {
+  padding: 0;
+  justify-content: flex-start;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.App .home-page-fullscreen {
+  width: 100%;
+  min-width: 100%;
+  min-height: 100vh;
+  flex: 1 1 auto;
+  align-self: stretch;
+}
+
+.home-page-fullscreen {
+  padding-bottom: 0;
+}
+
+.home-page-hero-area {
+  padding-top: 60px;
+  padding-bottom: 40px;
+  min-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Floating cards: keep at edges so they don't overlap central content */
+.home-page-floating-cards .floating-card {
+  pointer-events: none;
+}
+
+.home-page-floating-cards .card-1 {
+  top: 12%;
+  left: 4%;
+}
+
+.home-page-floating-cards .card-2 {
+  top: 10%;
+  right: 4%;
+}
+
+.home-page-floating-cards .card-3 {
+  bottom: 12%;
+  left: 4%;
+}
+
+.home-page-floating-cards .card-4 {
+  bottom: 10%;
+  right: 4%;
+}
+
+@media (max-width: 768px) {
+  .home-page-floating-cards .card-1 {
+    left: 2%;
+    top: 8%;
+  }
+  .home-page-floating-cards .card-2 {
+    right: 2%;
+    top: 6%;
+  }
+  .home-page-floating-cards .card-3 {
+    left: 2%;
+    bottom: 8%;
+  }
+  .home-page-floating-cards .card-4 {
+    right: 2%;
+    bottom: 6%;
+  }
+}
+
+/* Particles stay behind content, no interaction */
+.home-page-particles {
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Spacer so fixed AnimatedCredits doesn't cover last section */
+.home-page-credits-spacer {
+  height: 100px;
+  min-height: 100px;
+  flex-shrink: 0;
+}
+
+/* Ensure main content stays above decorative layers */
+.home-page-hero-area .loading-logo-container,
+.home-page-hero-area .loading-text-container,
+.home-page-hero-area .home-page-nav,
+.home-page-hero-area .home-page-continue {
+  position: relative;
+  z-index: 15;
+}
+
+/* Powered by AI – under logo, scrolls with page (not fixed) */
+.home-page-powered-by-ai {
+  color: #9ca3af;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  z-index: 15;
+  animation: poweredByPulse 3s linear infinite;
+}
+
+.home-page-ai-text {
+  color: #6366f1;
+  font-weight: 600;
+  animation: aiGlow 3s linear infinite;
+}
+
+.home-page-ai-dots {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.home-page-ai-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #6366f1;
+  margin: 0 1px;
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.home-page-ai-dot:nth-child(1) { animation-delay: 0s; }
+.home-page-ai-dot:nth-child(2) { animation-delay: 0.2s; }
+.home-page-ai-dot:nth-child(3) { animation-delay: 0.4s; }

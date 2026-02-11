@@ -1,10 +1,7 @@
 import { loadAllProfiles } from './firebaseProfile';
-import { API_URL } from '../config';
 
 /**
- * Generate matches for a given user profile
- * @param {Object} userProfile - The current user's profile
- * @returns {Promise<Array>} Array of matched profiles
+ * Generate matches for a given user profile (profiles are loaded from backend).
  */
 export const generateMatches = async (userProfile) => {
   try {
@@ -12,21 +9,7 @@ export const generateMatches = async (userProfile) => {
       return [];
     }
 
-    // Try to load all profiles from Firebase
-    let allProfiles = [];
-    try {
-      allProfiles = await loadAllProfiles();
-    } catch (firebaseError) {
-      // Fallback to backend API
-      try {
-        const response = await fetch(`${API_URL}/api/profiles`);
-        if (response.ok) {
-          allProfiles = await response.json();
-        }
-      } catch (backendError) {
-        return [];
-      }
-    }
+    const allProfiles = await loadAllProfiles();
 
     // Filter out the current user
     const otherProfiles = allProfiles.filter(
@@ -87,21 +70,24 @@ export const generateMatches = async (userProfile) => {
         distance = `${Math.round(distInMiles)} mi`;
       }
 
+      const compat = compatibility.toFixed(2);
       return {
         userId: otherProfile.userId || otherProfile.id,
         profileId: otherProfile.profileId || otherProfile.id,
         id: otherProfile.id || otherProfile.userId,
         name: otherProfile.name || 'Unknown',
-        compatibility: compatibility.toFixed(2),
+        compatibility: compat,
+        compatibilityScore: compat,
         distance,
         location: otherProfile.location || 'N/A',
-        score: otherProfile.score || compatibility.toFixed(2),
+        score: otherProfile.score || compat,
         answers: otherProfile.answers || [],
         image: otherProfile.image || '',
         major: otherProfile.major || '',
         age: otherProfile.age || '',
         allergyInfo: extractAllergyInfo(otherProfile.answers || []),
-        instagram: otherProfile.instagram || ''
+        instagram: otherProfile.instagram || '',
+        bio: otherProfile.bio || 'No bio available'
       };
     });
 
