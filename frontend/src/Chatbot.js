@@ -5,11 +5,6 @@ import './Chatbot.css';
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Only log that API key is configured (not the actual key)
-if (process.env.NODE_ENV === 'development') {
-  console.log('🔑 Gemini API Key configured:', GEMINI_API_KEY ? 'Yes' : 'No');
-}
-
 // AI Roommate Expert System Prompt
 const ROOMMATE_EXPERT_PROMPT = `You are a friendly roommate compatibility expert. Your job is to:
 
@@ -63,25 +58,38 @@ const callGeminiAPI = async (messages, systemPrompt = ROOMMATE_EXPERT_PROMPT) =>
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Gemini API error:', response.status, response.statusText);
-            throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+            throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
         }
 
         const data = await response.json();
-        
-        // Only log success if API key works (not the key itself)
-        if (process.env.NODE_ENV === 'development') {
-            console.log('✅ Gemini API call successful');
-        }
         
         return {
             success: true,
             content: data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated'
         };
     } catch (error) {
-        console.error('❌ Error calling Gemini API:', error.message);
         return { success: false, error: error.message };
     }
+};
+
+// Timeout wrapper for API calls
+const callGeminiWithTimeout = async (messages, systemPrompt, timeoutMs = 5000) => {
+    const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({ 
+                success: false, 
+                error: 'timeout',
+                message: 'AI response timed out after 5 seconds' 
+            });
+        }, timeoutMs);
+    });
+
+    const apiPromise = callGeminiAPI(messages, systemPrompt);
+
+    // Race between API call and timeout
+    const result = await Promise.race([apiPromise, timeoutPromise]);
+    
+    return result;
 };
 
 const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) => {
@@ -95,6 +103,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         if (conversationStep === 'initial') {
             startConversation();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -128,11 +137,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         setConversationStep('analyzing');
 
         try {
-            if (process.env.NODE_ENV === 'development') {
-                console.log('🤖 Calling Gemini API with user input');
-            }
-            
-            // Call Gemini AI to analyze the user's response
+            // Call Gemini AI to analyze the user's response with 5-second timeout
             const messages = [
                 {
                     role: 'user',
@@ -140,21 +145,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 }
             ];
 
-            console.log('📤 Sending messages to Gemini:', messages);
-            const aiResponse = await callGeminiAPI(messages);
-            console.log('📥 AI Response received:', aiResponse);
+            const aiResponse = await callGeminiWithTimeout(messages, ROOMMATE_EXPERT_PROMPT, 5000);
             
             if (aiResponse.success) {
-                console.log('✅ AI Response successful:', aiResponse.content);
                 
+                // Add both messages at once to avoid race conditions
                 const acknowledgmentMessage = {
                     id: Date.now() + 1,
                     text: "Thank you for sharing that information! I can see you're a thoughtful person who values good communication.",
                     sender: 'assistant',
                     timestamp: new Date()
                 };
-                
-                setMessages(prev => [...prev, acknowledgmentMessage]);
 
                 const followUpMessage = {
                     id: Date.now() + 2,
@@ -163,11 +164,23 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                     timestamp: new Date()
                 };
                 
-                setMessages(prev => [...prev, followUpMessage]);
+                // Add both messages together
+                setMessages(prev => [...prev, acknowledgmentMessage, followUpMessage]);
                 setConversationStep('waiting_for_followup');
+                setIsAnalyzing(false);
             } else {
-                console.error('❌ AI API failed:', aiResponse.error);
-                // Use fallback questions instead of showing error
+                // Check if timeout occurred
+                if (aiResponse.error === 'timeout') {
+                    const timeoutMessage = {
+                        id: Date.now() + 1,
+                        text: "⏰ The AI is taking longer than expected to respond. I'll use a quick question instead to keep things moving!",
+                        sender: 'assistant',
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, timeoutMessage]);
+                }
+                
+                // Use fallback questions
                 const fallbackQuestions = [
                     "That's interesting! Can you tell me more about your study habits and how you prefer to spend your evenings?",
                     "Thanks for sharing! What about your cleanliness preferences - are you someone who likes things very organized or more relaxed?",
@@ -178,30 +191,38 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
                 
                 const fallbackMessage = {
-                    id: Date.now() + 1,
-                    text: "Thanks for sharing that! " + randomQuestion,
+                    id: Date.now() + 2,
+                    text: randomQuestion,
                     sender: 'assistant',
                     timestamp: new Date()
                 };
                 
                 setMessages(prev => [...prev, fallbackMessage]);
                 setConversationStep('waiting_for_followup');
+                setIsAnalyzing(false);
             }
         } catch (error) {
-            console.error('Error in AI analysis:', error);
-            // Show error message instead of fallback
-            const errorMessage = {
+            // Use fallback instead of showing error to user
+            const fallbackQuestions = [
+                "That's interesting! Can you tell me more about your study habits and how you prefer to spend your evenings?",
+                "Thanks for sharing! What about your cleanliness preferences - are you someone who likes things very organized or more relaxed?",
+                "Great to know! How would you describe your social style - do you prefer quiet nights in or are you more outgoing?",
+                "Interesting! What are your thoughts on having guests over and noise levels in your living space?"
+            ];
+            
+            const randomQuestion = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
+            
+            const fallbackMessage = {
                 id: Date.now() + 1,
-                text: `Error: ${error.message}. Please check the console for details.`,
+                text: randomQuestion,
                 sender: 'assistant',
                 timestamp: new Date()
             };
             
-            setMessages(prev => [...prev, errorMessage]);
-            setConversationStep('waiting_for_response');
+            setMessages(prev => [...prev, fallbackMessage]);
+            setConversationStep('waiting_for_followup');
+            setIsAnalyzing(false);
         }
-        
-        setIsAnalyzing(false);
     };
 
     const handleFollowUpResponse = async (userInput) => {
@@ -216,6 +237,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
         
         setMessages(prev => [...prev, userMessage]);
         setIsAnalyzing(true);
+        setConversationStep('analyzing');
 
         try {
             // Get all previous messages for context
@@ -225,18 +247,17 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 .map(msg => msg.text)
                 .join('\n\n');
 
-            // Call Gemini AI for final analysis
-            const messages = [
+            // Call Gemini AI for final analysis with 5-second timeout
+            const apiMessages = [
                 {
                     role: 'user',
                     content: `Based on this conversation, create a brief profile summary:\n\n"${conversationContext}"\n\nKeep it short and indicate the profile is complete.`
                 }
             ];
 
-            const aiResponse = await callGeminiAPI(messages);
+            const aiResponse = await callGeminiWithTimeout(apiMessages, ROOMMATE_EXPERT_PROMPT, 5000);
             
             if (aiResponse.success) {
-                console.log('✅ Final AI analysis successful:', aiResponse.content);
                 const completionMessage = {
                     id: Date.now() + 3,
                     text: aiResponse.content + "\n\nReady to see your matches?",
@@ -246,8 +267,19 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 
                 setMessages(prev => [...prev, completionMessage]);
                 setConversationStep('complete');
+                setIsAnalyzing(false);
             } else {
-                console.log('⚠️ AI analysis failed, using fallback completion message');
+                // Check if timeout occurred
+                if (aiResponse.error === 'timeout') {
+                    const timeoutMessage = {
+                        id: Date.now() + 2,
+                        text: "⏰ The AI is taking longer than expected. No worries, I'll create your profile with the information you've shared!",
+                        sender: 'assistant',
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, timeoutMessage]);
+                }
+                
                 // Fallback message
                 const completionMessage = {
                     id: Date.now() + 3,
@@ -258,9 +290,9 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
                 
                 setMessages(prev => [...prev, completionMessage]);
                 setConversationStep('complete');
+                setIsAnalyzing(false);
             }
         } catch (error) {
-            console.error('Error in final AI analysis:', error);
             // Fallback message
             const completionMessage = {
                 id: Date.now() + 3,
@@ -271,9 +303,8 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             
             setMessages(prev => [...prev, completionMessage]);
             setConversationStep('complete');
+            setIsAnalyzing(false);
         }
-        
-        setIsAnalyzing(false);
     };
 
     const handleSend = () => {
@@ -286,10 +317,7 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
     };
 
     const handleCompleteConversation = async () => {
-        console.log('🎯 Chatbot completion - creating user profile...');
-        
         if (!currentUser) {
-            console.error('❌ No current user found');
             return;
         }
 
@@ -298,50 +326,59 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
             const userMessages = messages.filter(msg => msg.sender === 'user');
             const conversationText = userMessages.map(msg => msg.text).join('\n\n');
             
-            console.log('📝 Conversation text:', conversationText);
-            
             // Create a basic profile from the conversation
+            const major = extractInfo(conversationText, ['computer science', 'business', 'engineering', 'psychology', 'art', 'medicine']);
+            const age = extractAge(conversationText);
+            const cleanliness = extractInfo(conversationText, ['clean', 'very clean', 'messy', 'moderately clean']);
+            const sleepSchedule = extractInfo(conversationText, ['early bird', 'night owl', 'flexible']);
+            const socialPreference = extractInfo(conversationText, ['social', 'introverted', 'very social']);
+            const studyHabits = extractInfo(conversationText, ['quiet study', 'group study', 'flexible']);
+            const location = 'Unknown';
+            const answers = [
+                { questionId: 'major', answer: major || '' },
+                { questionId: 'age', answer: String(age || '') },
+                { questionId: 'cleanliness', answer: cleanliness || '' },
+                { questionId: 'sleepSchedule', answer: sleepSchedule || '' },
+                { questionId: 'socialPreference', answer: socialPreference || '' },
+                { questionId: 'studyHabits', answer: studyHabits || '' },
+                { questionId: 'location', answer: location || '' },
+                { questionId: 'bio', answer: conversationText || '' }
+            ];
             const userProfile = {
                 id: currentUser.id,
                 name: currentUser.name || 'User',
                 email: currentUser.email || '',
                 bio: conversationText,
-                // Extract basic info from conversation (you can enhance this)
-                major: extractInfo(conversationText, ['computer science', 'business', 'engineering', 'psychology', 'art', 'medicine']),
-                age: extractAge(conversationText),
-                cleanliness: extractInfo(conversationText, ['clean', 'very clean', 'messy', 'moderately clean']),
-                sleepSchedule: extractInfo(conversationText, ['early bird', 'night owl', 'flexible']),
-                socialPreference: extractInfo(conversationText, ['social', 'introverted', 'very social']),
-                studyHabits: extractInfo(conversationText, ['quiet study', 'group study', 'flexible']),
+                major,
+                age,
+                cleanliness,
+                sleepSchedule,
+                socialPreference,
+                studyHabits,
                 interests: extractInterests(conversationText),
                 year: 'Unknown',
-                location: 'Unknown',
+                location,
+                answers,
+                score: 50,
                 createdAt: new Date().toISOString(),
-                // Add some default values for better matching
                 isTestProfile: false,
                 lastUpdated: new Date().toISOString()
             };
 
-            console.log('👤 Created user profile:', userProfile);
-
-            // Save profile to Firebase
+            // Save profile via backend (backend stores to Firebase)
             const { saveProfile } = await import('./services/firebaseProfile');
             await saveProfile(userProfile);
-            console.log('✅ Profile saved to Firebase');
 
             // Update the parent component with the profile
             if (onUpdateUser) {
-                console.log('📤 Calling onUpdateUser with profile:', userProfile);
                 onUpdateUser(userProfile);
             } else {
-                console.log('⚠️ onUpdateUser callback not provided');
                 // Fallback: navigate to home
                 if (onResetToHome) {
                     onResetToHome();
                 }
             }
         } catch (error) {
-            console.error('❌ Error creating profile:', error);
             // Still navigate to home even if profile creation fails
             if (onResetToHome) {
                 onResetToHome();
@@ -491,12 +528,14 @@ const Chatbot = ({ currentUser, existingProfile, onResetToHome, onUpdateUser }) 
 };
 
 // Enhanced MatchResultsGrid component with pagination
-const MatchResultsGrid = ({ matches, onStartChat, currentUser, onResetToHome, onOpenSettings }) => {
-    console.log('🎯 MatchResultsGrid - matches:', matches);
-    console.log('🎯 MatchResultsGrid - matches length:', matches?.length);
-
+const MatchResultsGrid = ({ matches, userProfile, onStartChat, currentUser, onResetToHome, onOpenSettings }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const matchesPerPage = 4;
+
+    const hasLocation = userProfile && (
+        (userProfile.location && userProfile.location.trim() && userProfile.location !== 'Unknown') ||
+        (userProfile.coordinates && (userProfile.coordinates.lat != null || userProfile.coordinates.lng != null))
+    );
 
     if (!matches || matches.length === 0) {
         return (
@@ -550,6 +589,15 @@ const MatchResultsGrid = ({ matches, onStartChat, currentUser, onResetToHome, on
                         <span className="matches-label">roommates found</span>
                     </div>
                 </div>
+
+                {!hasLocation && (
+                    <div className="match-results-location-warning" role="alert">
+                        <span className="location-warning-icon">📍</span>
+                        <div className="location-warning-text">
+                            <strong>No location set.</strong> Add your location in your profile to see distance from roommates. You still see all matches below.
+                        </div>
+                    </div>
+                )}
                 
                 <div className="match-results-carousel">
                     <div className="match-results-grid">

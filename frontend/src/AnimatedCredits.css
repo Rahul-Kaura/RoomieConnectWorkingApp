@@ -9,6 +9,22 @@
   pointer-events: none;
 }
 
+/* Theme toggle at top left (home page) – above top bar so it’s clickable */
+.credits-container-top-left {
+  top: 20px;
+  left: 20px;
+  right: auto;
+  bottom: auto;
+  text-align: left;
+  pointer-events: auto;
+  z-index: 1100;
+}
+
+.credits-container-top-left .theme-toggle-container {
+  pointer-events: auto;
+  margin: 0;
+}
+
 .powered-by-ai {
   color: #6b7280;
   font-size: 18px;
@@ -146,33 +162,40 @@
   margin-top: 10px;
   display: flex;
   justify-content: center;
+  pointer-events: auto;
 }
 
-.theme-toggle-switch {
-  position: relative;
-  display: inline-block;
-}
-
-.theme-toggle-input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  position: absolute;
-}
-
-.theme-toggle-label {
+/* Single clickable button – no checkbox */
+.theme-toggle-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 120px;
   height: 40px;
-  background: #f3f4f6;
+  border: none;
   border-radius: 20px;
   padding: 0 8px;
   cursor: pointer;
   position: relative;
-  transition: all 0.3s ease;
+  font-family: inherit;
+  background: #f3f4f6;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle-button:hover {
+  transform: scale(1.02);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle-button:active {
+  transform: scale(0.98);
+}
+
+.theme-toggle-button:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 2px;
 }
 
 .theme-toggle-text {
@@ -185,6 +208,7 @@
   transition: color 0.3s ease;
   flex: 1;
   text-align: center;
+  pointer-events: none;
 }
 
 .theme-toggle-slider {
@@ -195,52 +219,37 @@
   height: 32px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   border-radius: 50%;
-  transition: all 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1;
+  pointer-events: none;
 }
 
-/* Dark mode state (when checked) */
-.theme-toggle-input:checked + .theme-toggle-label {
+/* Light mode (unpressed): slider left, orange */
+.theme-toggle-light .theme-toggle-text:first-child {
+  color: #d97706;
+}
+.theme-toggle-light .theme-toggle-text:last-child {
+  color: #9ca3af;
+}
+
+/* Dark mode (pressed): slider right, purple – animates on state change */
+.theme-toggle-dark {
   background: #374151;
 }
-
-.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-slider {
+.theme-toggle-dark .theme-toggle-slider {
   transform: translateX(80px);
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
 }
-
-.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-text:first-child {
+.theme-toggle-dark .theme-toggle-text:first-child {
   color: #9ca3af;
 }
-
-.theme-toggle-input:checked + .theme-toggle-label .theme-toggle-text:last-child {
+.theme-toggle-dark .theme-toggle-text:last-child {
   color: #6366f1;
 }
 
-/* Light mode state (default - when unchecked) */
-.theme-toggle-label .theme-toggle-text:first-child {
-  color: #f59e0b;
-}
-
-.theme-toggle-label .theme-toggle-text:last-child {
-  color: #9ca3af;
-}
-
-/* Hover effects */
-.theme-toggle-label:hover {
-  transform: scale(1.02);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.theme-toggle-label:hover .theme-toggle-slider {
+.theme-toggle-button:hover .theme-toggle-slider {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Focus states for accessibility */
-.theme-toggle-input:focus + .theme-toggle-label {
-  outline: 2px solid rgba(99, 102, 241, 0.5);
-  outline-offset: 2px;
 }
 
 /* Light theme overrides */
@@ -320,7 +329,7 @@ body.light-theme .theme-toggle-button:focus {
   outline-offset: 2px;
 } 
 
-body.light-theme .theme-toggle-label {
+body.light-theme .theme-toggle-button.theme-toggle-light {
   background: #f3f4f6;
 }
 

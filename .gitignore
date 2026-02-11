@@ -127,3 +127,12 @@ api-keys.json
 test-results/
 playwright-report/
 test-results.xml
+
+# Demo and testing files
+**/LOCAL_DEMO*.md
+**/TESTING*.md
+**/quick-start.sh
+**/quick-start.bat
+**/testMessaging.js
+**/mockFirebaseMessaging.js
+**/syncTestProfiles.js

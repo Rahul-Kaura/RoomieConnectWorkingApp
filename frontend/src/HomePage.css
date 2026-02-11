@@ -1,0 +1,215 @@
+/* Reuse loading screen look: gradient, logo animation, colors #6366f1, #20b2aa */
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fffe 0%, #e6fffa 100%);
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.dark-theme .home-page {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Log in top right */
+.home-page-auth {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.home-auth-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #20b2aa;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #20b2aa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(32, 178, 170, 0.2);
+  font-family: inherit;
+}
+
+body.dark-theme .home-auth-button {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+.home-auth-button:hover {
+  background: #20b2aa;
+  color: white;
+}
+
+body.dark-theme .home-auth-button:hover {
+  background: #6366f1;
+  color: white;
+}
+
+/* Hero: logo, title, nav */
+.home-page-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 80px 20px 60px;
+  text-align: center;
+}
+
+.home-logo-container {
+  margin-bottom: 24px;
+  animation: bounceLogo 2.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+.home-page-title {
+  color: #6366f1;
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+body.dark-theme .home-page-title {
+  color: #6366f1;
+}
+
+.home-page-subtitle {
+  color: #20b2aa;
+  font-size: 20px;
+  margin: 0 0 36px 0;
+  font-weight: 400;
+  max-width: 600px;
+}
+
+body.dark-theme .home-page-subtitle {
+  color: #9ca3af;
+}
+
+@keyframes bounceLogo {
+  0%   { transform: translateY(0); }
+  10%  { transform: translateY(-10px) scale(1.05); }
+  20%  { transform: translateY(-20px) scale(1.1); }
+  30%  { transform: translateY(-10px) scale(1.05); }
+  40%  { transform: translateY(0) scale(1); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Nav buttons: same style as loading screen elements */
+.home-page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.home-nav-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6366f1;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #6366f1;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  font-family: inherit;
+}
+
+body.dark-theme .home-nav-button {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: #6366f1;
+}
+
+.home-nav-button:hover {
+  background: #6366f1;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+/* Continue CTA for logged-in users */
+.home-page-continue {
+  margin-top: 24px;
+}
+
+.home-page-welcome {
+  color: #6366f1;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+body.dark-theme .home-page-welcome {
+  color: #6366f1;
+}
+
+.home-cta-button {
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #6366f1 0%, #20b2aa 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  font-family: inherit;
+}
+
+.home-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* Sections */
+.home-page-section {
+  padding: 48px 24px;
+  max-width: 720px;
+  margin: 0 auto;
+  scroll-margin-top: 24px;
+}
+
+.home-section-title {
+  color: #6366f1;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+body.dark-theme .home-section-title {
+  color: #6366f1;
+}
+
+.home-section-text {
+  color: #20b2aa;
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+body.dark-theme .home-section-text {
+  color: #9ca3af;
+}
+
+@media (min-width: 768px) {
+  .home-page-nav {
+    gap: 16px;
+  }
+  .home-page-title {
+    font-size: 56px;
+  }
+  .home-page-subtitle {
+    font-size: 22px;
+  }
+}

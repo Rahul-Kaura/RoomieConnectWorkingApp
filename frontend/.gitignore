@@ -8,16 +8,27 @@
 # testing
 /coverage
 
+# Demo and testing files
+LOCAL_DEMO*.md
+TESTING*.md
+quick-start.sh
+quick-start.bat
+src/testMessaging.js
+src/services/mockFirebaseMessaging.js
+src/services/syncTestProfiles.js
+
 # production
 /build
 
 # misc
 .DS_Store
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-
+.env.backend
+.env.frontend
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

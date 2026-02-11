@@ -1,5 +1,6 @@
 .chat-screen-container {
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     height: 600px;
     border-radius: 16px;
     background: #1f2937;
@@ -8,6 +9,28 @@
     flex-direction: column;
     overflow: hidden;
     border: 1px solid #374151;
+}
+
+/* Desktop version - larger chat window */
+@media (min-width: 1024px) {
+    .chat-screen-container {
+        max-width: 600px;
+        height: 700px;
+    }
+    
+    .chat-header-name {
+        font-size: 1.4rem;
+    }
+    
+    .chat-message-bubble {
+        max-width: 70%;
+        font-size: 1.1rem;
+    }
+    
+    .chat-input-area input {
+        font-size: 1.1rem;
+        padding: 12px 16px;
+    }
 }
 
 .chat-screen-header {
